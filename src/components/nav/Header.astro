@@ -1,0 +1,33 @@
+---
+const navItems = [
+  { href: "/", label: "首頁" },
+  { href: "/research", label: "研究" },
+  { href: "/publications", label: "發表" },
+  { href: "/people", label: "成員" },
+  { href: "/join-us", label: "加入我們" },
+  { href: "/news", label: "近況" },
+  { href: "/contact", label: "聯絡" },
+];
+---
+
+<header class="border-b border-gray-200 bg-white">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <a href="/" class="text-lg font-semibold tracking-tight">熱聲實驗室</a>
+    <nav>
+      <ul class="flex gap-6 text-sm">
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="text-gray-700 transition hover:text-gray-900"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>

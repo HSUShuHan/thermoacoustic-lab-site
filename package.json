@@ -1,0 +1,33 @@
+{
+  "name": "thermoacoustic-lab-site",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "typecheck": "astro check",
+    "format": "prettier --write \"**/*.{astro,ts,tsx,js,jsx,mjs,cjs,md,mdx,json,css}\""
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "^4.0.0",
+    "@iconify-json/heroicons": "^1.2.0",
+    "@iconify-json/lucide": "^1.2.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "astro": "^5.0.0",
+    "astro-icon": "^1.1.5",
+    "katex": "^0.16.11",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.0",
+    "prettier-plugin-astro": "^0.14.1"
+  }
+}
