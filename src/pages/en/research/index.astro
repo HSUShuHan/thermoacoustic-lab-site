@@ -1,0 +1,83 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+
+const all = await getCollection("research");
+const active = all
+  .filter((r) => r.data.active)
+  .sort((a, b) => a.data.order - b.data.order);
+const archived = all
+  .filter((r) => !r.data.active)
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  lang="en"
+  title="Research"
+  description="Research topics at the Thermoacoustic Lab — thermoacoustic effect, thermoacoustic engines, thermoacoustic refrigeration, and nonlinear thermoacoustic dynamics."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Research</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">Research</h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  <section class="mt-8 grid gap-6 md:grid-cols-2">
+    {
+      active.map((r) => (
+        <a
+          href={`/en/research/${r.slug}`}
+          class="block rounded-lg border border-brand-100 p-6 transition hover:border-brand-800 hover:shadow-md"
+        >
+          <h2 class="text-xl font-semibold text-brand-900">
+            {r.data.title_en}
+          </h2>
+          <p class="mt-1 text-sm text-brand-500">{r.data.title_zh}</p>
+          <p class="mt-3 text-gray-700">{r.data.summary_en ?? r.data.summary}</p>
+        </a>
+      ))
+    }
+
+    <a
+      href="/en/research/animations/standing-wave"
+      class="block rounded-lg border border-brand-100 p-6 transition hover:border-brand-800 hover:shadow-md"
+    >
+      <p>
+        <span
+          class="rounded bg-accent-50 px-2 py-0.5 text-xs font-medium text-accent-700"
+        >
+          Interactive
+        </span>
+      </p>
+      <h2 class="mt-2 text-xl font-semibold text-brand-900">
+        Thermoacoustic Mechanism Animation
+      </h2>
+      <p class="mt-1 text-sm text-brand-500">熱聲機制動畫</p>
+      <p class="mt-3 text-gray-700">
+        Synchronized gas-parcel oscillation, P–V trajectory, and T–x trajectory.
+        Switch between three wall-temperature gradient regimes (uniform,
+        refrigerator, engine) to see the device transition from inert, to
+        refrigerator, to engine.
+      </p>
+    </a>
+  </section>
+
+  {
+    archived.length > 0 && (
+      <section class="mt-16">
+        <h2 class="text-2xl font-semibold text-brand-900">Past Research</h2>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          {archived.map((r) => (
+            <a
+              href={`/en/research/${r.slug}`}
+              class="block rounded-lg border border-brand-100 p-4 text-gray-600 transition hover:border-brand-300 hover:text-brand-800"
+            >
+              <h3 class="font-medium">{r.data.title_en}</h3>
+              <p class="mt-1 text-sm">{r.data.summary_en ?? r.data.summary}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

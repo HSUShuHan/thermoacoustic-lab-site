@@ -1,0 +1,85 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  lang="en"
+  title="Contact"
+  description="Contact information for the Thermoacoustic Lab — address, phone, and email."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Contact</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">Contact</h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  <section class="mt-6 grid gap-10 md:grid-cols-2">
+    <div>
+      <h2 class="text-lg font-semibold text-brand-900">Address</h2>
+      <address class="mt-3 not-italic text-gray-700">
+        Comprehensive Science Building, Room 614-2A<br />
+        Department of Mechanical Engineering<br />
+        National Taipei University of Technology<br />
+        1, Section 3, Zhongxiao East Road<br />
+        Taipei 10608, Taiwan
+      </address>
+
+      <h2 class="mt-10 text-lg font-semibold text-brand-900">Reach us</h2>
+      <p class="mt-3 text-gray-700">
+        📞 +886 2 2771-2171 ext. 2086<br />
+        📧
+        <a
+          href="mailto:bookhsu@ntut.edu.tw"
+          class="text-accent-600 underline hover:text-accent-700"
+          >bookhsu@ntut.edu.tw</a
+        >
+      </p>
+
+      <h2 class="mt-10 text-lg font-semibold text-brand-900">Prospective students</h2>
+      <p class="mt-3 text-gray-700">
+        Before contacting us about graduate study, undergraduate research, or
+        collaborations, please read the
+        <a
+          href="/en/join-us"
+          class="text-accent-600 underline hover:text-accent-700"
+          >Join Us</a
+        > page.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold text-brand-900">Getting here</h2>
+      <ul class="mt-3 space-y-2 text-gray-700">
+        <li class="flex items-baseline gap-2">
+          <span class="inline-block h-1 w-1 shrink-0 rounded-full bg-accent-500"></span>
+          Approx. 5 min walk from MRT Zhongxiao Fuxing Station, Exit 1
+        </li>
+        <li class="flex items-baseline gap-2">
+          <span class="inline-block h-1 w-1 shrink-0 rounded-full bg-accent-500"></span>
+          NTUT Zhongxiao campus, 6F of the Comprehensive Science Building
+          (Zhongxiao E. Rd. side)
+        </li>
+      </ul>
+
+      <h2 class="mt-10 text-lg font-semibold text-brand-900">Map</h2>
+      <div class="mt-3 aspect-[4/3] w-full overflow-hidden rounded-lg border border-brand-100">
+        <iframe
+          src="https://www.google.com/maps?q=25.042256,121.536138&hl=en&z=18&output=embed"
+          title="National Taipei University of Technology, Comprehensive Science Building 614-2A"
+          class="h-full w-full"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen></iframe>
+      </div>
+      <p class="mt-2 text-xs text-gray-500">
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-accent-600 underline hover:text-accent-700"
+          >Open in Google Maps ↗</a
+        >
+      </p>
+    </div>
+  </section>
+</BaseLayout>

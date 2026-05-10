@@ -1,0 +1,140 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimation.astro";
+---
+
+<BaseLayout
+  lang="en"
+  title="Animation · Standing-Wave"
+  description="Interactive animation of the thermoacoustic effect: standing-wave engines and refrigerators in three regimes (uniform, refrigerator, engine), with synchronized gas-parcel oscillation, P–V trajectory, and T–x trajectory."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      Thermoacoustic Mechanism Animation
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      Standing-Wave Type · 駐波型
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      The thermoacoustic effect emerges from the coupling of two phenomena: the
+      oscillation of gas parcels in a temperature gradient, and the heat
+      exchange between those parcels and the surrounding walls. Following the
+      schematic concepts from G. W. Swift's and T. Biwa's thermoacoustics
+      textbooks, the animation below switches between three regimes — uniform,
+      refrigerator, and engine — and lets you observe damped spirals,
+      counter-clockwise closed orbits, and clockwise closed orbits in the phase
+      space.
+    </p>
+  </section>
+
+  <ThermoacousticAnimation />
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">How to read this animation</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① Gas parcel inside the stack</h3>
+    <p class="mt-2 text-gray-700">
+      Top wide strip: the resonator with the stack in the middle (the array of
+      horizontal lines represents the stack plates). The cyan rectangle is the
+      gas parcel under observation, oscillating left and right and changing
+      volume (compression / expansion) periodically with the acoustic wave.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② Close-up of the gas parcel</h3>
+    <p class="mt-2 text-gray-700">
+      Top-right inset: a close-up of the parcel and the two adjacent stack
+      plates. Red arrows indicate the direction and magnitude of <strong>radial
+      heat transfer</strong> between the parcel and the plates (arrow thickness
+      ∝ heat flux).
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ p–ξ / p–V trajectories</h3>
+    <p class="mt-2 text-gray-700">
+      Top-left: two trajectories overlaid, each with its own physical meaning.
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li>
+        <strong style="color:#d97706">Orange <i>p</i>–<i>ξ</i> (pressure–displacement)</strong>:
+        loop area × <i>ω</i>/(2π) = <strong>acoustic intensity <i>I</i></strong>
+        (⟨<i>p</i>·<i>u</i>⟩, where the parcel oscillates with velocity
+        <i>u</i> = d<i>ξ</i>/d<i>t</i>). Corresponds to the bottom-plane
+        projection of the 3D orbit.
+      </li>
+      <li>
+        <strong style="color:#0e7490">Cyan dashed <i>p</i>–<i>V</i> (pressure–volume)</strong>:
+        the classical thermodynamic PV diagram; loop area
+        ∮<i>p</i> d<i>V</i> = <strong>work per cycle <i>W</i></strong>. More
+        intuitive for readers familiar with heat-engine cycles.
+      </li>
+    </ul>
+    <p class="mt-2 text-gray-700">
+      Both close clockwise (engine) ⇒ acoustic power output; counter-clockwise
+      (refrigerator) ⇒ acoustic power input pumping heat; degenerate to a line
+      (critical / flat) ⇒ no net effect. The two shapes differ slightly because
+      <i>ξ</i> and <i>V</i> have different phase relationships for the same
+      parcel (in a standing wave, they are not perfectly in phase).
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <i>T</i>–<i>x</i> (temperature–position) trajectory</h3>
+    <p class="mt-2 text-gray-700">
+      Bottom-left: the dark-green ellipse is the parcel temperature versus
+      position; the orange dashed line is the wall temperature gradient. The
+      <strong>position of the ellipse relative to the dashed line</strong>
+      determines the radial heat-transfer direction: when the parcel is hotter
+      than the wall, heat flows to the wall; when colder, heat flows into the
+      parcel. As the parcel oscillates, it picks up heat at one end, carries
+      it, and releases it at the other end — the heart of the thermoacoustic
+      effect as a heat engine / refrigerator.
+    </p>
+    <p class="mt-2 text-gray-700 text-sm">
+      Note: this plot conceptually corresponds to the "entropy <i>S</i> vs
+      displacement <i>ξ</i> projection ≈ <i>Q</i>" face of the 3D orbit, but
+      the vertical axis here is <strong>temperature <i>T</i></strong>, not
+      entropy <i>S</i>. For a single parcel under adiabatic conditions
+      d<i>T</i> ∝ d<i>S</i>, so the shape is similar; the units differ (<i>T</i>
+      carries an extra heat-capacity factor), so the loop area is
+      <strong>proportional to</strong> heat flux <i>Q</i> rather than strictly
+      equal to it. The ellipse uses a darker shade
+      (<span style="color:#15803d">●</span>) than the 3D-projection green
+      (<span style="color:#16a34a">●</span>) to flag this "related but not
+      identical" relationship.
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">The three regimes and their wall-temperature gradients</h2>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4">Mode</th>
+          <th class="py-2 pr-4">Wall gradient</th>
+          <th class="py-2">Physical meaning</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Flat (uniform)</td>
+          <td class="py-2 pr-4">None</td>
+          <td class="py-2">No wall gradient; neither pump nor engine. The parcel oscillates purely adiabatically.</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Refrigerator</td>
+          <td class="py-2 pr-4">Shallow</td>
+          <td class="py-2">Wall gradient smaller than the parcel's adiabatic gradient; external work input pumps heat from cold to hot.</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">Engine</td>
+          <td class="py-2 pr-4">Steep</td>
+          <td class="py-2">Wall gradient steeper than the parcel's adiabatic gradient; heat flows from hot to cold and the parcel outputs acoustic power.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/en/research/animations" class="underline hover:text-accent-600">← Back to animation index</a>
+      <a href="/en/research/thermoacoustic-effect" class="underline hover:text-accent-600">The Thermoacoustic Effect</a>
+    </p>
+  </section>
+</BaseLayout>

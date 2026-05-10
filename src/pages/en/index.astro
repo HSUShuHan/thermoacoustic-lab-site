@@ -1,0 +1,411 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+
+const research = (await getCollection("research"))
+  .filter((r) => r.data.active)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const pi = (await getCollection("members")).find((m) => m.data.role === "pi");
+
+const featuredPubs = (await getCollection("publications"))
+  .filter((p) => p.data.featured)
+  .sort((a, b) => b.data.year - a.data.year);
+
+const recentPubs =
+  featuredPubs.length > 0
+    ? featuredPubs
+    : (await getCollection("publications"))
+        .sort((a, b) => b.data.year - a.data.year)
+        .slice(0, 4);
+
+const projects = (await getCollection("projects"))
+  .sort((a, b) =>
+    (b.data.period_start || "").localeCompare(a.data.period_start || "")
+  )
+  .slice(0, 3);
+
+const videos = (await getCollection("videos"))
+  .sort((a, b) => {
+    if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+    return (b.data.year ?? 0) - (a.data.year ?? 0);
+  })
+  .slice(0, 4);
+
+const heroNews = (await getCollection("news"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout
+  lang="en"
+  title="Thermoacoustic Lab"
+  description="Thermoacoustic Lab at National Taipei University of Technology. Research focus: thermoacoustic engines, thermoacoustic refrigeration, and nonlinear thermoacoustic dynamics."
+>
+  <!-- Hero -->
+  <section class="relative py-20">
+    <div
+      class="absolute -top-2 left-0 h-1 w-24 bg-accent-500"
+      aria-hidden="true"
+    >
+    </div>
+    <div class="grid gap-10 md:grid-cols-2 md:gap-12">
+      <div>
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+          National Taipei University of Technology
+        </p>
+        <h1 class="mt-3 text-6xl font-bold tracking-tight text-brand-900">
+          Thermoacoustic Lab
+        </h1>
+        <p class="mt-3 text-3xl font-light tracking-wide text-brand-600">
+          熱聲實驗室
+        </p>
+        <p class="mt-8 max-w-2xl text-lg leading-relaxed text-gray-700">
+          We explore the energy conversion between heat and sound. Our work
+          spans thermoacoustic engines and refrigeration, nonlinear
+          thermoacoustic phenomena, and mechatronic integration and control of
+          thermoacoustic energy systems.
+        </p>
+        <div class="mt-10 flex flex-wrap gap-3">
+          <a
+            href="/en/research"
+            class="inline-flex items-center rounded bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700"
+            >Explore our research →</a
+          >
+          <a
+            href="/en/join-us"
+            class="inline-flex items-center rounded border border-brand-300 px-5 py-2.5 text-sm font-medium text-brand-800 transition hover:border-brand-800"
+            >Join us</a
+          >
+        </div>
+      </div>
+
+      <!-- News strip -->
+      <aside
+        class="rounded-lg border border-brand-100 bg-brand-50/50 p-5 md:mt-2"
+      >
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-500">News</p>
+        <h2 class="mt-1 text-lg font-semibold text-brand-900">Latest</h2>
+        {
+          heroNews.length > 0 ? (
+            <ol class="mt-4 space-y-3">
+              {heroNews.map((n) => (
+                <li class="border-l-2 border-accent-500 pl-3">
+                  <a
+                    href={`/en/news#${n.slug}`}
+                    class="group block transition"
+                  >
+                    <p class="text-xs text-brand-500">
+                      {n.data.date.toISOString().slice(0, 10)}
+                    </p>
+                    <p class="mt-0.5 text-sm leading-snug text-brand-900 group-hover:text-accent-700">
+                      {n.data.title_en ?? n.data.title}
+                    </p>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="mt-4 text-sm text-gray-500">No news yet.</p>
+          )
+        }
+        <p class="mt-4 text-xs">
+          <a
+            href="/en/news"
+            class="text-brand-700 underline transition hover:text-accent-600"
+          >
+            See all →
+          </a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PI -->
+  {
+    pi && (
+      <section class="mt-16 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Principal Investigator
+        </p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Faculty</h2>
+        <div class="mt-8 grid gap-8 md:grid-cols-[1fr_2fr]">
+          <div class="rounded-lg border border-brand-100 bg-brand-50 p-6">
+            {pi.data.photo ? (
+              <img
+                src={pi.data.photo}
+                alt={`${pi.data.name_en} (welding heat exchangers and assembling thermoacoustic engine setups)`}
+                class="h-56 w-56 rounded-lg object-cover ring-1 ring-brand-200"
+              />
+            ) : (
+              <div
+                class="flex h-56 w-56 items-center justify-center rounded-lg bg-brand-800 text-7xl font-bold text-white ring-1 ring-brand-200"
+                aria-label={`${pi.data.name_en} photo placeholder`}
+              >
+                {pi.data.name_en.charAt(0)}
+              </div>
+            )}
+            <p class="mt-4 text-2xl font-semibold text-brand-900">
+              {pi.data.name_en}
+            </p>
+            <p class="mt-1 text-sm text-brand-600">
+              Associate Professor · {pi.data.name_zh}
+            </p>
+            {pi.data.email && (
+              <p class="mt-4 text-sm">
+                <a
+                  href={`mailto:${pi.data.email}`}
+                  class="text-accent-600 underline transition hover:text-accent-700"
+                >
+                  {pi.data.email}
+                </a>
+              </p>
+            )}
+            <p class="mt-4 text-sm">
+              <a
+                href={`/en/people/${pi.slug}`}
+                class="text-brand-700 underline transition hover:text-accent-600"
+              >
+                Full CV →
+              </a>
+            </p>
+          </div>
+          <div>
+            <p class="text-gray-700">
+              Department of Mechanical Engineering, National Taipei University
+              of Technology
+            </p>
+            <p class="mt-1 text-sm text-gray-500">
+              Dr. Eng., Tohoku University (Mechanical Systems and Design)
+            </p>
+            <h3 class="mt-6 text-xs font-medium uppercase tracking-widest text-brand-500">
+              Research Interests
+            </h3>
+            <ul class="mt-3 space-y-1 text-gray-700">
+              {pi.data.interests.map((i) => (
+                <li class="flex items-baseline gap-2">
+                  <span class="inline-block h-1 w-1 shrink-0 rounded-full bg-accent-500" />
+                  {i}
+                </li>
+              ))}
+            </ul>
+            <p class="mt-6 text-sm">
+              <a
+                href="/en/people"
+                class="text-brand-700 underline transition hover:text-accent-600"
+              >
+                See all members →
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Research -->
+  {
+    research.length > 0 && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Research
+        </p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Research</h2>
+        <div class="mt-8 grid gap-4 md:grid-cols-2">
+          {research.slice(0, 4).map((r) => (
+            <a
+              href={`/en/research/${r.slug}`}
+              class="block rounded-lg border border-brand-100 p-6 transition hover:border-brand-800 hover:shadow-md"
+            >
+              <h3 class="text-xl font-semibold text-brand-900">
+                {r.data.title_en}
+              </h3>
+              <p class="mt-1 text-sm text-brand-500">{r.data.title_zh}</p>
+              <p class="mt-3 text-gray-700">{r.data.summary_en ?? r.data.summary}</p>
+            </a>
+          ))}
+          <a
+            href="/en/research/animations/standing-wave"
+            class="block rounded-lg border border-brand-100 p-6 transition hover:border-brand-800 hover:shadow-md"
+          >
+            <p>
+              <span class="rounded bg-accent-50 px-2 py-0.5 text-xs font-medium text-accent-700">
+                Interactive
+              </span>
+            </p>
+            <h3 class="mt-2 text-xl font-semibold text-brand-900">
+              Thermoacoustic Mechanism Animation
+            </h3>
+            <p class="mt-1 text-sm text-brand-500">熱聲機制動畫</p>
+            <p class="mt-3 text-gray-700">
+              Synchronized gas-parcel oscillation, P–V trajectory, T–x
+              trajectory, and 3D orbit. Switch among three wall-temperature
+              gradient regimes (uniform, refrigerator, engine) to see the device
+              transition from inert, to refrigerator, to engine.
+            </p>
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Media / Videos -->
+  {
+    videos.length > 0 && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Media
+        </p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Media</h2>
+        <p class="mt-3 max-w-2xl text-gray-700">
+          Experiment footage and visualizations. Where applicable, the source
+          publication is referenced below the video.
+        </p>
+        <div class="mt-8 grid gap-6 md:grid-cols-2">
+          {videos.map((v) => (
+            <a
+              href={`/en/media#${v.slug}`}
+              class="group block overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300 hover:shadow-md"
+            >
+              <div class="relative aspect-video w-full bg-black">
+                <img
+                  src={`https://i.ytimg.com/vi/${v.data.youtube_id}/hqdefault.jpg`}
+                  alt={v.data.title_en ?? v.data.title}
+                  loading="lazy"
+                  class="h-full w-full object-cover"
+                />
+                <span class="absolute inset-0 flex items-center justify-center">
+                  <span class="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 text-white transition group-hover:bg-accent-600">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
+                </span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-medium leading-snug text-brand-900 group-hover:text-accent-700">
+                  {v.data.title_en ?? v.data.title}
+                </h3>
+                {v.data.year && (
+                  <p class="mt-1 text-xs text-brand-500">{v.data.year}</p>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+        <p class="mt-6">
+          <a
+            href="/en/media"
+            class="text-sm text-brand-700 underline transition hover:text-accent-600"
+          >
+            See all media →
+          </a>
+        </p>
+      </section>
+    )
+  }
+
+  <!-- Selected Publications -->
+  {
+    recentPubs.length > 0 && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Selected Publications
+        </p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Selected Publications</h2>
+        <ol class="mt-8 space-y-4">
+          {recentPubs.map((p) => {
+            const journalUrl =
+              p.data.url ||
+              (p.data.doi ? `https://doi.org/${p.data.doi}` : null);
+            const inner = (
+              <>
+                <p class="text-sm text-brand-500">{p.data.year}</p>
+                <p class="mt-1 font-medium leading-snug text-brand-900 group-hover:text-accent-700">
+                  {p.data.title}
+                  {journalUrl && (
+                    <span class="ml-1 inline-block text-xs text-brand-500 group-hover:text-accent-600">
+                      ↗
+                    </span>
+                  )}
+                </p>
+                <p class="mt-1 text-sm italic text-gray-600">{p.data.venue}</p>
+              </>
+            );
+            return (
+              <li>
+                {journalUrl ? (
+                  <a
+                    href={journalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group block rounded border-l-4 border-accent-500 bg-brand-50/50 p-4 transition hover:bg-brand-100"
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div class="rounded border-l-4 border-accent-500 bg-brand-50/50 p-4">
+                    {inner}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        <p class="mt-6">
+          <a
+            href="/en/publications"
+            class="text-sm text-brand-700 underline transition hover:text-accent-600"
+          >
+            See all publications →
+          </a>
+        </p>
+      </section>
+    )
+  }
+
+  <!-- Recent Projects -->
+  {
+    projects.length > 0 && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Projects
+        </p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Recent Projects</h2>
+        <div class="mt-8 space-y-3">
+          {projects.map((p) => (
+            <article class="rounded border border-brand-100 p-5">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <p class="text-sm text-brand-500">
+                  {p.data.funder} · {p.data.period_start} ~ {p.data.period_end}
+                </p>
+                {p.data.budget_twd !== undefined && (
+                  <p class="text-sm font-medium text-accent-700">
+                    NT$ {p.data.budget_twd.toLocaleString()}K
+                  </p>
+                )}
+              </div>
+              <h3 class="mt-1 font-semibold text-brand-900">
+                {p.data.title_en ?? p.data.title_zh}
+              </h3>
+            </article>
+          ))}
+        </div>
+        <p class="mt-6">
+          <a
+            href="/en/projects"
+            class="text-sm text-brand-700 underline transition hover:text-accent-600"
+          >
+            See all projects →
+          </a>
+        </p>
+      </section>
+    )
+  }
+</BaseLayout>

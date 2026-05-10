@@ -1,0 +1,197 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const members = await getCollection("members");
+  return members.map((m) => ({
+    params: { slug: m.slug },
+    props: { member: m },
+  }));
+}
+
+interface Props {
+  member: CollectionEntry<"members">;
+}
+
+const { member } = Astro.props;
+const { Content } = await member.render();
+
+const roleLabel: Record<string, string> = {
+  pi: "Principal Investigator",
+  postdoc: "Postdoctoral Researcher",
+  phd: "Ph.D. Student",
+  ms: "Master's Student",
+  undergrad: "Undergraduate Researcher",
+  "research-assistant": "Research Assistant",
+  alumni: "Alumni",
+};
+---
+
+<BaseLayout
+  lang="en"
+  title={`${member.data.name_en} · CV`}
+  description={`Background and research interests of ${member.data.name_en} (${member.data.name_zh}).`}
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      {roleLabel[member.data.role] ?? member.data.role}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      {member.data.name_en}
+    </h1>
+    <p class="mt-1 text-xl text-brand-600">{member.data.name_zh}</p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  <section class="mt-2 grid gap-8 md:grid-cols-[1fr_2fr]">
+    <aside class="rounded-lg border border-brand-100 bg-brand-50 p-6">
+      {
+        member.data.photo ? (
+          <img
+            src={member.data.photo}
+            alt={member.data.name_en}
+            class="h-56 w-56 rounded-lg object-cover ring-1 ring-brand-200"
+          />
+        ) : (
+          <div
+            class="flex h-56 w-56 items-center justify-center rounded-lg bg-brand-800 text-7xl font-bold text-white ring-1 ring-brand-200"
+            aria-label={`${member.data.name_en} photo placeholder`}
+          >
+            {member.data.name_en.charAt(0)}
+          </div>
+        )
+      }
+
+      {
+        member.data.affiliation && (
+          <p class="mt-4 text-sm text-gray-700">
+            Department of Mechanical Engineering, NTUT
+          </p>
+        )
+      }
+
+      <dl class="mt-4 space-y-2 text-sm">
+        {
+          member.data.email && (
+            <div>
+              <dt class="text-xs uppercase tracking-widest text-brand-500">
+                Email
+              </dt>
+              <dd>
+                <a
+                  href={`mailto:${member.data.email}`}
+                  class="text-accent-600 underline hover:text-accent-700"
+                >
+                  {member.data.email}
+                </a>
+              </dd>
+            </div>
+          )
+        }
+        {
+          member.data.orcid && (
+            <div>
+              <dt class="text-xs uppercase tracking-widest text-brand-500">
+                ORCID
+              </dt>
+              <dd>
+                <a
+                  href={`https://orcid.org/${member.data.orcid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-accent-600 underline hover:text-accent-700"
+                >
+                  {member.data.orcid}
+                </a>
+              </dd>
+            </div>
+          )
+        }
+        {
+          member.data.google_scholar && (
+            <div>
+              <dt class="text-xs uppercase tracking-widest text-brand-500">
+                Google Scholar
+              </dt>
+              <dd>
+                <a
+                  href={member.data.google_scholar}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-accent-600 underline hover:text-accent-700"
+                >
+                  Profile ↗
+                </a>
+              </dd>
+            </div>
+          )
+        }
+        {
+          member.data.homepage && (
+            <div>
+              <dt class="text-xs uppercase tracking-widest text-brand-500">
+                Homepage
+              </dt>
+              <dd>
+                <a
+                  href={member.data.homepage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-accent-600 underline hover:text-accent-700"
+                >
+                  External link ↗
+                </a>
+              </dd>
+            </div>
+          )
+        }
+        {
+          member.data.cv && (
+            <div>
+              <dt class="text-xs uppercase tracking-widest text-brand-500">
+                CV
+              </dt>
+              <dd>
+                <a
+                  href={member.data.cv}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-accent-600 underline hover:text-accent-700"
+                >
+                  Download PDF ↗
+                </a>
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+
+      {
+        member.data.interests.length > 0 && (
+          <div class="mt-4">
+            <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
+              Research Interests
+            </h3>
+            <ul class="mt-2 space-y-1 text-sm text-gray-700">
+              {member.data.interests.map((i) => (
+                <li class="flex items-baseline gap-2">
+                  <span class="inline-block h-1 w-1 shrink-0 rounded-full bg-accent-500" />
+                  {i}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </aside>
+
+    <article class="prose prose-brand max-w-none">
+      <Content />
+    </article>
+  </section>
+
+  <p class="mt-12 text-sm text-gray-500">
+    ← <a href="/en/people" class="underline hover:text-accent-600">Back to members</a>
+  </p>
+</BaseLayout>

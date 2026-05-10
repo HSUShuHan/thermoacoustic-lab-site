@@ -1,0 +1,189 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
+
+const all = await getCollection("members");
+const byRole = (role: string) =>
+  all
+    .filter((m) => m.data.role === role)
+    .sort((a, b) => a.data.order - b.data.order);
+
+const pi = byRole("pi");
+const postdoc = byRole("postdoc");
+const phd = byRole("phd");
+const ms = byRole("ms");
+const undergrad = byRole("undergrad");
+const ra = byRole("research-assistant");
+const alumni = byRole("alumni");
+
+const roleSections = [
+  { label: "Postdoc", members: postdoc },
+  { label: "Ph.D. Students", members: phd },
+  { label: "Master's Students", members: ms },
+  { label: "Undergraduate Researchers", members: undergrad },
+  { label: "Research Assistants", members: ra },
+];
+---
+
+<BaseLayout
+  lang="en"
+  title="People"
+  description="Members of the Thermoacoustic Lab — PI, graduate students, undergraduate researchers, and alumni."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">People</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">People</h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  {
+    pi.map(async (m) => {
+      const { Content } = await m.render();
+      const initial = m.data.name_en.charAt(0);
+      return (
+        <section class="mt-8 rounded-lg border border-brand-100 bg-brand-50 p-8">
+          <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+            Principal Investigator
+          </p>
+          <div class="mt-6 grid gap-8 md:grid-cols-[200px_1fr]">
+            <div>
+              {m.data.photo ? (
+                <img
+                  src={m.data.photo}
+                  alt={`${m.data.name_en} (welding heat exchangers and assembling thermoacoustic engine setups)`}
+                  class="h-48 w-48 rounded-lg object-cover ring-1 ring-brand-200"
+                />
+              ) : (
+                <div
+                  class="flex h-48 w-48 items-center justify-center rounded-lg bg-brand-800 text-7xl font-bold text-white ring-1 ring-brand-200"
+                  aria-label={`${m.data.name_en} photo placeholder`}
+                >
+                  {initial}
+                </div>
+              )}
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-brand-900">
+                {m.data.name_en}
+                <span class="ml-3 text-base font-normal text-brand-600">
+                  Associate Professor
+                </span>
+              </h2>
+              <p class="mt-1 text-lg text-brand-600">
+                {m.data.name_zh}
+              </p>
+              {m.data.affiliation && (
+                <p class="mt-3 text-gray-700">
+                  Department of Mechanical Engineering, National Taipei
+                  University of Technology
+                </p>
+              )}
+              <div class="mt-4 space-y-1 text-sm text-gray-600">
+                {m.data.email && (
+                  <p>
+                    Email:{" "}
+                    <a
+                      href={`mailto:${m.data.email}`}
+                      class="text-accent-600 underline hover:text-accent-700"
+                    >
+                      {m.data.email}
+                    </a>
+                  </p>
+                )}
+                {m.data.orcid && (
+                  <p>
+                    ORCID:{" "}
+                    <a
+                      href={`https://orcid.org/${m.data.orcid}`}
+                      target="_blank"
+                      rel="noopener"
+                      class="text-accent-600 underline hover:text-accent-700"
+                    >
+                      {m.data.orcid}
+                    </a>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 border-t border-brand-200 pt-6">
+            <Prose>
+              <Content />
+            </Prose>
+          </div>
+        </section>
+      );
+    })
+  }
+
+  <section class="mt-16">
+    <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+      Members
+    </p>
+    <h2 class="mt-2 text-2xl font-semibold text-brand-900">Lab Members</h2>
+    {
+      roleSections.every((s) => s.members.length === 0) ? (
+        <p class="mt-4 text-gray-500">
+          The roster is being updated — full member list coming soon.
+        </p>
+      ) : (
+        roleSections.map((s) =>
+          s.members.length > 0 ? (
+            <div class="mt-6">
+              <h3 class="text-lg font-medium text-brand-800">{s.label}</h3>
+              <div class="mt-3 grid gap-3 md:grid-cols-2">
+                {s.members.map((m) => (
+                  <div class="rounded-lg border border-brand-100 p-4 transition hover:border-brand-300">
+                    <p class="font-medium text-brand-900">
+                      {m.data.name_en}{" "}
+                      <span class="text-sm text-brand-500">
+                        {m.data.name_zh}
+                      </span>
+                    </p>
+                    {m.data.interests.length > 0 && (
+                      <p class="mt-1 text-sm text-gray-600">
+                        {m.data.interests.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null,
+        )
+      )
+    }
+  </section>
+
+  {
+    alumni.length > 0 && (
+      <section class="mt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Alumni
+        </p>
+        <h2 class="mt-2 text-2xl font-semibold text-brand-900">Alumni</h2>
+        <div class="mt-6 grid gap-3 md:grid-cols-2">
+          {alumni.map((m) => (
+            <div class="rounded-lg border border-brand-100 p-4">
+              <p class="font-medium text-brand-900">
+                {m.data.name_en}{" "}
+                <span class="text-sm text-brand-500">{m.data.name_zh}</span>
+              </p>
+              {m.data.graduated && (
+                <p class="mt-1 text-sm text-brand-500">
+                  Graduated {m.data.graduated}
+                </p>
+              )}
+              {m.data.current_position && (
+                <p class="mt-1 text-sm text-gray-700">
+                  {m.data.current_position}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

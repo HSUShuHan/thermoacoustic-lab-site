@@ -1,0 +1,32 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  lang="en"
+  title="404"
+  description="Page not found (404)."
+>
+  <section class="py-16 text-center">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Error 404</p>
+    <h1 class="mt-3 text-6xl font-bold tracking-tight text-brand-900">Page not found</h1>
+    <p class="mt-3 text-lg text-brand-600">頁面找不到</p>
+    <div class="mx-auto mt-6 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+
+    <p class="mt-10 max-w-xl text-gray-700 mx-auto">
+      The URL you entered doesn't match any page here — maybe a stale link or a
+      typo. Try the home page or pick a section from the top navigation.
+    </p>
+
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      <a
+        href="/en/"
+        class="inline-flex items-center rounded bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700"
+      >Back to home →</a>
+      <a
+        href="/en/research"
+        class="inline-flex items-center rounded border border-brand-300 px-5 py-2.5 text-sm font-medium text-brand-800 transition hover:border-brand-800"
+      >See research</a>
+    </div>
+  </section>
+</BaseLayout>

@@ -5,9 +5,11 @@ const videos = defineCollection({
   schema: z.object({
     title: z.string(),
     title_zh: z.string().optional(),
+    title_en: z.string().optional(),
     youtube_id: z.string(),
     year: z.number().optional(),
     description: z.string().optional(),
+    description_en: z.string().optional(),
     // Slug of the associated publication (e.g., "2024-hsu-condensation-shock").
     related_pub: z.string().optional(),
     tags: z.array(z.string()).default([]),
@@ -70,6 +72,7 @@ const research = defineCollection({
     title_zh: z.string(),
     title_en: z.string(),
     summary: z.string(),
+    summary_en: z.string().optional(),
     cover: z.string().optional(),
     order: z.number().default(100),
     related_publications: z.array(z.string()).default([]),
@@ -121,6 +124,7 @@ const news = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    title_en: z.string().optional(),
     date: z.date(),
     cover: z.string().optional(),
     tags: z.array(z.string()).default([]),
@@ -139,6 +143,7 @@ const projects = defineCollection({
     pi: z.string(),
     co_pis: z.array(z.string()).default([]),
     summary: z.string(),
+    summary_en: z.string().optional(),
     // 計畫總經費（單位：千元 NTD）— optional
     budget_twd: z.number().optional(),
     active: z.boolean().default(true),
