@@ -171,7 +171,7 @@ export const ui = {
     "role.postdoc": "Postdoc",
     "role.phd": "PhD Student",
     "role.ms": "MS Student",
-    "role.undergrad": "Undergraduate",
+    "role.undergrad": "Undergraduate Student",
     "role.research-assistant": "Research Assistant",
     "role.alumni": "Alumni",
 
