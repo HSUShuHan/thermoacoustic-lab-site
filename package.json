@@ -31,5 +31,8 @@
   "devDependencies": {
     "prettier": "^3.4.0",
     "prettier-plugin-astro": "^0.14.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
   }
 }
