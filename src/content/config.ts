@@ -34,6 +34,15 @@ const publications = defineCollection({
     abstract: z.string().optional(),
     featured: z.boolean().default(false),
     tags: z.array(z.string()).default([]),
+    // Latest available JCR Impact Factor (defaults to JCR 2023 unless specified).
+    impact_factor: z.number().optional(),
+    if_year: z.number().optional(),
+    // Best (highest-quartile) JCR / Scopus subcategory ranking, formatted
+    // "Q1 (5/108) Acoustics" or just "Q2 Mechanical Engineering" if rank
+    // numbers are unknown.
+    ranking: z.string().optional(),
+    // Mark a journal as not indexed by JCR (no IF available).
+    not_indexed: z.boolean().default(false),
   }),
 });
 
