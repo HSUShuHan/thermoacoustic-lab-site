@@ -25,12 +25,12 @@ const rendered = await Promise.all(
     ) : (
       <ol class="mt-8 space-y-8">
         {rendered.map(({ entry: n, Content }) => (
-          <li class="rounded-lg border border-brand-100 p-5 transition hover:border-brand-300">
+          <li id={n.slug} class="scroll-mt-24 rounded-lg border border-brand-100 p-5 transition hover:border-brand-300">
             <p class="text-sm text-brand-500">
               {n.data.date.toISOString().slice(0, 10)}
             </p>
             <h2 class="mt-1 text-xl font-semibold text-brand-900">
-              {n.data.title}
+              <a href={`#${n.slug}`} class="hover:text-accent-700">{n.data.title}</a>
             </h2>
             <div class="prose prose-brand mt-4 max-w-none text-gray-700">
               <Content />

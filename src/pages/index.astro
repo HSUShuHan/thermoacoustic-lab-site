@@ -85,12 +85,17 @@ const heroNews = (await getCollection("news"))
             <ol class="mt-4 space-y-3">
               {heroNews.map((n) => (
                 <li class="border-l-2 border-accent-500 pl-3">
-                  <p class="text-xs text-brand-500">
-                    {n.data.date.toISOString().slice(0, 10)}
-                  </p>
-                  <p class="mt-0.5 text-sm leading-snug text-brand-900">
-                    {n.data.title}
-                  </p>
+                  <a
+                    href={`/news#${n.slug}`}
+                    class="group block transition"
+                  >
+                    <p class="text-xs text-brand-500">
+                      {n.data.date.toISOString().slice(0, 10)}
+                    </p>
+                    <p class="mt-0.5 text-sm leading-snug text-brand-900 group-hover:text-accent-700">
+                      {n.data.title}
+                    </p>
+                  </a>
                 </li>
               ))}
             </ol>
