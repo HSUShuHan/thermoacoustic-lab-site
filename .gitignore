@@ -35,3 +35,4 @@ _legacy/
 
 # SVG conversion backups (kept locally for rollback, not for git)
 *.svg.bak
+package-lock.json
