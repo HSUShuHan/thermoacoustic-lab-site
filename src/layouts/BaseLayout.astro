@@ -2,25 +2,36 @@
 import "~/styles/global.css";
 import Header from "~/components/nav/Header.astro";
 import Footer from "~/components/nav/Footer.astro";
+import { getLangFromUrl, type Lang } from "~/i18n/ui";
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  lang?: Lang;
 }
 
-const { title, description, ogImage = "/og.png" } = Astro.props;
+const inferredLang = getLangFromUrl(Astro.url);
+const { title, description, ogImage = "/og.png", lang = inferredLang } =
+  Astro.props;
+
+const siteName =
+  lang === "en" ? "Thermoacoustic Lab" : "熱聲實驗室 Thermoacoustic Lab";
 const fullTitle =
-  title === "熱聲實驗室"
-    ? "熱聲實驗室 Thermoacoustic Lab"
-    : `${title} — 熱聲實驗室`;
+  title === "熱聲實驗室" || title === "Thermoacoustic Lab"
+    ? siteName
+    : `${title} — ${lang === "en" ? "Thermoacoustic Lab" : "熱聲實驗室"}`;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
 const ogImageAbs = new URL(ogImage, Astro.site ?? Astro.url).href;
+
+const htmlLang = lang === "en" ? "en" : "zh-Hant-TW";
+const ogLocale = lang === "en" ? "en_US" : "zh_TW";
+const ogLocaleAlt = lang === "en" ? "zh_TW" : "en_US";
 ---
 
 <!doctype html>
-<html lang="zh-Hant-TW">
+<html lang={htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -40,14 +51,15 @@ const ogImageAbs = new URL(ogImage, Astro.site ?? Astro.url).href;
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="熱聲實驗室 Thermoacoustic Lab" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={fullTitle} />
     {description && <meta property="og:description" content={description} />}
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageAbs} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={ogLocaleAlt} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -56,10 +68,10 @@ const ogImageAbs = new URL(ogImage, Astro.site ?? Astro.url).href;
     <meta name="twitter:image" content={ogImageAbs} />
   </head>
   <body class="flex min-h-screen flex-col bg-white text-gray-900">
-    <Header />
+    <Header lang={lang} />
     <main class="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
       <slot />
     </main>
-    <Footer />
+    <Footer lang={lang} />
   </body>
 </html>

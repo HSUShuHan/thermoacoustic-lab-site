@@ -1,5 +1,18 @@
 ---
+import { useTranslations, ui, type Lang } from "~/i18n/ui";
+
+interface Props {
+  lang?: Lang;
+}
+
+const { lang = "zh" } = Astro.props;
+const t = useTranslations(lang);
 const year = new Date().getFullYear();
+
+const titleZh = "熱聲實驗室";
+const titleEn = "Thermoacoustic Lab";
+const addressLines = ui[lang]["footer.address_lines"];
+const contactHref = lang === "en" ? "/en/contact" : "/contact";
 ---
 
 <footer class="mt-24 bg-brand-900 text-brand-100">
@@ -7,19 +20,24 @@ const year = new Date().getFullYear();
     class="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-3 md:gap-12"
   >
     <div>
-      <p class="text-lg font-semibold text-white">熱聲實驗室</p>
+      <p class="text-lg font-semibold text-white">
+        {lang === "en" ? titleEn : titleZh}
+      </p>
       <p class="text-sm uppercase tracking-widest text-brand-300">
-        Thermoacoustic Lab
+        {lang === "en" ? titleZh : titleEn}
       </p>
       <p class="mt-4 text-sm leading-relaxed">
-        10608 台北市忠孝東路三段 1 號<br />
-        綜合科館 614-2A<br />
-        國立臺北科技大學機械工程系
+        {addressLines.map((line, i) => (
+          <>
+            {line}
+            {i < addressLines.length - 1 && <br />}
+          </>
+        ))}
       </p>
     </div>
 
     <div>
-      <p class="text-sm font-medium text-white">聯絡</p>
+      <p class="text-sm font-medium text-white">{t("footer.contact")}</p>
       <p class="mt-3 text-sm leading-relaxed">
         📞 (02) 2771-2171 #2086<br />
         📧 <a
@@ -31,16 +49,16 @@ const year = new Date().getFullYear();
       </p>
       <p class="mt-3 text-sm">
         <a
-          href="/contact"
+          href={contactHref}
           class="underline transition hover:text-accent-400"
         >
-          聯絡我們 →
+          {t("footer.contact_us")}
         </a>
       </p>
     </div>
 
     <div>
-      <p class="text-sm font-medium text-white">外部連結</p>
+      <p class="text-sm font-medium text-white">{t("footer.external")}</p>
       <ul class="mt-3 space-y-1 text-sm">
         <li>
           <a
@@ -59,7 +77,7 @@ const year = new Date().getFullYear();
             rel="noopener"
             class="underline transition hover:text-accent-400"
           >
-            臺北科技大學
+            {t("footer.ntut")}
           </a>
         </li>
       </ul>
@@ -70,7 +88,7 @@ const year = new Date().getFullYear();
     <div
       class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-xs text-brand-300"
     >
-      <p>© {year} 熱聲實驗室 Thermoacoustic Lab</p>
+      <p>© {year} {t("footer.copyright")}</p>
       <p class="font-mono">thermoacoustictw.org</p>
     </div>
   </div>

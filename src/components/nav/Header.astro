@@ -1,40 +1,68 @@
 ---
-const navItems = [
-  { href: "/", label: "首頁" },
-  { href: "/research", label: "研究" },
-  { href: "/publications", label: "發表" },
-  { href: "/media", label: "影像" },
-  { href: "/projects", label: "計畫" },
-  { href: "/people", label: "成員" },
-  { href: "/join-us", label: "加入我們" },
-  { href: "/news", label: "近況" },
-  { href: "/contact", label: "聯絡" },
+import {
+  useTranslations,
+  translatePath,
+  type Lang,
+  type UIKey,
+} from "~/i18n/ui";
+
+interface Props {
+  lang?: Lang;
+}
+
+const { lang = "zh" } = Astro.props;
+const t = useTranslations(lang);
+
+type NavItem = { href: string; key: UIKey };
+const navItems: NavItem[] = [
+  { href: "/", key: "nav.home" },
+  { href: "/research", key: "nav.research" },
+  { href: "/publications", key: "nav.publications" },
+  { href: "/media", key: "nav.media" },
+  { href: "/projects", key: "nav.projects" },
+  { href: "/people", key: "nav.people" },
+  { href: "/join-us", key: "nav.join" },
+  { href: "/news", key: "nav.news" },
+  { href: "/contact", key: "nav.contact" },
 ];
 
+const prefix = lang === "en" ? "/en" : "";
+const homeHref = lang === "en" ? "/en/" : "/";
+
 const path = Astro.url.pathname;
-const isActive = (href: string) =>
-  href === "/" ? path === "/" : path.startsWith(href);
+const isActive = (href: string) => {
+  const fullHref = href === "/" ? homeHref : `${prefix}${href}`;
+  if (fullHref === homeHref) return path === homeHref;
+  return path.startsWith(fullHref);
+};
+
+const otherLang: Lang = lang === "en" ? "zh" : "en";
+const switchHref = translatePath(path, otherLang);
+const switchLabel = otherLang === "en" ? "EN" : "中";
+
+const titleZh = "熱聲實驗室";
+const titleEn = "Thermoacoustic Lab";
 ---
 
 <header class="border-b border-brand-100 bg-white">
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-    <a href="/" class="group flex items-baseline gap-3">
+    <a href={homeHref} class="group flex items-baseline gap-3">
       <span class="text-xl font-bold tracking-tight text-brand-800">
-        熱聲實驗室
+        {lang === "en" ? titleEn : titleZh}
       </span>
       <span
         class="hidden text-xs uppercase tracking-widest text-brand-400 sm:inline"
       >
-        Thermoacoustic Lab
+        {lang === "en" ? titleZh : titleEn}
       </span>
     </a>
-    <nav>
+    <nav class="flex items-center gap-6">
       <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
         {
           navItems.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={item.href === "/" ? homeHref : `${prefix}${item.href}`}
                 class:list={[
                   "transition",
                   isActive(item.href)
@@ -42,12 +70,19 @@ const isActive = (href: string) =>
                     : "text-gray-700 hover:text-brand-700",
                 ]}
               >
-                {item.label}
+                {t(item.key)}
               </a>
             </li>
           ))
         }
       </ul>
+      <a
+        href={switchHref}
+        class="rounded border border-brand-200 px-2 py-0.5 text-xs font-medium text-brand-600 transition hover:border-brand-800 hover:text-brand-900"
+        aria-label={otherLang === "en" ? "Switch to English" : "切換至中文"}
+      >
+        {switchLabel}
+      </a>
     </nav>
   </div>
 </header>
