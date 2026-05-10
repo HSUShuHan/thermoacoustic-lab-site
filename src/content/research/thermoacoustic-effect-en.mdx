@@ -1,0 +1,122 @@
+---
+title_zh: 熱聲效應
+title_en: Thermoacoustic Effects
+summary: Energy conversion arising from heat exchange between an oscillating gas medium and the solid walls of the channel through which it travels.
+order: 1
+active: true
+---
+
+## The Thermoacoustic Effect
+
+Sound is a mechanical wave that propagates through the back-and-forth oscillation of a medium. In a gas, an acoustic wave drives a periodic displacement of the fluid together with periodic pressure variation.
+
+Compression and expansion in the cycle also drive a temperature oscillation, in step with the displacement. When a low-frequency wave passes through a gas confined within sufficiently small channels — for example inside a regenerator or a stack — the oscillating gas exchanges heat with the channel walls because of the temperature difference between them, giving rise to the rich set of phenomena known collectively as **thermoacoustic effects**.
+
+The earliest written record of a thermoacoustic phenomenon comes from the 18th-century Japanese supernatural-tale collection *Ugetsu Monogatari* (《雨月物語》), specifically the chapter "Kibitsu no Kama" (吉備津釜) which describes the <a href="https://youtu.be/-lYBRUHMJG4?t=410" target="_blank" rel="noopener noreferrer">"kama-naki" (釜鳴)</a> — the rumbling of a sacred kettle. The Kibitsu kettle, sketched in Fig. 1(a), is a long iron pot covered with a steaming mesh sprinkled with rice grains; steam from the boiling water inside heats the small channels formed between the rice grains, exciting a self-sustained acoustic oscillation. In 19th-century Europe, glass blowers occasionally noticed sound emerging from a glass tube when the cold end was pressed against a hot blob of molten glass; Sondhauss made the first systematic experimental investigation of the phenomenon, and the device was thereafter named the *Sondhauss tube* (Fig. 1(b)). Around the same period, Rijke placed a heated wire mesh at the quarter-length point inside a tube open at both ends and likewise observed sound generation — the famous <a href="https://youtu.be/abswNCqnMRQ?t=90" target="_blank" rel="noopener noreferrer">Rijke tube</a> shown in Fig. 1(c).
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/kibitsu-sondhauss-rijke.svg" alt="Fig. 1: (a) Kibitsu kettle, (b) Sondhauss tube, (c) Rijke tube" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 1: Early thermoacoustic devices — (a) Kibitsu kettle, (b) Sondhauss tube, (c) Rijke tube.
+  </figcaption>
+</figure>
+
+<div class="my-8 grid gap-6 sm:grid-cols-2">
+  <figure>
+    <div class="aspect-video w-full overflow-hidden rounded">
+      <iframe
+        class="h-full w-full"
+        src="https://www.youtube-nocookie.com/embed/-lYBRUHMJG4?start=410"
+        title="Kibitsu kettle · kama-naki demonstration"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <figcaption class="mt-2 text-center text-sm text-gray-600">
+      Video: Kibitsu kettle "kama-naki" demonstration (Fig. 1a).
+    </figcaption>
+  </figure>
+  <figure>
+    <div class="aspect-video w-full overflow-hidden rounded">
+      <iframe
+        class="h-full w-full"
+        src="https://www.youtube-nocookie.com/embed/abswNCqnMRQ?start=90"
+        title="Rijke tube demonstration"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <figcaption class="mt-2 text-center text-sm text-gray-600">
+      Video: Rijke tube self-sustained oscillation (Fig. 1c).
+    </figcaption>
+  </figure>
+</div>
+
+In the late 19th and early 20th century, Lord Rayleigh first described the thermoacoustic effect qualitatively in his classic *The Theory of Sound*:
+
+> *If heat be given to the air at the moment of greatest condensation or taken from it at the moment of greatest rarefaction, the vibration is encouraged.*
+
+This sentence captures the essence of the thermoacoustic mechanism.
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/gasparcelcycle.svg" alt="Fig. 2: thermoacoustic effect — microscopic gas-parcel cycle" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 2: Microscopic cycle of a gas parcel oscillating along an axial temperature gradient — displacing, exchanging heat with the wall, and oscillating in pressure.
+  </figcaption>
+</figure>
+
+Figure 2 makes the picture concrete. A row of gas parcels sits inside a channel; the steep positive axial temperature gradient imposed on the channel is shown by the red-to-blue gradient. When a parcel is perturbed, it absorbs heat from the wall at the hot side and releases heat at the cold side. Because heat absorption sustains compression / expansion across the back-and-forth motion, the initial perturbation grows into a stable oscillation.
+
+---
+
+## Why this matters — from piston-less Stirling engines to thermoacoustic engines
+
+A heat engine converts thermal energy into mechanical work, and may be either an internal- or external-combustion engine.
+
+Among external-combustion engines that run high-efficiency thermodynamic cycles, the Stirling engine is a notable example. An α-type Stirling engine is sketched in Fig. 3(a): two solid pistons reciprocate 90° out of phase to produce work. A thermoacoustic engine is also an external-combustion engine, but unlike a mechanical engine its output is in the form of an oscillating acoustic pressure wave; when energy is converted via the traveling-wave component of the acoustic field, the underlying thermodynamic process closely approximates the Stirling cycle.
+
+As Fig. 3(a) shows, in a looped configuration with a regenerator and hot and cold heat exchangers, a thermoacoustic engine is essentially a Stirling engine with the crank-and-piston assembly stripped away. Figure 3(b) takes a microscopic view of the gas parcels oscillating inside the regenerator: the back-and-forth motion of the two pistons forces a 90° phase difference between pressure and displacement oscillations — equivalently, the parcel's pressure and velocity oscillate *in phase*, which is the signature of a traveling acoustic wave propagating from cold end to hot end. So when a traveling wave like that of Fig. 3(c) passes through a regenerator with an axial temperature gradient, each parcel undergoes a sequence of thermodynamic processes that approximates the Stirling cycle.
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/stirling-vs-thermoacoustic.svg" alt="Fig. 3(a): α-type Stirling engine vs. looped thermoacoustic engine" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 3(a): α-type Stirling engine (left) vs. looped thermoacoustic engine (right) — the latter replaces mechanical pistons with the acoustic wave, eliminating sliding seals.
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/stirling-engine-wave.svg" alt="Fig. 3(b): four-step cycle of a gas parcel inside a mechanical Stirling engine regenerator" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 3(b): Four-step cycle of a gas parcel inside the regenerator of a mechanical Stirling engine; the displacement of the two solid pistons traces a wave-like temporal pattern, and the parcel passes through expansion → cooling → compression → heating.
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/wavephase.svg" alt="Fig. 3(c): in-phase relation between pressure and velocity in a traveling acoustic wave" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 3(c): In-phase relation between pressure <i>p</i> and volumetric flow rate <i>U</i> in a traveling acoustic wave — the thermodynamic basis for the Stirling-like cycle.
+  </figcaption>
+</figure>
+
+Replacing the mechanical piston with an acoustic wave makes a thermoacoustic engine remarkably simple in construction. It largely sidesteps the sliding-seal and mechanical-complexity issues of conventional Stirling engines, beating them on reliability and cost; recent reports place its thermal efficiency on par with internal-combustion engines [1, 2].
+
+The following organizations are actively developing thermoacoustic devices and applications:
+
+- <a href="https://www.lanl.gov/engage/organizations/physical-sciences/materials-physics-applications/quantum/thermoacoustics" target="_blank" rel="noopener noreferrer">Los Alamos National Laboratory (USA)</a>
+- <a href="http://www.ipc.ac.cn/xwzx/kyjz/202405/t20240531_7176727.html" target="_blank" rel="noopener noreferrer">Key Laboratory of Cryogenic Engineering, Chinese Academy of Sciences</a>
+- <a href="https://www.lihan.com/" target="_blank" rel="noopener noreferrer">Zhongke Lihan (Shenzhen) Thermoacoustic Technology Co.</a>
+- <a href="https://www.etalim.com/" target="_blank" rel="noopener noreferrer">Etalim Inc. (Canada)</a>
+- <a href="https://www.soundenergy.nl/" target="_blank" rel="noopener noreferrer">SoundEnergy (Netherlands)</a>
+- <a href="https://www.thermagix.com/" target="_blank" rel="noopener noreferrer">Thermagix (Israel)</a>
+
+---
+
+## References
+
+1. Backhaus, S., & Swift, G. W. (1999). A thermoacoustic Stirling heat engine. *Nature*, *399*(6734), 335–338. <a href="https://doi.org/10.1038/20624" target="_blank" rel="noopener noreferrer">doi:10.1038/20624</a>
+
+2. Tijani, M. E. H., & Spoelstra, S. (2011). A high performance thermoacoustic engine. *Journal of Applied Physics*, *110*(9), 093519. <a href="https://doi.org/10.1063/1.3658253" target="_blank" rel="noopener noreferrer">doi:10.1063/1.3658253</a>

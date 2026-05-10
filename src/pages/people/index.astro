@@ -3,7 +3,9 @@ import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
 
-const all = await getCollection("members");
+const all = (await getCollection("members")).filter(
+  (m) => !m.slug.endsWith("-en"),
+);
 const byRole = (role: string) =>
   all
     .filter((m) => m.data.role === role)

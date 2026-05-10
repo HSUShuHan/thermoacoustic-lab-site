@@ -4,10 +4,12 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
 
 export async function getStaticPaths() {
   const members = await getCollection("members");
-  return members.map((m) => ({
-    params: { slug: m.slug },
-    props: { member: m },
-  }));
+  return members
+    .filter((m) => !m.slug.endsWith("-en"))
+    .map((m) => ({
+      params: { slug: m.slug },
+      props: { member: m },
+    }));
 }
 
 interface Props {

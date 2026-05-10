@@ -2,7 +2,9 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
-const all = await getCollection("research");
+const all = (await getCollection("research")).filter(
+  (r) => !r.slug.endsWith("-en"),
+);
 const active = all
   .filter((r) => r.data.active)
   .sort((a, b) => a.data.order - b.data.order);

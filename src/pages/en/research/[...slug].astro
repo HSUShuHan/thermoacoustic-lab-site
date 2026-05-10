@@ -5,10 +5,14 @@ import Prose from "~/components/Prose.astro";
 
 export async function getStaticPaths() {
   const items = await getCollection("research");
-  return items.map((item) => ({
-    params: { slug: item.slug },
-    props: { item },
-  }));
+  const bases = items.filter((i) => !i.slug.endsWith("-en"));
+  return bases.map((base) => {
+    const enVariant = items.find((i) => i.slug === `${base.slug}-en`);
+    return {
+      params: { slug: base.slug },
+      props: { item: enVariant ?? base },
+    };
+  });
 }
 
 const { item } = Astro.props;

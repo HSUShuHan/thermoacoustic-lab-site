@@ -3,7 +3,12 @@ import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
 
-const all = await getCollection("members");
+const allRaw = await getCollection("members");
+const baseMembers = allRaw.filter((m) => !m.slug.endsWith("-en"));
+// For sections that render MDX body (PI block), prefer the -en variant.
+const all = baseMembers.map(
+  (b) => allRaw.find((m) => m.slug === `${b.slug}-en`) ?? b,
+);
 const byRole = (role: string) =>
   all
     .filter((m) => m.data.role === role)

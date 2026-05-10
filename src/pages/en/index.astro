@@ -2,11 +2,23 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
-const research = (await getCollection("research"))
+const allResearch = await getCollection("research");
+const researchBases = allResearch.filter((r) => !r.slug.endsWith("-en"));
+const research = researchBases
+  .map((b) => {
+    const enVar = allResearch.find((r) => r.slug === `${b.slug}-en`);
+    return { slug: b.slug, data: enVar?.data ?? b.data };
+  })
   .filter((r) => r.data.active)
   .sort((a, b) => a.data.order - b.data.order);
 
-const pi = (await getCollection("members")).find((m) => m.data.role === "pi");
+const allMembers = await getCollection("members");
+const pi = (() => {
+  const baseList = allMembers.filter((m) => !m.slug.endsWith("-en"));
+  const basePi = baseList.find((m) => m.data.role === "pi");
+  if (!basePi) return undefined;
+  return allMembers.find((m) => m.slug === `${basePi.slug}-en`) ?? basePi;
+})();
 
 const featuredPubs = (await getCollection("publications"))
   .filter((p) => p.data.featured)
@@ -32,7 +44,13 @@ const videos = (await getCollection("videos"))
   })
   .slice(0, 4);
 
-const heroNews = (await getCollection("news"))
+const allNews = await getCollection("news");
+const heroNews = allNews
+  .filter((n) => !n.slug.endsWith("-en"))
+  .map((b) => {
+    const enVar = allNews.find((n) => n.slug === `${b.slug}-en`);
+    return { slug: b.slug, data: enVar?.data ?? b.data };
+  })
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 ---

@@ -3,7 +3,7 @@ export type Lang = "zh" | "en";
 export const defaultLang: Lang = "zh";
 
 export const languages: Record<Lang, string> = {
-  zh: "中",
+  zh: "華",
   en: "EN",
 };
 

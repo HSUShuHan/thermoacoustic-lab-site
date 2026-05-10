@@ -5,10 +5,12 @@ import Prose from "~/components/Prose.astro";
 
 export async function getStaticPaths() {
   const items = await getCollection("research");
-  return items.map((item) => ({
-    params: { slug: item.slug },
-    props: { item },
-  }));
+  return items
+    .filter((item) => !item.slug.endsWith("-en"))
+    .map((item) => ({
+      params: { slug: item.slug },
+      props: { item },
+    }));
 }
 
 const { item } = Astro.props;

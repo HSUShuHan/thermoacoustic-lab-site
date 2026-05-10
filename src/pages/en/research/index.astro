@@ -2,7 +2,14 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
-const all = await getCollection("research");
+const allRaw = await getCollection("research");
+// For each base entry, expose the English-variant data when it exists; keep
+// the base slug so URLs stay clean (no -en suffix).
+const baseEntries = allRaw.filter((r) => !r.slug.endsWith("-en"));
+const all = baseEntries.map((b) => {
+  const enVar = allRaw.find((r) => r.slug === `${b.slug}-en`);
+  return { slug: b.slug, data: enVar?.data ?? b.data };
+});
 const active = all
   .filter((r) => r.data.active)
   .sort((a, b) => a.data.order - b.data.order);

@@ -3,10 +3,13 @@ import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
 const research = (await getCollection("research"))
+  .filter((r) => !r.slug.endsWith("-en"))
   .filter((r) => r.data.active)
   .sort((a, b) => a.data.order - b.data.order);
 
-const pi = (await getCollection("members")).find((m) => m.data.role === "pi");
+const pi = (await getCollection("members"))
+  .filter((m) => !m.slug.endsWith("-en"))
+  .find((m) => m.data.role === "pi");
 
 const featuredPubs = (await getCollection("publications"))
   .filter((p) => p.data.featured)
@@ -31,6 +34,7 @@ const videos = (await getCollection("videos"))
   .slice(0, 4);
 
 const heroNews = (await getCollection("news"))
+  .filter((n) => !n.slug.endsWith("-en"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 ---
