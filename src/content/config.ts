@@ -1,5 +1,20 @@
 import { defineCollection, z } from "astro:content";
 
+const videos = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    title_zh: z.string().optional(),
+    youtube_id: z.string(),
+    year: z.number().optional(),
+    description: z.string().optional(),
+    // Slug of the associated publication (e.g., "2024-hsu-condensation-shock").
+    related_pub: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    order: z.number().default(0),
+  }),
+});
+
 const publications = defineCollection({
   type: "content",
   schema: z.object({
@@ -124,11 +139,14 @@ const projects = defineCollection({
     pi: z.string(),
     co_pis: z.array(z.string()).default([]),
     summary: z.string(),
+    // 計畫總經費（單位：千元 NTD）— optional
+    budget_twd: z.number().optional(),
     active: z.boolean().default(true),
   }),
 });
 
 export const collections = {
+  videos,
   publications,
   members,
   research,

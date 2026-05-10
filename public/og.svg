@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"
+     font-family="'PingFang TC', 'Noto Sans TC', 'Inter', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#fca5a5" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative wavy lines (acoustic motif) -->
+  <g stroke="url(#wave)" stroke-width="3" fill="none" opacity="0.6">
+    <path d="M -50 480 Q 100 420, 250 480 T 550 480 T 850 480 T 1250 480"/>
+    <path d="M -50 510 Q 100 460, 250 510 T 550 510 T 850 510 T 1250 510" opacity="0.7"/>
+    <path d="M -50 540 Q 100 500, 250 540 T 550 540 T 850 540 T 1250 540" opacity="0.5"/>
+    <path d="M -50 570 Q 100 540, 250 570 T 550 570 T 850 570 T 1250 570" opacity="0.35"/>
+  </g>
+
+  <!-- Accent strip -->
+  <rect x="80" y="148" width="100" height="6" fill="#dc2626"/>
+
+  <!-- Eyebrow -->
+  <text x="80" y="135" font-size="22" letter-spacing="6" fill="#94a3b8">
+    NATIONAL TAIPEI UNIVERSITY OF TECHNOLOGY
+  </text>
+
+  <!-- Main title -->
+  <text x="80" y="270" font-size="120" font-weight="700" fill="white">
+    熱聲實驗室
+  </text>
+  <text x="80" y="345" font-size="60" font-weight="300" fill="#cbd5e1">
+    Thermoacoustic Lab
+  </text>
+
+  <!-- Subtitle -->
+  <text x="80" y="420" font-size="28" fill="#cbd5e1">
+    探索熱與聲的能量轉換 · Energy conversion between heat and sound
+  </text>
+
+  <!-- URL -->
+  <text x="80" y="595" font-size="24" font-style="italic" fill="#64748b">
+    thermoacoustictw.org
+  </text>
+</svg>

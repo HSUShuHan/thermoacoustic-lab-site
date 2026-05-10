@@ -1,0 +1,1245 @@
+---
+// Standing-wave thermoacoustic 4-mode animation
+// Physics 1:1 ported from G. W. Swift's `standing.py` (LANL bookAnimations 2015)
+// LANL Disclaimer: LA-UR 99-895; permission granted to copy/use with notice + authorship reproduced
+---
+
+<figure class="ta-anim not-prose" data-mode="engine">
+  <div class="ta-tabs" role="tablist" aria-label="模式選擇">
+    <button type="button" data-mode="flat" role="tab">(f)lat 均溫</button>
+    <button type="button" data-mode="refrigerator" role="tab">
+      (r)efrigerator 製冷
+    </button>
+    {/* Critical mode 已封存：對初學者門檻較高（需理解 ∇T_crit）。代碼保留，
+        UI tab 隱藏；keyboard `c` shortcut 也保留以便除錯。 */}
+    {/* <button type="button" data-mode="critical" role="tab">
+      (c)ritical 臨界
+    </button> */}
+    <button
+      type="button"
+      data-mode="engine"
+      role="tab"
+      aria-selected="true"
+      class="active"
+    >
+      (e)ngine 引擎
+    </button>
+  </div>
+
+  <svg
+    class="ta-svg"
+    viewBox="-30 0 830 750"
+    role="img"
+    aria-labelledby="ta-title ta-desc"
+  >
+    <title id="ta-title">駐波型熱聲機制 4 模式動畫</title>
+    <desc id="ta-desc">
+      氣塊在 stack 中往復振盪；同步顯示氣塊壓力—體積（PV）軌跡、氣塊溫度—位置（T—x）軌跡，及壁溫梯度。可切換 3 種模式：均溫、製冷、引擎。
+    </desc>
+
+    <defs>
+      <marker
+        id="ta-heat"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="5"
+        markerHeight="5"
+        orient="auto"
+      >
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"></path>
+      </marker>
+      <marker
+        id="ta-axis-arrow"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto"
+      >
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e3a5f"></path>
+      </marker>
+      <!-- Wall-temperature gradients for the close-up panel.
+           Convention: x positive to the right; engine has ∇T > 0 → right hot,
+           left cold. Direction is the SAME across refrigerator/critical/engine
+           (∇T > 0), only intensity differs.
+           flat has no fill (CSS sets it to white). -->
+      <linearGradient id="ta-grad-engine" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#60a5fa"></stop>
+        <stop offset="100%" stop-color="#f87171"></stop>
+      </linearGradient>
+      <linearGradient id="ta-grad-critical" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#bfdbfe"></stop>
+        <stop offset="100%" stop-color="#fecaca"></stop>
+      </linearGradient>
+      <linearGradient id="ta-grad-refrig" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#dbeafe"></stop>
+        <stop offset="100%" stop-color="#fee2e2"></stop>
+      </linearGradient>
+    </defs>
+
+    <!-- ═══════════ Panel 1: stack with parcel ═══════════ -->
+    <g id="ta-stack" transform="translate(40, 60)">
+      <!-- Resonator: open-LEFT + closed-RIGHT (right hot convention).
+           Piston/crank assembly drives the open left end (refrigerator only). -->
+      <!-- Top wall -->
+      <line x1="0" y1="0" x2="680" y2="0" stroke="#1e3a5f" stroke-width="3"></line>
+      <!-- Bottom wall -->
+      <line x1="0" y1="110" x2="680" y2="110" stroke="#1e3a5f" stroke-width="3"></line>
+      <!-- Right closed end (hot side in engine convention) -->
+      <line x1="680" y1="0" x2="680" y2="110" stroke="#1e3a5f" stroke-width="3"></line>
+      <!-- (Left end: open — no vertical wall) -->
+
+      <!-- Wave fronts (xi-sheets): 12 vertical tracer lines that oscillate
+           with the standing-wave gas displacement. JS animates `transform`. -->
+      <g id="ta-wavefronts" stroke="#94a3b8" stroke-width="1" opacity="0.65">
+        <line data-x0="50" x1="50" y1="6" x2="50" y2="104"></line>
+        <line data-x0="100" x1="100" y1="6" x2="100" y2="104"></line>
+        <line data-x0="150" x1="150" y1="6" x2="150" y2="104"></line>
+        <line data-x0="200" x1="200" y1="6" x2="200" y2="104"></line>
+        <line data-x0="250" x1="250" y1="6" x2="250" y2="104"></line>
+        <line data-x0="300" x1="300" y1="6" x2="300" y2="104"></line>
+        <line data-x0="350" x1="350" y1="6" x2="350" y2="104"></line>
+        <line data-x0="400" x1="400" y1="6" x2="400" y2="104"></line>
+        <line data-x0="450" x1="450" y1="6" x2="450" y2="104"></line>
+        <line data-x0="500" x1="500" y1="6" x2="500" y2="104"></line>
+        <line data-x0="550" x1="550" y1="6" x2="550" y2="104"></line>
+        <line data-x0="600" x1="600" y1="6" x2="600" y2="104"></line>
+      </g>
+
+      <!-- Flat-mode initial perturbation indicator (open LEFT end).
+           A red impulse arrow pointing INTO the resonator. CSS shows this
+           only in flat mode; JS fades it out over the spiral span so it
+           visually represents the one-time disturbance that excites the
+           damped oscillation. -->
+      <g id="ta-flat-impulse">
+        <!-- Three short horizontal "wind" streaks just outside the open
+             left end, curving slightly toward the opening — suggests a
+             gust / breath that excites the column once. -->
+        <path
+          d="M -32 42 L -8 42 Q -2 42 2 47"
+          stroke="#64748b"
+          stroke-width="1.6"
+          fill="none"
+          stroke-linecap="round"></path>
+        <path
+          d="M -36 55 L -6 55 Q 0 55 4 55"
+          stroke="#64748b"
+          stroke-width="2"
+          fill="none"
+          stroke-linecap="round"></path>
+        <path
+          d="M -32 68 L -8 68 Q -2 68 2 63"
+          stroke="#64748b"
+          stroke-width="1.6"
+          fill="none"
+          stroke-linecap="round"></path>
+        <text
+          x="-12"
+          y="30"
+          font-size="10"
+          fill="#475569"
+          text-anchor="middle"
+          font-weight="500">初始擾動</text>
+      </g>
+
+      <!-- Slider-crank piston assembly (refrigerator mode only).
+           Mirror-flipped from Swift convention: piston now at LEFT (open) end,
+           crank center at (-34, 40). R=10, rod L=44, piston width 22.
+           Wrist range: 0..20 (stroke = 2R = 20 px).
+           Z-order: piston / wheel / arm at back; conrod and joint pins on top. -->
+      <g id="ta-crank-assembly">
+        <!-- ── BACK layer ─────────────────────────────────── -->
+        <!-- Piston block (slides horizontally). JS sets x. -->
+        <rect
+          id="ta-piston"
+          x="0"
+          y="3"
+          width="22"
+          height="104"
+          fill="#16a34a"
+          fill-opacity="0.85"
+          stroke="#15803d"
+          stroke-width="1"></rect>
+
+        <!-- Crank wheel (rim, static circle). -->
+        <circle
+          cx="-34"
+          cy="55"
+          r="10"
+          fill="white"
+          stroke="#1e3a5f"
+          stroke-width="1.5"></circle>
+        <!-- Crank arm: from center to crank pin. JS updates x2/y2. -->
+        <line
+          id="ta-crank-arm"
+          x1="-34"
+          y1="55"
+          x2="-24"
+          y2="55"
+          stroke="#1e3a5f"
+          stroke-width="2"
+          stroke-linecap="round"></line>
+        <!-- Crank centre pivot (small fixed dot). -->
+        <circle cx="-34" cy="55" r="2" fill="#1e3a5f"></circle>
+
+        <!-- ── FRONT layer (drawn on top) ────────────────── -->
+        <!-- Connecting rod: tilts as the crank rotates. JS updates both endpoints. -->
+        <line
+          id="ta-conrod"
+          x1="0"
+          y1="55"
+          x2="-24"
+          y2="55"
+          stroke="#475569"
+          stroke-width="3"
+          stroke-linecap="round"></line>
+        <!-- Wrist pin: joint between conrod and piston rod (slides with piston). -->
+        <circle
+          id="ta-wrist-pin"
+          cx="0"
+          cy="55"
+          r="3.5"
+          fill="#94a3b8"
+          stroke="#1e293b"
+          stroke-width="1.2"></circle>
+        <!-- Crank pin: joint between conrod and crank arm (orbits on rim). -->
+        <circle
+          id="ta-crank-pin"
+          cx="-24"
+          cy="55"
+          r="3.5"
+          fill="#dc2626"
+          stroke="#7f1d1d"
+          stroke-width="1.2"></circle>
+
+        <!-- Label below the crank-piston, identifying the external work input -->
+        <text
+          x="-22"
+          y="124"
+          font-size="10"
+          font-weight="600"
+          fill="#16a34a"
+          text-anchor="middle">機械功輸入 →</text>
+      </g>
+
+      <!-- Stack region (between velocity & pressure node), x ≈ 460..620
+           — moved to RIGHT side, near the closed (hot) end. -->
+      <g id="ta-stack-plates">
+        <!-- 8 horizontal plates, evenly spaced 14 px apart, positioned so
+             that the channel between plates 48 and 62 is centered on the
+             tracked parcel (y≈55). 7 channels in total. -->
+        <line x1="460" y1="6" x2="620" y2="6" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="20" x2="620" y2="20" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="34" x2="620" y2="34" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="48" x2="620" y2="48" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="62" x2="620" y2="62" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="76" x2="620" y2="76" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="90" x2="620" y2="90" stroke="#1e3a5f" stroke-width="1"></line>
+        <line x1="460" y1="104" x2="620" y2="104" stroke="#1e3a5f" stroke-width="1"></line>
+      </g>
+
+      <!-- Yellow oval highlight: zoom region around the tracked parcel.
+           Centered on the wavefront at x0=530; size bounds parcel motion (~±15 px). -->
+      <ellipse
+        cx="530"
+        cy="55"
+        rx="22"
+        ry="14"
+        fill="none"
+        stroke="#eab308"
+        stroke-width="1.5"
+        stroke-dasharray="3 2"></ellipse>
+
+      <!-- The moving parcel: locked to wavefront at x0=530, co-moves with it.
+           JS updates x and width every frame. -->
+      <rect
+        id="ta-parcel-stack"
+        x="528"
+        y="50"
+        width="4"
+        height="10"
+        fill="#0891b2"
+        rx="0.5"></rect>
+
+      <!-- Panel header — JS rewrites text content per mode -->
+      <text
+        id="ta-stack-title"
+        x="340"
+        y="-26"
+        font-size="12"
+        fill="#1e3a5f"
+        text-anchor="middle"
+        font-weight="600">共鳴管 + 中段片堆</text>
+      <text x="530" y="-12" font-size="10" fill="#475569" text-anchor="middle">
+        ↓ 片堆 (stack)
+      </text>
+    </g>
+
+    <!-- ═══════════ Panel 2: parcel close-up + heat arrows ═══════════ -->
+    <!-- Larger panel: 340 wide × 200 tall content. -->
+    <g id="ta-closeup" transform="translate(420, 230)">
+      <!-- Wall-temperature gradient between plates; CSS controls fill by mode -->
+      <rect
+        id="ta-closeup-bg"
+        x="0"
+        y="12"
+        width="280"
+        height="146"
+        opacity="0.7"></rect>
+      <!-- two plate fragments, top and bottom -->
+      <rect x="0" y="0" width="280" height="12" fill="#94a3b8"></rect>
+      <rect x="0" y="158" width="280" height="12" fill="#94a3b8"></rect>
+
+      <!-- Heat arrow lines (one above + one below parcel)
+           JS sets x1/x2/y1/y2/stroke-width every frame to flip direction -->
+      <line
+        id="ta-heat-top-line"
+        x1="140"
+        y1="50"
+        x2="140"
+        y2="18"
+        stroke="#dc2626"
+        stroke-width="0"
+        marker-end="url(#ta-heat)"></line>
+      <line
+        id="ta-heat-bot-line"
+        x1="140"
+        y1="120"
+        x2="140"
+        y2="152"
+        stroke="#dc2626"
+        stroke-width="0"
+        marker-end="url(#ta-heat)"></line>
+
+      <!-- The big parcel — JS updates its x and width -->
+      <rect
+        id="ta-parcel-big"
+        x="115"
+        y="58"
+        width="50"
+        height="54"
+        fill="#0891b2"
+        fill-opacity="0.85"
+        stroke="#0e7490"
+        stroke-width="1"
+        rx="4"></rect>
+
+      <text x="140" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
+        (c) 氣塊放大特寫（紅箭頭 = 徑向熱傳方向）
+      </text>
+    </g>
+
+    <!-- ═══════════ Panel 3: 壓力–位移 (p-ξ) + 壓力–體積 (p-V) ═══════════ -->
+    <!-- Two overlaid traces:
+         · p–ξ (orange, primary) — matches Biwa Fig 6.2's I projection.
+         · p–V (cyan dashed)     — classical thermo PV-loop, 環面積 = 功. -->
+    <g id="ta-pv" transform="translate(20, 230)">
+      <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
+        (b) 氣塊 壓力–位移 / 壓力–體積 軌跡
+      </text>
+      <text x="120" y="-12" font-size="9" text-anchor="middle">
+        <tspan fill="#d97706">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">ξ</tspan> × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>（聲音強度）</tspan>
+        <tspan fill="#475569"> · </tspan>
+        <tspan fill="#0e7490">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">V</tspan> = <tspan font-style="italic">W</tspan>（一週期之功）</tspan>
+      </text>
+      <!-- Axes (with arrowheads) -->
+      <line x1="0" y1="170" x2="0" y2="0" stroke="#1e3a5f" stroke-width="2"
+            marker-end="url(#ta-axis-arrow)"></line>
+      <line x1="0" y1="170" x2="240" y2="170" stroke="#1e3a5f" stroke-width="2"
+            marker-end="url(#ta-axis-arrow)"></line>
+      <text
+        x="-18"
+        y="85"
+        font-size="11"
+        fill="#1e3a5f"
+        text-anchor="middle"
+        font-weight="500"
+        transform="rotate(-90 -18 85)">壓力 <tspan font-style="italic">p</tspan></text>
+      <text x="120" y="190" font-size="11" fill="#1e3a5f" text-anchor="middle"
+        >位移 <tspan font-style="italic">ξ</tspan> / 體積 <tspan font-style="italic">V</tspan>（歸一化）</text>
+
+      <!-- p–ξ filled cycle (orange) — primary trace = I projection -->
+      <path
+        id="ta-pv-fill"
+        d=""
+        fill="#fcd34d"
+        fill-opacity="0.18"
+        stroke="none"></path>
+      <path
+        id="ta-pv-loop"
+        d=""
+        fill="none"
+        stroke="#d97706"
+        stroke-width="1.8"></path>
+
+      <!-- p–V cycle (cyan dashed) — classical thermodynamic PV loop -->
+      <path
+        id="ta-pv-loop-V"
+        d=""
+        fill="none"
+        stroke="#0e7490"
+        stroke-width="1.4"
+        stroke-dasharray="4 3"
+        opacity="0.9"></path>
+
+      <!-- Moving dot on the p–ξ trace -->
+      <circle id="ta-pv-dot" cx="120" cy="100" r="5" fill="#d97706"></circle>
+      <!-- Moving dot on the p–V trace -->
+      <circle
+        id="ta-pv-dot-V"
+        cx="120"
+        cy="100"
+        r="4"
+        fill="#0e7490"
+        stroke="white"
+        stroke-width="1"></circle>
+    </g>
+
+    <!-- ═══════════ Panel 4: T-x diagram ═══════════ -->
+    <g id="ta-tx" transform="translate(20, 490)">
+      <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
+        (d) 氣塊 溫度–位置（<tspan font-style="italic">T</tspan>–<tspan font-style="italic">x</tspan>）軌跡
+      </text>
+      <text x="120" y="-12" font-size="9" fill="#15803d" text-anchor="middle">
+        形似 3D 熵（<tspan font-style="italic">S</tspan>）–位移（<tspan font-style="italic">ξ</tspan>）投影：以溫度替代熵
+      </text>
+      <text x="120" y="-2" font-size="9" fill="#475569" text-anchor="middle">
+        （絕熱時 d<tspan font-style="italic">T</tspan> ∝ d<tspan font-style="italic">S</tspan>，環面積 ∝ <tspan font-style="italic">Q</tspan> 但量綱不同）
+      </text>
+      <!-- Axes (240 wide × 200 tall — taller so panel matches Biwa height) -->
+      <line x1="0" y1="200" x2="0" y2="0" stroke="#1e3a5f" stroke-width="2"
+            marker-end="url(#ta-axis-arrow)"></line>
+      <line x1="0" y1="200" x2="240" y2="200" stroke="#1e3a5f" stroke-width="2"
+            marker-end="url(#ta-axis-arrow)"></line>
+      <text
+        x="-18"
+        y="100"
+        font-size="11"
+        fill="#1e3a5f"
+        text-anchor="middle"
+        font-weight="500"
+        transform="rotate(-90 -18 100)">溫度 <tspan font-style="italic">T</tspan></text>
+      <text x="120" y="220" font-size="11" fill="#1e3a5f" text-anchor="middle"
+        >位移 <tspan font-style="italic">ξ</tspan></text>
+
+      <!-- Wall (plate) temperature gradient — orange. -->
+      <line
+        id="ta-wall-line"
+        x1="15"
+        y1="100"
+        x2="225"
+        y2="100"
+        stroke="#ea580c"
+        stroke-width="2"
+        stroke-dasharray="4 3"></line>
+      <text
+        id="ta-wall-label"
+        x="232"
+        y="104"
+        font-size="10"
+        font-weight="500"
+        fill="#ea580c"
+        text-anchor="start">壁溫梯度</text>
+
+      <!-- Gas temperature ellipse / loop trace.
+           Color: a darker variant of the Q-projection green (#16a34a) — close
+           to but distinct from it, signaling "related but not equivalent". -->
+      <path
+        id="ta-tx-loop"
+        d=""
+        fill="none"
+        stroke="#15803d"
+        stroke-width="1.8"></path>
+
+      <!-- Moving dot -->
+      <circle id="ta-tx-dot" cx="120" cy="100" r="5" fill="#15803d"></circle>
+    </g>
+
+    <!-- ═══════════ Panel 5: Biwa Fig 6.2 — 3D (p, S, ξ) orbit ═══════════ -->
+    <g id="ta-biwa" transform="translate(420, 490)">
+      <!-- Header (attribution to Biwa moved to figcaption below the SVG) -->
+      <text
+        x="180"
+        y="-26"
+        font-size="12"
+        fill="#1e3a5f"
+        text-anchor="middle"
+        font-weight="600"
+        >(e) 氣塊 (<tspan font-style="italic">p</tspan>, <tspan font-style="italic">S</tspan>, <tspan font-style="italic">ξ</tspan>) 3D 軌道</text>
+      <text
+        x="180"
+        y="-12"
+        font-size="9"
+        fill="#475569"
+        text-anchor="middle"
+        >投影面積 × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>（聲音強度）, <tspan font-style="italic">Q</tspan>（熱流）, <tspan font-style="italic">w</tspan>（功源）</text>
+
+      <!-- 3D box wireframe + axis arrows + ellipse + dot. JS draws into these. -->
+      <g id="ta-biwa-box" stroke="#1e3a5f" fill="none"></g>
+      <g id="ta-biwa-axes" fill="none"></g>
+      <path
+        id="ta-biwa-ellipse"
+        d=""
+        fill="none"
+        stroke="#0891b2"
+        stroke-width="1.8"
+        opacity="0.9"></path>
+      <!-- Three 2D projection ellipses on the back faces -->
+      <path
+        id="ta-biwa-proj-pxi"
+        d=""
+        fill="#fcd34d"
+        fill-opacity="0.18"
+        stroke="#d97706"
+        stroke-width="1"
+        stroke-dasharray="3 2"></path>
+      <path
+        id="ta-biwa-proj-sxi"
+        d=""
+        fill="#86efac"
+        fill-opacity="0.18"
+        stroke="#16a34a"
+        stroke-width="1"
+        stroke-dasharray="3 2"></path>
+      <path
+        id="ta-biwa-proj-sp"
+        d=""
+        fill="#c4b5fd"
+        fill-opacity="0.18"
+        stroke="#7c3aed"
+        stroke-width="1"
+        stroke-dasharray="3 2"></path>
+      <!-- Moving dot at current (p, S, ξ) -->
+      <circle
+        id="ta-biwa-dot"
+        cx="0"
+        cy="0"
+        r="5"
+        fill="#0891b2"
+        stroke="white"
+        stroke-width="1"></circle>
+      <!-- Axis labels (Chinese + italic Latin symbol) -->
+      <text
+        id="ta-biwa-label-p"
+        x="0"
+        y="0"
+        font-size="11"
+        font-weight="600"
+        fill="#1e3a5f"
+        text-anchor="middle">壓力 <tspan font-style="italic">p</tspan></text>
+      <text
+        id="ta-biwa-label-s"
+        x="0"
+        y="0"
+        font-size="11"
+        font-weight="600"
+        fill="#1e3a5f"
+        text-anchor="middle">熵 <tspan font-style="italic">S</tspan></text>
+      <text
+        id="ta-biwa-label-xi"
+        x="0"
+        y="0"
+        font-size="11"
+        font-weight="600"
+        fill="#1e3a5f"
+        text-anchor="middle">位移 <tspan font-style="italic">ξ</tspan></text>
+
+      <!-- Vertical legend on the right side of the cube. -->
+      <g transform="translate(255, 60)">
+        <line x1="0" y1="0" x2="18" y2="0" stroke="#d97706" stroke-width="2" stroke-dasharray="3 2"></line>
+        <text x="24" y="4" font-size="10" fill="#1e3a5f"><tspan font-style="italic">p</tspan>–<tspan font-style="italic">ξ</tspan> 投影 = <tspan font-weight="600" font-style="italic" fill="#d97706">I</tspan></text>
+        <line x1="0" y1="22" x2="18" y2="22" stroke="#16a34a" stroke-width="2" stroke-dasharray="3 2"></line>
+        <text x="24" y="26" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">ξ</tspan> 投影 ≈ <tspan font-weight="600" font-style="italic" fill="#16a34a">Q</tspan></text>
+        <line x1="0" y1="44" x2="18" y2="44" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3 2"></line>
+        <text x="24" y="48" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">p</tspan> 投影 = <tspan font-weight="600" font-style="italic" fill="#7c3aed">w</tspan></text>
+      </g>
+    </g>
+  </svg>
+
+  <figcaption class="ta-caption">
+    <p>
+      <strong>圖：駐波型熱聲機制（4 模式）</strong>
+      氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 <i>p</i>–<i>ξ</i>（聲音強度 <i>I</i> 之概念）與青色虛線 <i>p</i>–<i>V</i>（一週期之功 <i>W</i>）。左下「<i>T</i>—<i>x</i> 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（<i>p</i>, <i>S</i>, <i>ξ</i>）三量之同步軌跡及其三個 2D 投影同時呈現。
+    </p>
+    <p class="ta-attrib">
+      Swift 動畫部分概念基於 G. W. Swift, <em
+        >Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators</em
+      >，物理參數沿用 LANL bookAnimations 之
+      <code>standing.py</code>
+      （LA-UR 99-895；Condensed Matter and Thermal Physics Group, Los Alamos National
+      Laboratory）。3D 軌道圖之概念取自 T. Biwa,
+      <em>Introduction to Thermoacoustic Devices</em>（World Scientific, 2017）, Fig 6.2。
+      本實作為網頁原生重製，依各方授權聲明使用。
+    </p>
+  </figcaption>
+</figure>
+
+<style>
+  .ta-anim {
+    margin: 2.5rem 0;
+    padding: 1.25rem 1rem 0.5rem;
+    border: 1px solid var(--color-brand-100);
+    border-radius: 0.5rem;
+    background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
+  }
+
+  .ta-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .ta-tabs button {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--color-brand-200);
+    background: white;
+    color: var(--color-brand-700);
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+    font-family: inherit;
+  }
+  .ta-tabs button:hover {
+    border-color: var(--color-brand-500);
+    color: var(--color-brand-900);
+  }
+  .ta-tabs button.active {
+    background: var(--color-brand-800);
+    border-color: var(--color-brand-800);
+    color: white;
+  }
+
+  .ta-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    background: white;
+    border-radius: 0.25rem;
+  }
+
+  /* Wall-temperature gradient in close-up panel switches by mode */
+  .ta-anim[data-mode="engine"] #ta-closeup-bg {
+    fill: url(#ta-grad-engine);
+  }
+  .ta-anim[data-mode="refrigerator"] #ta-closeup-bg {
+    fill: url(#ta-grad-refrig);
+  }
+  .ta-anim[data-mode="critical"] #ta-closeup-bg {
+    fill: url(#ta-grad-critical);
+  }
+  .ta-anim[data-mode="flat"] #ta-closeup-bg {
+    fill: white;
+  }
+
+  /* Crank-piston only visible in refrigerator mode */
+  #ta-crank-assembly {
+    display: none;
+  }
+  .ta-anim[data-mode="refrigerator"] #ta-crank-assembly {
+    display: inline;
+  }
+
+  /* Flat-mode initial-perturbation indicator visible only in flat mode */
+  #ta-flat-impulse {
+    display: none;
+  }
+  .ta-anim[data-mode="flat"] #ta-flat-impulse {
+    display: inline;
+  }
+
+  .ta-caption {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.55;
+  }
+  .ta-caption p {
+    margin: 0.5rem 0;
+  }
+  .ta-caption strong {
+    color: var(--color-brand-900);
+    font-weight: 600;
+  }
+  .ta-attrib {
+    font-size: 0.75rem;
+    color: #64748b;
+    border-top: 1px solid var(--color-brand-100);
+    padding-top: 0.5rem;
+    margin-top: 0.75rem !important;
+  }
+  .ta-attrib code {
+    background: white;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 0.7rem;
+  }
+</style>
+
+<script>
+  // ── Mode → phase parameter (Swift's standing.py) ─────────────────────
+  type Mode = "flat" | "refrigerator" | "critical" | "engine";
+
+  const phases: Record<Mode, number> = {
+    flat: 0.14,
+    refrigerator: 0.07,
+    critical: 0.0,
+    engine: -0.14,
+  };
+
+  const PERIOD = 5.0; // seconds for one ωt = 2π
+  const TWO_PI = Math.PI * 2;
+
+  // Flat mode: undriven damped oscillation. Trace this many cycles, decaying
+  // from amplitude 1 to FLAT_DECAY_END (0 = full stop), pause FLAT_REST seconds
+  // showing the parcel at rest, then loop back to full amplitude.
+  const FLAT_CYCLES = 3;
+  const FLAT_DECAY_END = 0;
+  const FLAT_REST = 1.0; // seconds of stillness after the spiral collapses
+
+  // SVG element coordinate constants (must match the static SVG above)
+  // Resonator is 680 px wide (closed left at x=0, open right at x=680);
+  // remaining ~80 px holds the crank-piston assembly in refrigerator mode.
+  const RESO_LEN = 680;
+  const WAVE_AMP = 25;
+  const WAVE_SMALL = 4;
+
+  // Parcel rest position — co-moves with wavefront at x0=530 (right side
+  // of resonator, near the closed/hot end in right-hot convention).
+  const STACK_X0 = 530;
+  const PARCEL_W0 = 4;
+  const PARCEL_W_AMP = 1.2;
+
+  // Slider-crank kinematics (refrigerator mode).
+  // Piston is to the RIGHT of the crank center (piston in resonator,
+  // crank outside on the left of the open end).
+  // x_wrist(θ) = Cx + R·cos(θ) + √(L² − R²·sin²(θ))
+  // Stroke = 2R = 20 px; rod tilts so wrist x is NOT pure sinusoidal.
+  const CRANK_CX = -34;
+  const CRANK_CY = 55;
+  const CRANK_R = 10;
+  const ROD_LEN = 44;
+  const PISTON_W = 22; // piston block width
+
+  // Standing-wave displacement at any x0 in the stack panel:
+  //   ξ(x0, ωt) = amp(x0)·cos(ωt) + small(x0)·sin(ωt)
+  //
+  // The resonator is OPEN at x=0 (piston-driven) and CLOSED at x=RESO_LEN.
+  // Fundamental quarter-wave mode: displacement antinode at the open
+  // end, node at the closed end. Sign chosen so that ξ(0, ωt=0) > 0,
+  // matching the piston's rightmost position at ωt=0 — i.e. piston and
+  // adjacent wavefronts are now IN PHASE.
+  function xiAmp(x0: number) {
+    return WAVE_AMP * Math.cos((Math.PI * x0) / (2 * RESO_LEN));
+  }
+  // Small traveling-wave term: largest at the OPEN/PISTON-driven end (LEFT, x=0)
+  // and zero at the closed end (RIGHT, x=680). Sign flipped vs Swift due to
+  // the spatial mirror.
+  function xiSmall(x0: number) {
+    return WAVE_SMALL * ((RESO_LEN - x0) / RESO_LEN);
+  }
+
+  const CLOSEUP_X0 = 140; // center of close-up panel (now 280 wide for symmetry with PV/T-x)
+  const CLOSEUP_AMP_X = 100; // amplitude in close-up
+  const PARCEL_BIG_W0 = 60;
+  const PARCEL_BIG_W_AMP = 12;
+
+  // PV diagram (axes 0..240 wide, 0..170 tall, origin at bottom-left)
+  const PV_CX = 120; // center of trace
+  const PV_CY_BOTTOM = 170;
+  const PV_AMP_X = 70;
+  const PV_AMP_Y = 50;
+  const PV_CY = 95; // visual center y
+
+  // T-x diagram (axes 0..240 wide, 0..200 tall — matches Biwa panel height)
+  const TX_CX = 120;
+  const TX_CY = 100;
+  const TX_AMP_X = 95; // parcel position amplitude on x-axis
+  const TX_AMP_T = 70; // parcel temperature deviation amplitude
+
+  // Biwa 3D (p, S, ξ) panel — matches Biwa textbook Fig 6.2 axis convention:
+  //   S' (entropy) is the VERTICAL axis (up).
+  //   ξ' (displacement) goes right-and-down.
+  //   p' (pressure) goes left-and-down (depth into the page).
+  // World 3D axis mapping for project3D(x, y, z):
+  //   x = ξ (right-down on screen)
+  //   y = S (vertical up on screen)
+  //   z = p (depth, left-down on screen)
+  const BIWA_YAW = Math.PI / 5; // 36°  (more rotation = better separation)
+  const BIWA_PITCH = -Math.PI / 7; // ≈ -26° (steeper top-down view)
+  const BIWA_SCALE = 58;
+  const BIWA_CX = 135; // centered so the p-axis label (extending left-down) stays in panel
+  const BIWA_CY = 130; // shifted down so the upward S-axis fits below header
+  function project3D(xi: number, p: number, s: number) {
+    // Yaw around y-axis
+    const x1 = xi * Math.cos(BIWA_YAW) - s * Math.sin(BIWA_YAW);
+    const y1 = p;
+    const z1 = xi * Math.sin(BIWA_YAW) + s * Math.cos(BIWA_YAW);
+    // Pitch around x-axis
+    const x2 = x1;
+    const y2 = y1 * Math.cos(BIWA_PITCH) + z1 * Math.sin(BIWA_PITCH);
+    return {
+      x: BIWA_CX + x2 * BIWA_SCALE,
+      y: BIWA_CY - y2 * BIWA_SCALE,
+    };
+  }
+
+  // ── DOM refs ─────────────────────────────────────────────────────────
+  function initAnimation(root: HTMLElement) {
+    const tabs = root.querySelectorAll<HTMLButtonElement>("[data-mode]");
+    const $ = (id: string) => root.querySelector<SVGGraphicsElement>("#" + id)!;
+
+    const parcelStack = $("ta-parcel-stack") as unknown as SVGRectElement;
+    const parcelBig = $("ta-parcel-big") as unknown as SVGRectElement;
+    const pvDot = $("ta-pv-dot") as unknown as SVGCircleElement;
+    const pvDotV = $("ta-pv-dot-V") as unknown as SVGCircleElement;
+    const pvLoop = $("ta-pv-loop") as unknown as SVGPathElement;
+    const pvLoopV = $("ta-pv-loop-V") as unknown as SVGPathElement;
+    const pvFill = $("ta-pv-fill") as unknown as SVGPathElement;
+    const txDot = $("ta-tx-dot") as unknown as SVGCircleElement;
+    const txLoop = $("ta-tx-loop") as unknown as SVGPathElement;
+    const wallLine = $("ta-wall-line") as unknown as SVGLineElement;
+    const wavefronts = root.querySelectorAll<SVGLineElement>(
+      "#ta-wavefronts line",
+    );
+    const piston = $("ta-piston") as unknown as SVGRectElement;
+    const conrod = $("ta-conrod") as unknown as SVGLineElement;
+    const crankArm = $("ta-crank-arm") as unknown as SVGLineElement;
+    const wristPin = $("ta-wrist-pin") as unknown as SVGCircleElement;
+    const crankPin = $("ta-crank-pin") as unknown as SVGCircleElement;
+    const heatTop = $("ta-heat-top-line") as unknown as SVGLineElement;
+    const heatBot = $("ta-heat-bot-line") as unknown as SVGLineElement;
+    const biwaBox = $("ta-biwa-box") as unknown as SVGGElement;
+    const biwaAxes = $("ta-biwa-axes") as unknown as SVGGElement;
+    const biwaEllipse = $("ta-biwa-ellipse") as unknown as SVGPathElement;
+    const biwaProjPxi = $("ta-biwa-proj-pxi") as unknown as SVGPathElement;
+    const biwaProjSxi = $("ta-biwa-proj-sxi") as unknown as SVGPathElement;
+    const biwaProjSp = $("ta-biwa-proj-sp") as unknown as SVGPathElement;
+    const biwaDot = $("ta-biwa-dot") as unknown as SVGCircleElement;
+    const biwaLabelP = $("ta-biwa-label-p") as unknown as SVGTextElement;
+    const biwaLabelS = $("ta-biwa-label-s") as unknown as SVGTextElement;
+    const biwaLabelXi = $("ta-biwa-label-xi") as unknown as SVGTextElement;
+    const flatImpulse = $("ta-flat-impulse") as unknown as SVGGElement;
+
+    // Build the 3D box wireframe + axis arrows + label positions
+    // (one-time setup since the projection geometry is fixed).
+    {
+      const corners: { x: number; y: number }[] = [];
+      for (let i = 0; i < 8; i++) {
+        const xi = i & 1 ? 1 : -1;
+        const p = i & 2 ? 1 : -1;
+        const s = i & 4 ? 1 : -1;
+        corners.push(project3D(xi, p, s));
+      }
+      // 12 edges of the cube. Light gray for non-axis edges; axis edges drawn
+      // separately as colored arrows in a second pass.
+      const edges: [number, number][] = [
+        [0, 1], [2, 3], [4, 5], [6, 7], // ξ direction (corner 0→1 is the ξ axis)
+        [0, 2], [1, 3], [4, 6], [5, 7], // p direction (corner 0→2 is the p axis)
+        [0, 4], [1, 5], [2, 6], [3, 7], // S direction (corner 0→4 is the S axis)
+      ];
+      const axisEdges = new Set(["0-1", "0-2", "0-4"]);
+      let edgesHtml = "";
+      for (const [a, b] of edges) {
+        if (axisEdges.has(`${a}-${b}`)) continue; // axes drawn separately
+        edgesHtml += `<line x1="${corners[a].x.toFixed(1)}" y1="${corners[a].y.toFixed(1)}" x2="${corners[b].x.toFixed(1)}" y2="${corners[b].y.toFixed(1)}" stroke="#cbd5e1" stroke-width="1"/>`;
+      }
+      biwaBox.innerHTML = edgesHtml;
+
+      // Axis arrows align with the three cube edges at corner 0 = (ξ,S,p) =
+      // (−1,−1,−1) and extend past the +1 face. They visually become the
+      // three edges meeting at that corner, exactly matching Biwa Fig 6.2.
+      const axisOrigin = project3D(-1, -1, -1); // = corners[0]
+      const axisXi = project3D(1.6, -1, -1); // ξ axis: from corner along bottom-back edge, past +ξ face
+      const axisS = project3D(-1, 1.4, -1); // S axis: from corner upward, past +S face
+      const axisP = project3D(-1, -1, 1.6); // p axis: from corner into depth, past +p face
+      const axisAttrs =
+        ' stroke="#1e3a5f" stroke-width="2" marker-end="url(#ta-axis-arrow)"';
+      biwaAxes.innerHTML =
+        `<line x1="${axisOrigin.x.toFixed(1)}" y1="${axisOrigin.y.toFixed(1)}" x2="${axisXi.x.toFixed(1)}" y2="${axisXi.y.toFixed(1)}"${axisAttrs}/>` +
+        `<line x1="${axisOrigin.x.toFixed(1)}" y1="${axisOrigin.y.toFixed(1)}" x2="${axisS.x.toFixed(1)}" y2="${axisS.y.toFixed(1)}"${axisAttrs}/>` +
+        `<line x1="${axisOrigin.x.toFixed(1)}" y1="${axisOrigin.y.toFixed(1)}" x2="${axisP.x.toFixed(1)}" y2="${axisP.y.toFixed(1)}"${axisAttrs}/>`;
+
+      // Axis labels just past the arrow tip — small offsets so each label
+      // sits clear of the cube body. CX=135 keeps even the leftmost label
+      // (壓力 p) safely inside the panel with anchor=middle.
+      const labelXi = project3D(1.85, -1, -1); // 位移 ξ
+      const labelS = project3D(-1, 1.65, -1); // 熵 S
+      const labelP = project3D(-1, -1, 1.85); // 壓力 p
+      biwaLabelXi.setAttribute("x", (labelXi.x + 6).toFixed(1));
+      biwaLabelXi.setAttribute("y", (labelXi.y + 4).toFixed(1));
+      biwaLabelS.setAttribute("x", labelS.x.toFixed(1));
+      biwaLabelS.setAttribute("y", (labelS.y - 2).toFixed(1));
+      biwaLabelP.setAttribute("x", (labelP.x - 4).toFixed(1));
+      biwaLabelP.setAttribute("y", (labelP.y + 4).toFixed(1));
+    }
+
+    // Build 3D ellipse path + 3 projection paths for current mode.
+    function buildBiwaPaths(phase: number, mode: Mode) {
+      const { cycles, N, closed } = flatTraceParams(mode);
+      const main: string[] = [];
+      const projP: string[] = [];
+      const projS: string[] = [];
+      const projSP: string[] = [];
+      for (let i = 0; i <= N; i++) {
+        const wt = ((i / N) * cycles) * TWO_PI;
+        const d = decayAt(i, N, mode);
+        const s = state(wt, phase, d);
+        const xi = s.parcelXNorm;
+        const pNorm = -s.pvyRaw - 0.5;
+        const sNorm = s.parcelTDev / 0.3;
+        const m = project3D(xi, sNorm, pNorm);
+        const a = project3D(xi, -1, pNorm);
+        const b = project3D(xi, sNorm, -1);
+        const c = project3D(-1, sNorm, pNorm);
+        const cmd = i === 0 ? "M " : "L ";
+        main.push(cmd + m.x.toFixed(1) + " " + m.y.toFixed(1));
+        projP.push(cmd + a.x.toFixed(1) + " " + a.y.toFixed(1));
+        projS.push(cmd + b.x.toFixed(1) + " " + b.y.toFixed(1));
+        projSP.push(cmd + c.x.toFixed(1) + " " + c.y.toFixed(1));
+      }
+      const close = closed ? " Z" : "";
+      return {
+        main: main.join(" ") + close,
+        pxi: projP.join(" ") + close,
+        sxi: projS.join(" ") + close,
+        sp: projSP.join(" ") + close,
+      };
+    }
+
+    let mode: Mode = (root.getAttribute("data-mode") as Mode) ?? "engine";
+
+    // ── Compute one frame's state from ωt and phase ────────────────────
+    // `decay` ∈ (0, 1] scales every oscillation amplitude around its mean —
+    // used for flat-mode damped spiral. Default 1 = no decay.
+    function state(wt: number, phase: number, decay: number = 1) {
+      const cwt = Math.cos(wt);
+      const swt = Math.sin(wt);
+
+      // Parcel position — full spatial mirror of Swift (negate sign).
+      // At ωt=0 parcel is at LEFT extreme (cold side in right-hot convention).
+      //
+      // Mode-dependent admixture: Swift's standing.py uses a fixed sin(ωt)
+      // coefficient (≈0.0406), making parcelX mode-independent. That makes
+      // the p–ξ ellipse area NOT track the mode — which contradicts our
+      // pedagogical claim ω/(2π)·∮p dξ = I (acoustic intensity). To fix
+      // it, scale the admixture linearly with `phase`: at critical (phase=0)
+      // it vanishes (degenerate line, I=0), at |phase|=0.14 it matches
+      // Swift's original magnitude (0.0406 = 0.29 × 0.14). Sign of the
+      // admixture flips between engine and refrigerator so the loop
+      // direction in p–ξ also flips, mirroring p–V behavior.
+      // Phase admixture coefficient bumped from 0.29 (Swift's own value) to
+      // 0.9 — exaggerates the p–ξ ellipse area for pedagogical clarity at the
+      // cost of physical fidelity to Swift's standing.py.
+      const parcelXNorm =
+        (-(0.5556 * cwt + 0.9 * phase * swt) / 0.557) * decay;
+      const parcelSize = 1 + 0.3 * cwt * decay;
+      const parcelTDev = -0.3 * Math.cos(wt + 2.5 * phase + 0.073) * decay;
+
+      // PV: pvx = cos(wt - phase) — decays around 0;
+      // pvy = -0.5 + (oscillation around -0.5 with amp 0.8) — decays around -0.5
+      const pvxRaw = Math.cos(wt - phase) * decay;
+      const pvyRaw = -0.5 - 0.8 * cwt * decay;
+
+      return { parcelXNorm, parcelSize, parcelTDev, pvxRaw, pvyRaw };
+    }
+
+    // ── Pre-compute traces for current mode ────────────────────────────
+    // For flat mode, trace FLAT_CYCLES periods with a linear amplitude decay
+    // so the path becomes an inward-shrinking spiral (damped oscillation).
+    // For other modes, trace one closed cycle.
+    function flatTraceParams(mode: Mode) {
+      if (mode === "flat") {
+        return { cycles: FLAT_CYCLES, N: 240, closed: false };
+      }
+      return { cycles: 1, N: 80, closed: true };
+    }
+
+    function decayAt(i: number, N: number, mode: Mode) {
+      if (mode !== "flat") return 1;
+      return 1 - (1 - FLAT_DECAY_END) * (i / N);
+    }
+
+    function buildPVPath(phase: number, mode: Mode) {
+      const { cycles, N, closed } = flatTraceParams(mode);
+      const pts: string[] = [];
+      for (let i = 0; i <= N; i++) {
+        const wt = ((i / N) * cycles) * TWO_PI;
+        const d = decayAt(i, N, mode);
+        const { parcelXNorm, pvyRaw } = state(wt, phase, d);
+        const x = PV_CX + parcelXNorm * PV_AMP_X;
+        const y = PV_CY - (pvyRaw + 0.5) * PV_AMP_Y * 1.5;
+        pts.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + y.toFixed(1));
+      }
+      return pts.join(" ") + (closed ? " Z" : "");
+    }
+
+    function buildPVPathOnV(phase: number, mode: Mode) {
+      const { cycles, N, closed } = flatTraceParams(mode);
+      const pts: string[] = [];
+      for (let i = 0; i <= N; i++) {
+        const wt = ((i / N) * cycles) * TWO_PI;
+        const d = decayAt(i, N, mode);
+        const { pvxRaw, pvyRaw } = state(wt, phase, d);
+        const x = PV_CX + pvxRaw * PV_AMP_X;
+        const y = PV_CY - (pvyRaw + 0.5) * PV_AMP_Y * 1.5;
+        pts.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + y.toFixed(1));
+      }
+      return pts.join(" ") + (closed ? " Z" : "");
+    }
+
+    function buildTXPath(phase: number, mode: Mode) {
+      const { cycles, N, closed } = flatTraceParams(mode);
+      const pts: string[] = [];
+      for (let i = 0; i <= N; i++) {
+        const wt = ((i / N) * cycles) * TWO_PI;
+        const d = decayAt(i, N, mode);
+        const { parcelXNorm, parcelTDev } = state(wt, phase, d);
+        const x = TX_CX + parcelXNorm * TX_AMP_X;
+        const y = TX_CY - (parcelTDev / 0.3) * TX_AMP_T;
+        pts.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + y.toFixed(1));
+      }
+      return pts.join(" ") + (closed ? " Z" : "");
+    }
+
+    const stackTitle = root.querySelector<SVGTextElement>("#ta-stack-title")!;
+    const titleByMode: Record<Mode, string> = {
+      flat: "(a) 共鳴管 + 中段片堆 · 均溫模式（無壁溫梯度）",
+      refrigerator: "(a) 共鳴管 + 中段片堆 + 左端曲柄活塞 · 製冷模式",
+      critical: "(a) 共鳴管 + 中段片堆 · 臨界模式（梯度恰等於氣塊絕熱）",
+      engine: "(a) 共鳴管 + 中段片堆 · 引擎模式（∇T > 0，右熱左冷）",
+    };
+
+    function applyMode(newMode: Mode) {
+      mode = newMode;
+      root.setAttribute("data-mode", newMode);
+      tabs.forEach((b) => {
+        const sel = b.getAttribute("data-mode") === newMode;
+        b.classList.toggle("active", sel);
+        b.setAttribute("aria-selected", String(sel));
+      });
+      stackTitle.textContent = titleByMode[newMode];
+
+      const phase = phases[newMode];
+
+      // PV traces — both p–ξ (primary, orange) and p–V (secondary, cyan dashed)
+      const pvD = buildPVPath(phase, newMode);
+      const pvDV = buildPVPathOnV(phase, newMode);
+      pvLoop.setAttribute("d", pvD);
+      pvLoopV.setAttribute("d", pvDV);
+      // Fill the primary p–ξ cycle (translucent amber) to highlight the area
+      // = I; suppress fill for the degenerate critical mode and the open
+      // spiral in flat mode.
+      pvFill.setAttribute(
+        "d",
+        phase === 0 || newMode === "flat" ? "" : pvD,
+      );
+
+      // T-x trace
+      txLoop.setAttribute("d", buildTXPath(phase, newMode));
+
+      // Wall T line — convention: ∇T > 0 (right hot, left cold) for engine.
+      // slopeMag here means dy/dx on the T-x plot; negative number means SVG y
+      // decreases (= temperature INCREASES on screen) as x grows.
+      const slopeMag = 4.286 * (phase - 0.14); // engine phase=-0.14 → -1.2
+      const yL = TX_CY - slopeMag * TX_AMP_T; // left side y
+      const yR = TX_CY + slopeMag * TX_AMP_T; // right side y
+      wallLine.setAttribute("y1", yL.toFixed(1));
+      wallLine.setAttribute("y2", yR.toFixed(1));
+
+      // Biwa 3D ellipse + 3 projection ellipses
+      const b = buildBiwaPaths(phase, newMode);
+      biwaEllipse.setAttribute("d", b.main);
+      biwaProjPxi.setAttribute("d", b.pxi);
+      biwaProjSxi.setAttribute("d", b.sxi);
+      biwaProjSp.setAttribute("d", b.sp);
+    }
+
+    // ── Animation loop ─────────────────────────────────────────────────
+    let start: number | null = null;
+    function frame(ts: number) {
+      if (start === null) start = ts;
+      const t = (ts - start) / 1000; // seconds
+      // Flat mode: amplitude decays over FLAT_CYCLES periods (no driving force →
+      // damped oscillation), then loops. Other modes are steady-state cycles.
+      let wt: number;
+      let decay: number;
+      if (mode === "flat") {
+        const span = PERIOD * FLAT_CYCLES;
+        const totalSpan = span + FLAT_REST;
+        const localT = t % totalSpan; // 0..(span+rest)
+        if (localT < span) {
+          // Active phase: parcel oscillates with linearly decaying amplitude.
+          wt = (localT / PERIOD) * TWO_PI;
+          decay = 1 - (1 - FLAT_DECAY_END) * (localT / span);
+        } else {
+          // Rest phase: parcel sits at equilibrium for FLAT_REST seconds.
+          wt = 0;
+          decay = 0;
+        }
+        // Initial-perturbation indicator: bright at the start of each spiral
+        // span, fades to transparent within the first ~25% of the span.
+        const flash = Math.max(0, 1 - (localT / span) / 0.25);
+        flatImpulse.setAttribute("opacity", flash.toFixed(2));
+      } else {
+        wt = (t / PERIOD) * TWO_PI;
+        decay = 1;
+      }
+      const phase = phases[mode];
+      const s = state(wt, phase, decay);
+
+      const cwt = Math.cos(wt);
+      const swt = Math.sin(wt);
+
+      // Stack panel parcel — co-moves with wavefront at STACK_X0 (=530, near
+      // right closed end where stack plates are). Same formula as wavefronts.
+      const parcelDx = xiAmp(STACK_X0) * cwt + xiSmall(STACK_X0) * swt;
+      const sx = STACK_X0 + parcelDx;
+      const sw = PARCEL_W0 + s.parcelSize * PARCEL_W_AMP - PARCEL_W_AMP;
+      parcelStack.setAttribute("x", (sx - sw / 2).toFixed(1));
+      parcelStack.setAttribute("width", Math.max(0.5, sw).toFixed(1));
+
+      // Wave fronts (xi-sheets) — standing-wave gas displacement
+      // using the same xiAmp/xiSmall functions as the parcel above.
+      wavefronts.forEach((line) => {
+        const x0 = parseFloat((line as SVGLineElement).dataset.x0!);
+        const dx = xiAmp(x0) * cwt + xiSmall(x0) * swt;
+        line.setAttribute("transform", `translate(${dx.toFixed(1)} 0)`);
+      });
+
+      // Slider-crank piston assembly (visible only in refrigerator mode via CSS).
+      // Crank rotates at ωt; wrist x derived from constant rod-length constraint.
+      const cpx = CRANK_CX + CRANK_R * cwt; // crank pin x (orbits)
+      const cpy = CRANK_CY + CRANK_R * swt; // crank pin y
+      // Piston is to the RIGHT of crank center → use + sqrt(...)
+      const wristX =
+        CRANK_CX +
+        CRANK_R * cwt +
+        Math.sqrt(ROD_LEN * ROD_LEN - CRANK_R * CRANK_R * swt * swt);
+      const wxs = wristX.toFixed(1);
+      const cpxs = cpx.toFixed(1);
+      const cpys = cpy.toFixed(1);
+
+      // Piston block — LEFT face at wrist pin (piston extends RIGHTWARD into resonator)
+      piston.setAttribute("x", wristX.toFixed(1));
+      // Crank arm — from center to crank pin
+      crankArm.setAttribute("x2", cpxs);
+      crankArm.setAttribute("y2", cpys);
+      // Connecting rod — wrist pin → crank pin (tilts with θ)
+      conrod.setAttribute("x1", wxs);
+      conrod.setAttribute("x2", cpxs);
+      conrod.setAttribute("y2", cpys);
+      // Joint pins (drawn on top of conrod)
+      wristPin.setAttribute("cx", wxs);
+      crankPin.setAttribute("cx", cpxs);
+      crankPin.setAttribute("cy", cpys);
+
+      // Close-up parcel
+      const cx = CLOSEUP_X0 + s.parcelXNorm * CLOSEUP_AMP_X;
+      const cw = PARCEL_BIG_W0 + (s.parcelSize - 1) * PARCEL_BIG_W_AMP * 3;
+      const cwClamped = Math.max(8, cw);
+      parcelBig.setAttribute("x", (cx - cwClamped / 2).toFixed(1));
+      parcelBig.setAttribute("width", cwClamped.toFixed(1));
+
+      // PV dots — primary p–ξ trace + secondary p–V trace (both moving)
+      const pvX = PV_CX + s.parcelXNorm * PV_AMP_X;
+      const pvY = PV_CY - (s.pvyRaw + 0.5) * PV_AMP_Y * 1.5;
+      pvDot.setAttribute("cx", pvX.toFixed(1));
+      pvDot.setAttribute("cy", pvY.toFixed(1));
+      const pvXV = PV_CX + s.pvxRaw * PV_AMP_X;
+      pvDotV.setAttribute("cx", pvXV.toFixed(1));
+      pvDotV.setAttribute("cy", pvY.toFixed(1));
+
+      // Biwa 3D dot — same parcel projected to (ξ, S, p) world coords
+      const biwaPos = project3D(
+        s.parcelXNorm, // x = ξ
+        s.parcelTDev / 0.3, // y = S (vertical, entropy stand-in (T as a proxy for S))
+        -s.pvyRaw - 0.5, // z = p (depth, pressure deviation)
+      );
+      biwaDot.setAttribute("cx", biwaPos.x.toFixed(1));
+      biwaDot.setAttribute("cy", biwaPos.y.toFixed(1));
+
+      // T-x dot
+      const txX = TX_CX + s.parcelXNorm * TX_AMP_X;
+      const txY = TX_CY - (s.parcelTDev / 0.3) * TX_AMP_T;
+      txDot.setAttribute("cx", txX.toFixed(1));
+      txDot.setAttribute("cy", txY.toFixed(1));
+
+      // ── Heat arrows ────────────────────────────────────────────────
+      // FULL MIRROR (∇T > 0, right hot): both wall direction AND parcel position
+      // are mirrored relative to Swift, so the two negations cancel — shaftW
+      // formula reverts to Swift's exact form. shaftW > 0 → heat OUT, < 0 → heat IN.
+      // Engine cycle: gas at right (hot) absorbs (shaftW < 0) at ωt=π,
+      //               gas at left (cold) deposits (shaftW > 0) at ωt=0.
+      const shaftW = s.parcelTDev - 1.5 * cwt * 1.49 * (phase - 0.14);
+      const w = Math.min(8, Math.abs(shaftW) * 14);
+
+      const xs = cx.toFixed(1);
+      heatTop.setAttribute("x1", xs);
+      heatTop.setAttribute("x2", xs);
+      heatBot.setAttribute("x1", xs);
+      heatBot.setAttribute("x2", xs);
+      heatTop.setAttribute("stroke-width", w.toFixed(1));
+      heatBot.setAttribute("stroke-width", w.toFixed(1));
+
+      // Geometry constants for the (resized) close-up panel:
+      //   top plate inner = y=12, parcel = y=58..112, bottom plate inner = y=158
+      //   gap above parcel: y=12..58 (46 tall)
+      //   gap below parcel: y=112..158 (46 tall)
+      if (shaftW < 0) {
+        // Heat IN to parcel from BOTH plates
+        heatTop.setAttribute("y1", "18");
+        heatTop.setAttribute("y2", "52");
+        heatBot.setAttribute("y1", "152");
+        heatBot.setAttribute("y2", "118");
+      } else {
+        // Heat OUT of parcel to BOTH plates
+        heatTop.setAttribute("y1", "52");
+        heatTop.setAttribute("y2", "18");
+        heatBot.setAttribute("y1", "118");
+        heatBot.setAttribute("y2", "152");
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    // ── Wire up tab clicks ─────────────────────────────────────────────
+    tabs.forEach((b) =>
+      b.addEventListener("click", () => {
+        const m = b.getAttribute("data-mode") as Mode;
+        if (m && m in phases) applyMode(m);
+      }),
+    );
+
+    // ── Keyboard shortcuts (f/r/c/e), respect Swift's UI ──────────────
+    root.tabIndex = 0;
+    root.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      const map: Record<string, Mode> = {
+        f: "flat",
+        r: "refrigerator",
+        c: "critical",
+        e: "engine",
+      };
+      if (map[key]) {
+        applyMode(map[key]);
+        e.preventDefault();
+      }
+    });
+
+    applyMode(mode);
+    requestAnimationFrame(frame);
+  }
+
+  // Initialize all instances on the page
+  document
+    .querySelectorAll<HTMLElement>(".ta-anim")
+    .forEach((el) => initAnimation(el));
+</script>

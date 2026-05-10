@@ -1,0 +1,126 @@
+---
+title_zh: 熱聲效應
+title_en: Thermoacoustic Effects
+summary: 往復振動氣體介質與流道固體壁之間相互熱交換所形成的能量轉換現象。
+order: 1
+active: true
+---
+
+## 熱聲效應
+
+聲音是在介質的來回振盪中所傳播的機械波。在氣體介質中傳遞的聲波，會使氣體經歷週期性的位移與壓力變化。
+
+在壓縮和膨脹的週期過程中，氣體介質溫度也隨之振盪，同時伴隨著位移振動。由於聲波使氣體有溫度振盪，當低頻聲波傳遞於充分微小流道內（比如蓄熱器（regenerator）或片堆（stack）內）的氣體介質中時，傳遞機械波的振動流體，便會與流道固體壁之間有溫度差而發生熱傳，形成豐富多樣的熱聲效應（thermoacoustic effects）。
+
+熱聲現象最早的文獻紀錄，是在日本 18 世紀志怪小說《雨月物語》中「吉備津釜」篇提及的<a href="https://youtu.be/-lYBRUHMJG4?t=410" target="_blank" rel="noopener noreferrer">釜鳴</a>。吉備津釜的構造如圖 1(a)，灑滿米粒的蒸網置於長筒狀鐵釜上，釜內沸水的水蒸氣加熱了米粒構成的微小流道，引發自激發聲現象。19 世紀歐洲亦有紀錄，玻璃工匠偶然發現到，將常溫玻璃管的一端吹製熔融玻璃球時，不時有聲波發生，Sondhauss 率先系統性地嘗試實驗調查此現象，此熱聲裝置因此命名為 Sondhauss tube（圖 1(b)）。同時期，Rijke 在兩端開放管內部的四分之一處置入金屬網並加熱之，也發現了聲波產生，而有圖 1(c) 的 <a href="https://youtu.be/abswNCqnMRQ?t=90" target="_blank" rel="noopener noreferrer">Rijke tube</a>。
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/kibitsu-sondhauss-rijke.svg" alt="圖 1：(a) 吉備津釜、(b) Sondhauss tube、(c) Rijke tube" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 1：早期熱聲裝置 —— (a) 吉備津釜、(b) Sondhauss tube、(c) Rijke tube。
+  </figcaption>
+</figure>
+
+<div class="my-8 grid gap-6 sm:grid-cols-2">
+  <figure>
+    <div class="aspect-video w-full overflow-hidden rounded">
+      <iframe
+        class="h-full w-full"
+        src="https://www.youtube-nocookie.com/embed/-lYBRUHMJG4?start=410"
+        title="吉備津釜 · 釜鳴示範"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <figcaption class="mt-2 text-center text-sm text-gray-600">
+      影片：吉備津釜「釜鳴」示範（圖 1a）。
+    </figcaption>
+  </figure>
+  <figure>
+    <div class="aspect-video w-full overflow-hidden rounded">
+      <iframe
+        class="h-full w-full"
+        src="https://www.youtube-nocookie.com/embed/abswNCqnMRQ?start=90"
+        title="Rijke tube 示範"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <figcaption class="mt-2 text-center text-sm text-gray-600">
+      影片：Rijke tube 自激振盪示範（圖 1c）。
+    </figcaption>
+  </figure>
+</div>
+
+十九世紀後期至二十世紀初期的英國雷利勳爵（Lord Rayleigh），在其名著《聲學原理》（*The Theory of Sound*）首次對熱聲效應給出定性敘述：
+
+> 在空氣最為凝縮時加熱或最為膨脹時奪熱，可激發振動。
+>
+> *If heat be given to the air at the moment of greatest condensation or taken from it at the moment of greatest rarefaction, the vibration is encouraged.*
+
+此段敘述本質上點出了熱聲效應的機制。
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/gasparcelcycle.svg" alt="圖 2：熱聲效應 — 微觀氣塊循環示意" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 2：流道中氣塊在軸向溫度梯度下，經歷「位移、吸放熱、壓力振盪」之微觀循環示意。
+  </figcaption>
+</figure>
+
+進一步以圖 2 來理解熱聲效應，流道中有一系列流體氣塊（gas parcel），施加於流道上之急遽正軸向溫度梯度以紅藍漸層色表示。當氣塊受到微小擾動，造成氣塊於流道高溫處吸收固體壁熱能、低溫處放熱，如此往復位移過程中，因氣團的吸放熱使壓力的收縮與膨脹得以持續，進而造成初始擾動增幅成穩定振盪。
+
+---
+
+## 研究重要性 — 無活塞史特靈引擎 → 熱聲引擎
+
+引擎（熱機，heat engine）是將熱能轉換成機械功的裝置，可分為內燃機與外燃機。
+
+理論上，運行高效率熱力學循環的熱機之一有史特靈引擎，為外燃機；Alpha 型史特靈熱機的形式如圖 3(a)，以二個相位差 90 度的固體活塞往復運動做功。本研究室主要研究之熱聲引擎亦是外燃機，不同於機械式引擎，是以聲音的振動壓力波形式輸出功；若以聲波的行波成分轉換能量，其熱力學過程可近似於史特靈循環。
+
+由圖 3(a) 可知，在環形構造及蓄熱器、高低溫熱交換器架構下，熱聲引擎可說是精簡曲柄活塞後的史特靈引擎。如圖 3(b)，由微觀視點觀察蓄熱器中往復振動的氣塊，可知因二活塞往復會使壓力振動與位移振動形成 90 度的相位差；意即氣塊的壓力與流速以同相位振動，等同於從冷端傳到熱端的行波聲波。因此，當如圖 3(c) 的行波聲波傳遞於一有軸向溫度梯度的蓄熱器，氣塊便在往復振動過程當中經歷一系列熱力學過程，進而近似於史特靈循環。
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/stirling-vs-thermoacoustic.svg" alt="圖 3(a)：α 型史特靈引擎與行波型熱聲引擎之構造對比" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 3(a)：α 型史特靈引擎（左）與行波型熱聲引擎（右）構造對比 ——
+    後者以聲波代替機械活塞，省去密封滑動部件。
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/stirling-engine-wave.svg" alt="圖 3(b)：機械式史特靈引擎蓄熱器中氣塊之 4 步循環" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 3(b)：機械式史特靈引擎蓄熱器中氣塊之 4 步循環；兩端固體活塞之位移呈現如波般的時序關係，氣塊依序經歷膨脹 → 冷卻 → 壓縮 → 加熱。
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-3xl mx-auto">
+  <img src="/images/research/wavephase.svg" alt="圖 3(c)：行波聲波之壓力與速度同相關係" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 3(c)：行波聲波之壓力 <i>p</i> 與體積流速 <i>U</i> 同相關係 ——
+    史特靈循環之熱力學基礎。
+  </figcaption>
+</figure>
+
+於是，熱聲引擎便可以聲波取代機械式活塞輸出功率，使其構造極為簡單。熱聲引擎可說在根本上解決了傳統機械式史特靈引擎的密封滑動與機械複雜性問題，所以在信賴性和成本上優於機械式引擎，近年在熱效率上亦有不遜於內燃機引擎的報告發表 [1, 2]。
+
+目前以下單位皆積極開發熱聲裝置與相關應用：
+
+- <a href="https://www.lanl.gov/engage/organizations/physical-sciences/materials-physics-applications/quantum/thermoacoustics" target="_blank" rel="noopener noreferrer">美國 Los Alamos 國家實驗室</a>
+- <a href="http://www.ipc.ac.cn/xwzx/kyjz/202405/t20240531_7176727.html" target="_blank" rel="noopener noreferrer">中國科學院低溫工程學重點實驗室</a>
+- <a href="https://www.lihan.com/" target="_blank" rel="noopener noreferrer">中科力函（深圳）熱聲技術有限公司</a>
+- <a href="https://www.etalim.com/" target="_blank" rel="noopener noreferrer">加拿大 Etalim 公司</a>
+- <a href="https://www.soundenergy.nl/" target="_blank" rel="noopener noreferrer">荷蘭 Sound Energy 公司</a>
+- <a href="https://www.thermagix.com/" target="_blank" rel="noopener noreferrer">以色列 Thermagix 公司</a>
+
+---
+
+## 參考文獻
+
+1. Backhaus, S., & Swift, G. W. (1999). A thermoacoustic Stirling heat engine. *Nature*, *399*(6734), 335–338. <a href="https://doi.org/10.1038/20624" target="_blank" rel="noopener noreferrer">doi:10.1038/20624</a>
+
+2. Tijani, M. E. H., & Spoelstra, S. (2011). A high performance thermoacoustic engine. *Journal of Applied Physics*, *110*(9), 093519. <a href="https://doi.org/10.1063/1.3658253" target="_blank" rel="noopener noreferrer">doi:10.1063/1.3658253</a>

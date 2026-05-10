@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
+
+export async function getStaticPaths() {
+  const items = await getCollection("research");
+  return items.map((item) => ({
+    params: { slug: item.slug },
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+const { Content } = await item.render();
+---
+
+<BaseLayout title={item.data.title_zh} description={item.data.summary}>
+  <article class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      {item.data.title_en}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      {item.data.title_zh}
+    </h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 text-lg leading-relaxed text-gray-700">
+      {item.data.summary}
+    </p>
+
+    <div class="mt-12">
+      <Prose>
+        <Content />
+      </Prose>
+    </div>
+
+    <p class="mt-16">
+      <a
+        href="/research"
+        class="text-sm text-brand-700 underline transition hover:text-accent-600"
+        >← 回研究列表</a
+      >
+    </p>
+  </article>
+</BaseLayout>

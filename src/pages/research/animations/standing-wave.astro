@@ -1,0 +1,103 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimation.astro";
+---
+
+<BaseLayout
+  title="動畫 · 駐波型"
+  description="熱聲效應的互動動畫：駐波型熱聲引擎與製冷機之 3 種模式（均溫、製冷、引擎）；氣塊振盪、PV 軌跡、T—x 軌跡同步顯示。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      熱聲機制動畫
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      駐波型 · Standing-Wave Type
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      熱聲效應是「氣塊在溫度梯度中往復振盪」與「氣塊與壁之間相互熱交換」二者耦合結果，依片堆處所施加之軸向溫度梯度有不同模式。以下動畫參考
+      G. W. Swift 與 T. Biwa 熱聲學教科書圖示觀念，可切換均溫、製冷、引擎三種模式，分別觀察阻尼螺旋、逆時針封閉環、順時針封閉環等相空間軌跡。
+    </p>
+  </section>
+
+  <ThermoacousticAnimation />
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">怎麼看這個動畫</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① stack 中的氣塊</h3>
+    <p class="mt-2 text-gray-700">
+      最上方寬條：共鳴管 + 中間 stack（橫線陣列代表 stack 的薄板）。青色長方體即被觀察的氣塊，隨聲波左右移動且體積（壓縮/膨脹）週期性變化。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② 氣塊放大特寫</h3>
+    <p class="mt-2 text-gray-700">
+      右上方框：把氣塊與兩側薄板的局部放大。紅色箭頭表示氣塊與薄板之間的<strong>徑向熱傳</strong>方向與大小（箭頭粗細代表熱通量）。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ 壓力—位移 / 壓力—體積 軌跡</h3>
+    <p class="mt-2 text-gray-700">
+      左上方同時疊兩條軌跡，分別對應兩種讀法：
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li>
+        <strong style="color:#d97706">橙色 <i>p</i>–<i>ξ</i>（壓力—位移）</strong>：環面積 ×
+        <i>ω</i>/(2π) =
+        <strong>聲音強度 <i>I</i></strong>（⟨<i>p</i>·<i>u</i>⟩，氣塊以速度 <i>u</i> = d<i>ξ</i>/d<i>t</i> 振盪）。對應右下 3D 軌道圖底面的投影。
+      </li>
+      <li>
+        <strong style="color:#0e7490">青色虛線 <i>p</i>–<i>V</i>（壓力—體積）</strong>：古典熱力學 PV 圖，環面積 ∮<i>p</i> d<i>V</i> =
+        <strong>一週期之功 <i>W</i></strong>。對熟悉熱機循環的讀者更直觀。
+      </li>
+    </ul>
+    <p class="mt-2 text-gray-700">
+      二者皆順時針封閉（engine）= 熱聲輸出聲功；逆時針（refrigerator）= 外界輸入聲功（泵熱）；退化成線（critical / flat）= 無作用。形狀略有差異是因為位移 <i>ξ</i> 與體積 <i>V</i> 對同一氣塊有不同相位關係（駐波情境下二者非完全同相）。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <i>T</i>—<i>x</i>（溫度—位置）軌跡</h3>
+    <p class="mt-2 text-gray-700">
+      左下方深綠橢圓是氣塊溫度隨位置的軌跡，橘色虛線是壁溫梯度。
+      <strong>橢圓相對虛線的位置</strong>決定徑向熱傳方向：氣塊比壁熱 → 熱往壁傳；氣塊比壁冷 → 熱往氣塊傳。氣塊隨位移在「拿熱、走、放熱」的循環裡把熱從一端搬到另一端 — 這就是熱聲效應作為熱機 / 製冷機的根源。
+    </p>
+    <p class="mt-2 text-gray-700 text-sm">
+      註：此圖在概念上對應 3D 軌道圖的「熵 <i>S</i>—位移 <i>ξ</i> 投影 ≈ <i>Q</i>」，但這裡縱軸用的是 <strong>溫度 <i>T</i></strong> 而非熵 <i>S</i>。對單一氣塊，絕熱過程下 d<i>T</i> 與 d<i>S</i> 成正比，所以軌跡形狀近似；但兩者量綱不同（<i>T</i> 有額外熱容因子），所以環面積 <strong>正比於</strong> 熱流 <i>Q</i> 但不嚴格相等。橢圓顏色刻意用 3D 投影綠（<span style="color:#16a34a">●</span>）的較深變體（<span style="color:#15803d">●</span>），表示「相關但不等同」。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">3 種模式對應的壁溫梯度</h2>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4">模式</th>
+          <th class="py-2 pr-4">壁溫梯度</th>
+          <th class="py-2">物理意義</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">flat 均溫</td>
+          <td class="py-2 pr-4">無</td>
+          <td class="py-2">壁無溫度差，不熱泵也不引擎；氣塊純絕熱振盪</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">refrigerator 製冷</td>
+          <td class="py-2 pr-4">淺</td>
+          <td class="py-2">壁梯度小於氣塊絕熱梯度；外功輸入，泵熱由冷往熱</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">engine 引擎</td>
+          <td class="py-2 pr-4">陡</td>
+          <td class="py-2">壁梯度大於氣塊絕熱梯度；熱往冷流，氣塊輸出聲功</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/research/animations" class="underline hover:text-accent-600">← 回動畫總覽</a>
+      <a href="/research/thermoacoustic-effect" class="underline hover:text-accent-600">熱聲效應總論</a>
+    </p>
+  </section>
+</BaseLayout>

@@ -1,0 +1,150 @@
+<svg width="600" height="850" viewBox="0 0 600 850" xmlns="http://www.w3.org/2000/svg"
+     font-family="'Inter', 'Noto Sans TC', 'PingFang TC', sans-serif">
+  <defs>
+    <linearGradient id="pistonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#333333"/>
+      <stop offset="50%" stop-color="#aaaaaa"/>
+      <stop offset="100%" stop-color="#333333"/>
+    </linearGradient>
+
+    <linearGradient id="expandGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe599"/>
+      <stop offset="100%" stop-color="#f1c232"/>
+    </linearGradient>
+    <linearGradient id="coolGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b6d7a8"/>
+      <stop offset="100%" stop-color="#45818e"/>
+    </linearGradient>
+    <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e6b8af"/>
+      <stop offset="100%" stop-color="#b45f06"/>
+    </linearGradient>
+    <linearGradient id="heatGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6b26b"/>
+      <stop offset="100%" stop-color="#cc0000"/>
+    </linearGradient>
+
+    <g id="regenerator">
+      <line x1="220" y1="-28" x2="220" y2="28" stroke="#1f4e79" stroke-width="2.5" stroke-dasharray="5,3"/>
+      <line x1="228" y1="-28" x2="228" y2="28" stroke="#1f4e79" stroke-width="2.5" stroke-dasharray="5,3"/>
+      <line x1="236" y1="-28" x2="236" y2="28" stroke="#1f4e79" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+      <line x1="304" y1="-28" x2="304" y2="28" stroke="#cc0000" stroke-width="2.5" stroke-dasharray="5,3"/>
+      <line x1="312" y1="-28" x2="312" y2="28" stroke="#cc0000" stroke-width="2.5" stroke-dasharray="5,3"/>
+      <line x1="320" y1="-28" x2="320" y2="28" stroke="#cc0000" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+      <path d="M 244 -28 L 244 28 M 252 -28 L 252 28 M 260 -28 L 260 28 M 268 -28 L 268 28 M 276 -28 L 276 28 M 284 -28 L 284 28 M 292 -28 L 292 28" stroke="black" stroke-width="1.5"/>
+      <path d="M 240 -20 L 296 -20 M 240 -12 L 296 -12 M 240 -4 L 296 -4 M 240 4 L 296 4 M 240 12 L 296 12 M 240 20 L 296 20" stroke="black" stroke-width="1.5"/>
+    </g>
+  </defs>
+
+  <!-- T_C / T_H column titles -->
+  <text x="200" y="44" font-size="28" font-family="serif" font-style="italic" text-anchor="middle">T<tspan font-size="18" dy="6">C</tspan></text>
+  <text x="200" y="74" font-size="14" text-anchor="middle" fill="#475569">cold · 冷端</text>
+  <text x="340" y="44" font-size="28" font-family="serif" font-style="italic" text-anchor="middle">T<tspan font-size="18" dy="6">H</tspan></text>
+  <text x="340" y="74" font-size="14" text-anchor="middle" fill="#475569">hot · 熱端</text>
+
+  <!-- x axis arrow -->
+  <line x1="480" y1="40" x2="550" y2="40" stroke="black" stroke-width="2"/>
+  <polygon points="545,35 555,40 545,45" fill="black"/>
+  <text x="560" y="46" font-size="22" font-family="serif" font-style="italic">x</text>
+
+  <!-- Background highlight bands (preserve from original) -->
+  <rect x="100" y="120" width="300" height="60" fill="#eaeaea"/>
+  <rect x="150" y="270" width="300" height="60" fill="#eaeaea"/>
+  <rect x="200" y="420" width="200" height="60" fill="#eaeaea"/>
+  <rect x="150" y="570" width="200" height="60" fill="#eaeaea"/>
+  <rect x="100" y="720" width="300" height="60" fill="#eaeaea"/>
+
+  <!-- Wave-like envelope curves on left and right -->
+  <path d="M 100 150 C 100 250, 200 350, 200 450 C 200 550, 100 650, 100 750" fill="none" stroke="black" stroke-width="2.5"/>
+  <!-- Right envelope: proper sine wave through (400,150)→(450,300)→(400,450)→(350,600)→(400,750) -->
+  <path d="M 400 150 C 425 200, 450 250, 450 300 C 450 350, 425 400, 400 450 C 375 500, 350 550, 350 600 C 350 650, 375 700, 400 750"
+        fill="none" stroke="black" stroke-width="2.5"/>
+
+  <!-- Frame: step 2 -->
+  <g>
+    <line x1="50" y1="120" x2="520" y2="120" stroke="black" stroke-width="3.5"/>
+    <line x1="50" y1="180" x2="520" y2="180" stroke="black" stroke-width="3.5"/>
+    <rect x="88" y="122" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="88" y1="150" x2="48" y2="150" stroke="black" stroke-width="4"/>
+    <rect x="400" y="122" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="412" y1="150" x2="452" y2="150" stroke="black" stroke-width="4"/>
+    <use href="#regenerator" x="0" y="150"/>
+    <rect x="260" y="142" width="16" height="16" fill="#fae155" stroke="black" stroke-width="1.5"/>
+    <text x="540" y="158" font-size="28" font-family="sans-serif" font-weight="bold">2</text>
+  </g>
+
+  <!-- Frame: step 3 -->
+  <g>
+    <line x1="50" y1="270" x2="520" y2="270" stroke="black" stroke-width="3.5"/>
+    <line x1="50" y1="330" x2="520" y2="330" stroke="black" stroke-width="3.5"/>
+    <rect x="138" y="272" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="138" y1="300" x2="98" y2="300" stroke="black" stroke-width="4"/>
+    <rect x="450" y="272" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="462" y1="300" x2="502" y2="300" stroke="black" stroke-width="4"/>
+    <use href="#regenerator" x="0" y="300"/>
+    <rect x="260" y="292" width="16" height="16" fill="#f4b149" stroke="black" stroke-width="1.5"/>
+    <text x="540" y="308" font-size="28" font-family="sans-serif" font-weight="bold">3</text>
+  </g>
+
+  <!-- Frame: step 4 -->
+  <g>
+    <line x1="50" y1="420" x2="520" y2="420" stroke="black" stroke-width="3.5"/>
+    <line x1="50" y1="480" x2="520" y2="480" stroke="black" stroke-width="3.5"/>
+    <rect x="188" y="422" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="188" y1="450" x2="148" y2="450" stroke="black" stroke-width="4"/>
+    <rect x="400" y="422" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="412" y1="450" x2="452" y2="450" stroke="black" stroke-width="4"/>
+    <use href="#regenerator" x="0" y="450"/>
+    <rect x="236" y="442" width="16" height="16" fill="#58b3e5" stroke="black" stroke-width="1.5"/>
+    <text x="540" y="458" font-size="28" font-family="sans-serif" font-weight="bold">4</text>
+  </g>
+
+  <!-- Frame: step 1 -->
+  <g>
+    <line x1="50" y1="570" x2="520" y2="570" stroke="black" stroke-width="3.5"/>
+    <line x1="50" y1="630" x2="520" y2="630" stroke="black" stroke-width="3.5"/>
+    <rect x="138" y="572" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="138" y1="600" x2="98" y2="600" stroke="black" stroke-width="4"/>
+    <rect x="350" y="572" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="362" y1="600" x2="402" y2="600" stroke="black" stroke-width="4"/>
+    <use href="#regenerator" x="0" y="600"/>
+    <rect x="260" y="592" width="16" height="16" fill="#e27c2f" stroke="black" stroke-width="1.5"/>
+    <text x="540" y="608" font-size="28" font-family="sans-serif" font-weight="bold">1</text>
+  </g>
+
+  <!-- Frame: step 2 (cycle restart) -->
+  <g>
+    <line x1="50" y1="720" x2="520" y2="720" stroke="black" stroke-width="3.5"/>
+    <line x1="50" y1="780" x2="520" y2="780" stroke="black" stroke-width="3.5"/>
+    <rect x="88" y="722" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="88" y1="750" x2="48" y2="750" stroke="black" stroke-width="4"/>
+    <rect x="400" y="722" width="12" height="56" fill="url(#pistonGrad)" stroke="black"/>
+    <line x1="412" y1="750" x2="452" y2="750" stroke="black" stroke-width="4"/>
+    <use href="#regenerator" x="0" y="750"/>
+    <rect x="284" y="742" width="16" height="16" fill="#d72121" stroke="black" stroke-width="1.5"/>
+    <text x="540" y="758" font-size="28" font-family="sans-serif" font-weight="bold">2</text>
+  </g>
+
+  <!-- ── Process transition labels (bilingual) ─────────────────── -->
+  <text x="270" y="210" font-size="22" font-weight="bold" text-anchor="middle">expansion
+    <tspan x="270" dy="20" font-size="16" font-weight="500" fill="#475569">膨脹</tspan>
+  </text>
+  <polygon points="260,250 280,250 280,265 290,265 270,285 250,265 260,265" fill="url(#expandGrad)"/>
+
+  <text x="270" y="360" font-size="22" font-weight="bold" text-anchor="middle">cooling
+    <tspan x="270" dy="20" font-size="16" font-weight="500" fill="#475569">冷卻</tspan>
+  </text>
+  <polygon points="260,400 280,400 280,415 290,415 270,435 250,415 260,415" fill="url(#coolGrad)"/>
+
+  <text x="270" y="510" font-size="22" font-weight="bold" text-anchor="middle">compression
+    <tspan x="270" dy="20" font-size="16" font-weight="500" fill="#475569">壓縮</tspan>
+  </text>
+  <polygon points="260,550 280,550 280,565 290,565 270,585 250,565 260,565" fill="url(#compGrad)"/>
+
+  <text x="270" y="660" font-size="22" font-weight="bold" text-anchor="middle">heating
+    <tspan x="270" dy="20" font-size="16" font-weight="500" fill="#475569">加熱</tspan>
+  </text>
+  <polygon points="260,700 280,700 280,715 290,715 270,735 250,715 260,715" fill="url(#heatGrad)"/>
+</svg>

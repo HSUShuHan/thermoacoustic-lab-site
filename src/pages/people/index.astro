@@ -1,0 +1,185 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
+
+const all = await getCollection("members");
+const byRole = (role: string) =>
+  all
+    .filter((m) => m.data.role === role)
+    .sort((a, b) => a.data.order - b.data.order);
+
+const pi = byRole("pi");
+const postdoc = byRole("postdoc");
+const phd = byRole("phd");
+const ms = byRole("ms");
+const undergrad = byRole("undergrad");
+const ra = byRole("research-assistant");
+const alumni = byRole("alumni");
+
+const roleSections = [
+  { label: "Postdoc", members: postdoc },
+  { label: "Ph.D.", members: phd },
+  { label: "Master's", members: ms },
+  { label: "Undergrad", members: undergrad },
+  { label: "Research Assistant", members: ra },
+];
+---
+
+<BaseLayout
+  title="成員"
+  description="熱聲實驗室成員：PI、研究生、大學部專題生、校友。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">People</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">成員</h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  {
+    pi.map(async (m) => {
+      const { Content } = await m.render();
+      const initial = m.data.name_zh.charAt(0);
+      return (
+        <section class="mt-8 rounded-lg border border-brand-100 bg-brand-50 p-8">
+          <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+            Principal Investigator 指導教授
+          </p>
+          <div class="mt-6 grid gap-8 md:grid-cols-[200px_1fr]">
+            <div>
+              {m.data.photo ? (
+                <img
+                  src={m.data.photo}
+                  alt={`${m.data.name_zh}（焊接熱交換器、整備熱聲引擎實驗裝置）`}
+                  class="h-48 w-48 rounded-lg object-cover ring-1 ring-brand-200"
+                />
+              ) : (
+                <div
+                  class="flex h-48 w-48 items-center justify-center rounded-lg bg-brand-800 text-7xl font-bold text-white ring-1 ring-brand-200"
+                  aria-label={`${m.data.name_zh} 照片佔位`}
+                >
+                  {initial}
+                </div>
+              )}
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-brand-900">
+                {m.data.name_zh}
+                <span class="ml-3 text-base font-normal text-brand-600">
+                  副教授
+                </span>
+              </h2>
+              <p class="mt-1 text-lg text-brand-600">
+                Assoc. Prof. {m.data.name_en}
+              </p>
+              {m.data.affiliation && (
+                <p class="mt-3 text-gray-700">{m.data.affiliation}</p>
+              )}
+              <div class="mt-4 space-y-1 text-sm text-gray-600">
+                {m.data.email && (
+                  <p>
+                    Email:{" "}
+                    <a
+                      href={`mailto:${m.data.email}`}
+                      class="text-accent-600 underline hover:text-accent-700"
+                    >
+                      {m.data.email}
+                    </a>
+                  </p>
+                )}
+                {m.data.orcid && (
+                  <p>
+                    ORCID:{" "}
+                    <a
+                      href={`https://orcid.org/${m.data.orcid}`}
+                      target="_blank"
+                      rel="noopener"
+                      class="text-accent-600 underline hover:text-accent-700"
+                    >
+                      {m.data.orcid}
+                    </a>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 border-t border-brand-200 pt-6">
+            <Prose>
+              <Content />
+            </Prose>
+          </div>
+        </section>
+      );
+    })
+  }
+
+  <section class="mt-16">
+    <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+      Members
+    </p>
+    <h2 class="mt-2 text-2xl font-semibold text-brand-900">團隊成員</h2>
+    {
+      roleSections.every((s) => s.members.length === 0) ? (
+        <p class="mt-4 text-gray-500">
+          團隊成員資料更新中，最新名單將陸續上線。
+        </p>
+      ) : (
+        roleSections.map((s) =>
+          s.members.length > 0 ? (
+            <div class="mt-6">
+              <h3 class="text-lg font-medium text-brand-800">{s.label}</h3>
+              <div class="mt-3 grid gap-3 md:grid-cols-2">
+                {s.members.map((m) => (
+                  <div class="rounded-lg border border-brand-100 p-4 transition hover:border-brand-300">
+                    <p class="font-medium text-brand-900">
+                      {m.data.name_zh}{" "}
+                      <span class="text-sm text-brand-500">
+                        {m.data.name_en}
+                      </span>
+                    </p>
+                    {m.data.interests.length > 0 && (
+                      <p class="mt-1 text-sm text-gray-600">
+                        {m.data.interests.join("、")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null,
+        )
+      )
+    }
+  </section>
+
+  {
+    alumni.length > 0 && (
+      <section class="mt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Alumni
+        </p>
+        <h2 class="mt-2 text-2xl font-semibold text-brand-900">校友</h2>
+        <div class="mt-6 grid gap-3 md:grid-cols-2">
+          {alumni.map((m) => (
+            <div class="rounded-lg border border-brand-100 p-4">
+              <p class="font-medium text-brand-900">
+                {m.data.name_zh}{" "}
+                <span class="text-sm text-brand-500">{m.data.name_en}</span>
+              </p>
+              {m.data.graduated && (
+                <p class="mt-1 text-sm text-brand-500">
+                  畢業 {m.data.graduated}
+                </p>
+              )}
+              {m.data.current_position && (
+                <p class="mt-1 text-sm text-gray-700">
+                  {m.data.current_position}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

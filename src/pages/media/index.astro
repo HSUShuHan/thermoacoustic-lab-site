@@ -1,0 +1,93 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+
+const allVideos = await getCollection("videos");
+// Sort: by `order` first, then by year desc
+const videos = allVideos.sort((a, b) => {
+  if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+  return (b.data.year ?? 0) - (a.data.year ?? 0);
+});
+
+// Build a slug→publication map so we can show "related paper" links cheaply
+const pubs = await getCollection("publications");
+const pubBySlug = new Map(pubs.map((p) => [p.slug, p]));
+---
+
+<BaseLayout
+  title="影像紀錄"
+  description="熱聲實驗室實驗影像、動畫紀錄。對應論文之 YouTube 影片彙整。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Media</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      影像紀錄
+    </h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+  </section>
+
+  <section class="mt-8 grid gap-8 md:grid-cols-2">
+    {
+      videos.map((v) => {
+        const pub = v.data.related_pub
+          ? pubBySlug.get(v.data.related_pub)
+          : null;
+        const journalUrl = pub
+          ? pub.data.url ||
+            (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
+          : null;
+        return (
+          <article id={v.slug} class="scroll-mt-24 overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm">
+            <div class="relative aspect-video w-full bg-black">
+              <iframe
+                class="absolute inset-0 h-full w-full"
+                src={`https://www.youtube-nocookie.com/embed/${v.data.youtube_id}`}
+                title={v.data.title_zh ?? v.data.title}
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              />
+            </div>
+            <div class="p-5">
+              {v.data.year && (
+                <p class="text-xs uppercase tracking-widest text-brand-500">
+                  {v.data.year}
+                </p>
+              )}
+              <h2 class="mt-1 text-lg font-semibold leading-snug text-brand-900">
+                {v.data.title_zh ?? v.data.title}
+              </h2>
+              {v.data.title_zh && v.data.title && (
+                <p class="mt-1 text-sm italic text-gray-500">{v.data.title}</p>
+              )}
+              {v.data.description && (
+                <p class="mt-3 text-sm text-gray-700">{v.data.description}</p>
+              )}
+              {pub && (
+                <p class="mt-4 text-sm">
+                  <span class="text-brand-600">對應論文：</span>
+                  {journalUrl ? (
+                    <a
+                      href={journalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-accent-600 underline transition hover:text-accent-700"
+                    >
+                      {pub.data.venue_short ?? pub.data.venue} ({pub.data.year})
+                      <span class="ml-0.5 text-xs">↗</span>
+                    </a>
+                  ) : (
+                    <span class="text-gray-700">
+                      {pub.data.venue_short ?? pub.data.venue} ({pub.data.year})
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+          </article>
+        );
+      })
+    }
+  </section>
+</BaseLayout>

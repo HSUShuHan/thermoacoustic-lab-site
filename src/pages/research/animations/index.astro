@@ -1,0 +1,68 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="動畫"
+  description="熱聲機制互動動畫總覽：駐波型熱聲引擎與製冷機；行波型 Stirling 熱聲引擎（規劃中）。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      熱聲機制動畫
+    </h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      熱聲效應為「氣塊在溫度梯度中往復振盪」與「氣塊與壁之間相互熱交換」二者耦合結果。實驗室建構互動動畫對照
+      <strong>駐波型</strong>（standing-wave）與<strong>行波型</strong>（traveling-wave）兩大典範，幫助理解氣塊在不同聲學配置下的循環行為。
+    </p>
+  </section>
+
+  <section class="mt-8 grid gap-6 md:grid-cols-2">
+    <a
+      href="/research/animations/standing-wave"
+      class="block rounded-lg border border-brand-100 p-6 transition hover:border-brand-800 hover:shadow-md"
+    >
+      <p>
+        <span
+          class="rounded bg-accent-50 px-2 py-0.5 text-xs font-medium text-accent-700"
+        >
+          已上線
+        </span>
+      </p>
+      <h2 class="mt-2 text-2xl font-semibold text-brand-900">駐波型</h2>
+      <p class="mt-1 text-sm text-brand-500">Standing-Wave Type</p>
+      <p class="mt-3 text-gray-700">
+        氣塊振盪、PV 軌跡、T—x 軌跡、3D 軌道同步顯示；可切換 3 種壁溫梯度模式（均溫、製冷、引擎），看裝置從「無作用」變成製冷機、再到引擎。
+      </p>
+      <p class="mt-4 text-sm font-medium text-accent-600">進入動畫 →</p>
+    </a>
+
+    <div
+      class="block cursor-not-allowed rounded-lg border border-dashed border-brand-200 bg-brand-50/50 p-6 opacity-75"
+    >
+      <p>
+        <span
+          class="rounded bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700"
+        >
+          建置中
+        </span>
+      </p>
+      <h2 class="mt-2 text-2xl font-semibold text-brand-900">行波型</h2>
+      <p class="mt-1 text-sm text-brand-500">Traveling-Wave Type · TASHE</p>
+      <p class="mt-3 text-gray-700">
+        行波型 Stirling 熱聲引擎（thermoacoustic-Stirling
+        hybrid，TASHE）動畫，呈現 regenerator 中氣塊之 isothermal
+        Stirling 循環、loop 拓樸與 <i>p</i>–<i>u</i>
+        同相關係。物理與視覺仍在調教中。
+      </p>
+      <p class="mt-4 text-sm text-gray-500">敬請期待</p>
+    </div>
+  </section>
+
+  <p class="mt-12 text-sm text-gray-500">
+    ← <a href="/research/thermoacoustic-effect" class="underline hover:text-accent-600">回熱聲效應總論</a>
+  </p>
+</BaseLayout>

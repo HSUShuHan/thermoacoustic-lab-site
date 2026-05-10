@@ -8,6 +8,26 @@
   --font-mono:
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
+
+  /* Brand — deep navy, primary identity */
+  --color-brand-50: #f0f4f8;
+  --color-brand-100: #d9e2ec;
+  --color-brand-200: #bcccdc;
+  --color-brand-300: #9fb3c8;
+  --color-brand-400: #627d98;
+  --color-brand-500: #486581;
+  --color-brand-600: #334e68;
+  --color-brand-700: #243b53;
+  --color-brand-800: #1e3a5f;
+  --color-brand-900: #102a43;
+
+  /* Accent — warm red, "thermo / 火焰" highlight */
+  --color-accent-50: #fef2f2;
+  --color-accent-100: #fde8e8;
+  --color-accent-400: #ef4444;
+  --color-accent-500: #e63946;
+  --color-accent-600: #d62828;
+  --color-accent-700: #b91c1c;
 }
 
 html {
@@ -17,4 +37,33 @@ html {
 body {
   @apply bg-white text-gray-900 antialiased;
   font-family: var(--font-sans);
+}
+
+::selection {
+  background-color: var(--color-brand-100);
+  color: var(--color-brand-900);
+}
+
+/* Default link color in content prose */
+.content-prose a {
+  color: var(--color-accent-600);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent-600);
+  text-underline-offset: 3px;
+}
+
+.content-prose a:hover {
+  color: var(--color-accent-700);
+}
+
+/* Decorative red ribbon for hero accents (2020 mockup language) */
+.ribbon::before {
+  content: "";
+  display: inline-block;
+  width: 2.5rem;
+  height: 0.25rem;
+  background-color: var(--color-accent-500);
+  vertical-align: middle;
+  margin-right: 0.75rem;
+  transform: translateY(-2px);
 }
