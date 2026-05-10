@@ -16,6 +16,11 @@ export default defineConfig({
     },
   },
   integrations: [mdx(), icon(), sitemap()],
+  redirects: {
+    "/home": "/",
+    "/index.php": "/",
+    "/wp-admin": "/",
+  },
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
