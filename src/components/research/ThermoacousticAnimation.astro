@@ -2,18 +2,122 @@
 // Standing-wave thermoacoustic 4-mode animation
 // Physics 1:1 ported from G. W. Swift's `standing.py` (LANL bookAnimations 2015)
 // LANL Disclaimer: LA-UR 99-895; permission granted to copy/use with notice + authorship reproduced
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const isEn = lang === "en";
+
+// Bilingual labels. The animation has 30+ Chinese strings inside the SVG and
+// in the inline JS; consolidate them here so the rest of the file just reads
+// from `L.*`.
+const L = isEn
+  ? {
+      mode_select: "Mode selection",
+      tab_flat: "(f)lat uniform",
+      tab_refrigerator: "(r)efrigerator",
+      tab_critical: "(c)ritical",
+      tab_engine: "(e)ngine",
+      title: "Standing-wave thermoacoustic mechanism · 4-mode animation",
+      desc: "A gas parcel oscillates inside the stack; the figure simultaneously displays the parcel pressure–volume (PV) trajectory, the temperature–position (T–x) trajectory, and the wall temperature gradient. Three modes can be switched: uniform, refrigerator, and engine.",
+      initial_perturbation: "Initial perturbation",
+      mech_work_in: "Mechanical work input →",
+      stack_header: "Resonator + stack",
+      stack_arrow: "↓ stack",
+      panel_c: "(c) Gas-parcel close-up (red arrows = radial heat transfer direction)",
+      panel_b: "(b) Gas-parcel p–ξ / p–V trajectory",
+      legend_I: "(acoustic intensity)",
+      legend_W: "(work per cycle)",
+      axis_pressure: "Pressure",
+      axis_xi_or_V: "Displacement / Volume (normalized)",
+      panel_d: "(d) Gas-parcel T–x (temperature–position) trajectory",
+      panel_d_note1: "Similar to the 3D S–ξ projection: temperature in place of entropy",
+      panel_d_note2:
+        "(under adiabatic conditions d≡dS; loop area ∝ Q but dimensions differ)",
+      axis_temperature: "Temperature",
+      axis_displacement: "Displacement",
+      wall_gradient: "Wall T gradient",
+      panel_e: "(e) Gas-parcel (p, S, ξ) 3D orbit",
+      panel_e_note: "Projected loop area × ω/(2π) = I (acoustic intensity), Q (heat flux), w (work source)",
+      axis_entropy: "Entropy",
+      proj_pxi: "projection",
+      proj_sxi: "projection",
+      proj_sp: "projection",
+      caption_title: "Standing-wave thermoacoustic mechanism (4 modes)",
+      caption_body:
+        "A cyan gas parcel oscillates inside the stack. The top-left p–ξ / p–V panel overlays two trajectories: orange p–ξ (acoustic intensity I) and dashed cyan p–V (work per cycle W). The bottom-left T–x panel shows the parcel's temperature–position ellipse; the orange dashed line is the wall temperature gradient. The bottom-right 3D orbit panel synchronizes (p, S, ξ) and its three 2D projections.",
+      attribution_pre: "Animation concepts based partially on G. W. Swift, ",
+      attribution_book_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_post:
+        "; physics parameters follow LANL bookAnimations' standing.py (Los Alamos National Laboratory). The 3D-orbit concept is taken from T. Biwa, Introduction to Thermoacoustic Devices (Springer, 2023). This implementation is a native browser remake under the respective licenses.",
+      stack_title_flat: "(a) Resonator + stack · uniform mode (no wall T gradient)",
+      stack_title_refrigerator: "(a) Resonator + stack + left-end crank piston · refrigerator mode",
+      stack_title_critical: "(a) Resonator + stack · critical mode (gradient equals parcel adiabatic)",
+      stack_title_engine: "(a) Resonator + stack · engine mode (∇T > 0, hot right / cold left)",
+    }
+  : {
+      mode_select: "模式選擇",
+      tab_flat: "(f)lat 均溫",
+      tab_refrigerator: "(r)efrigerator 製冷",
+      tab_critical: "(c)ritical 臨界",
+      tab_engine: "(e)ngine 引擎",
+      title: "駐波型熱聲機制 4 模式動畫",
+      desc: "氣塊在 stack 中往復振盪；同步顯示氣塊壓力—體積（PV）軌跡、氣塊溫度—位置（T—x）軌跡，及壁溫梯度。可切換 3 種模式：均溫、製冷、引擎。",
+      initial_perturbation: "初始擾動",
+      mech_work_in: "機械功輸入 →",
+      stack_header: "共鳴管 + 片堆",
+      stack_arrow: "↓ 片堆 (stack)",
+      panel_c: "(c) 氣塊放大特寫（紅箭頭 = 徑向熱傳方向）",
+      panel_b: "(b) 氣塊 壓力–位移 / 壓力–體積 軌跡",
+      legend_I: "（聲音強度）",
+      legend_W: "（一週期之功）",
+      axis_pressure: "壓力",
+      axis_xi_or_V: "位移 / 體積（歸一化）",
+      panel_d: "(d) 氣塊 溫度–位置（T–x）軌跡",
+      panel_d_note1: "形似 3D 熵（S）–位移（ξ）投影：以溫度替代熵",
+      panel_d_note2: "（絕熱時 dT ∝ dS，環面積 ∝ Q 但量綱不同）",
+      axis_temperature: "溫度",
+      axis_displacement: "位移",
+      wall_gradient: "壁溫梯度",
+      panel_e: "(e) 氣塊 (p, S, ξ) 3D 軌道",
+      panel_e_note: "投影面積 × ω/(2π) = I（聲音強度）, Q（熱流）, w（功源）",
+      axis_entropy: "熵",
+      proj_pxi: "投影",
+      proj_sxi: "投影",
+      proj_sp: "投影",
+      caption_title: "駐波型熱聲機制（4 模式）",
+      caption_body:
+        "氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 p–ξ（聲音強度 I 之概念）與青色虛線 p–V（一週期之功 W）。左下「T—x 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（p, S, ξ）三量之同步軌跡及其三個 2D 投影同時呈現。",
+      attribution_pre: "Swift 動畫部分概念基於 G. W. Swift, ",
+      attribution_book_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_post:
+        "，物理參數沿用 LANL bookAnimations 之 standing.py（Los Alamos National Laboratory）。3D 軌道圖之概念取自 T. Biwa, Introduction to Thermoacoustic Devices (Springer, 2023)。本實作為網頁原生重製，依各方授權聲明使用。",
+      stack_title_flat: "(a) 共鳴管 + 片堆 · 均溫模式（無壁溫梯度）",
+      stack_title_refrigerator: "(a) 共鳴管 + 片堆 + 左端曲柄活塞 · 製冷模式",
+      stack_title_critical: "(a) 共鳴管 + 片堆 · 臨界模式（梯度恰等於氣塊絕熱）",
+      stack_title_engine: "(a) 共鳴管 + 片堆 · 引擎模式（∇T > 0，右熱左冷）",
+    };
 ---
 
-<figure class="ta-anim not-prose" data-mode="engine">
-  <div class="ta-tabs" role="tablist" aria-label="模式選擇">
-    <button type="button" data-mode="flat" role="tab">(f)lat 均溫</button>
+<figure
+  class="ta-anim not-prose"
+  data-mode="engine"
+  data-lang={lang}
+  data-stack-flat={L.stack_title_flat}
+  data-stack-refrigerator={L.stack_title_refrigerator}
+  data-stack-critical={L.stack_title_critical}
+  data-stack-engine={L.stack_title_engine}
+>
+  <div class="ta-tabs" role="tablist" aria-label={L.mode_select}>
+    <button type="button" data-mode="flat" role="tab">{L.tab_flat}</button>
     <button type="button" data-mode="refrigerator" role="tab">
-      (r)efrigerator 製冷
+      {L.tab_refrigerator}
     </button>
     {/* Critical mode 已封存：對初學者門檻較高（需理解 ∇T_crit）。代碼保留，
         UI tab 隱藏；keyboard `c` shortcut 也保留以便除錯。 */}
     {/* <button type="button" data-mode="critical" role="tab">
-      (c)ritical 臨界
+      {L.tab_critical}
     </button> */}
     <button
       type="button"
@@ -22,7 +126,7 @@
       aria-selected="true"
       class="active"
     >
-      (e)ngine 引擎
+      {L.tab_engine}
     </button>
   </div>
 
@@ -32,10 +136,8 @@
     role="img"
     aria-labelledby="ta-title ta-desc"
   >
-    <title id="ta-title">駐波型熱聲機制 4 模式動畫</title>
-    <desc id="ta-desc">
-      氣塊在 stack 中往復振盪；同步顯示氣塊壓力—體積（PV）軌跡、氣塊溫度—位置（T—x）軌跡，及壁溫梯度。可切換 3 種模式：均溫、製冷、引擎。
-    </desc>
+    <title id="ta-title">{L.title}</title>
+    <desc id="ta-desc">{L.desc}</desc>
 
     <defs>
       <marker
@@ -141,7 +243,7 @@
           font-size="10"
           fill="#475569"
           text-anchor="middle"
-          font-weight="500">初始擾動</text>
+          font-weight="500">{L.initial_perturbation}</text>
       </g>
 
       <!-- Slider-crank piston assembly (refrigerator mode only).
@@ -221,7 +323,7 @@
           font-size="10"
           font-weight="600"
           fill="#16a34a"
-          text-anchor="middle">機械功輸入 →</text>
+          text-anchor="middle">{L.mech_work_in}</text>
       </g>
 
       <!-- Stack region (between velocity & pressure node), x ≈ 460..620
@@ -271,9 +373,9 @@
         font-size="12"
         fill="#1e3a5f"
         text-anchor="middle"
-        font-weight="600">共鳴管 + 中段片堆</text>
+        font-weight="600">{L.stack_header}</text>
       <text x="530" y="-12" font-size="10" fill="#475569" text-anchor="middle">
-        ↓ 片堆 (stack)
+        {L.stack_arrow}
       </text>
     </g>
 
@@ -327,7 +429,7 @@
         rx="4"></rect>
 
       <text x="140" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
-        (c) 氣塊放大特寫（紅箭頭 = 徑向熱傳方向）
+        {L.panel_c}
       </text>
     </g>
 
@@ -337,12 +439,12 @@
          · p–V (cyan dashed)     — classical thermo PV-loop, 環面積 = 功. -->
     <g id="ta-pv" transform="translate(20, 230)">
       <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
-        (b) 氣塊 壓力–位移 / 壓力–體積 軌跡
+        {L.panel_b}
       </text>
       <text x="120" y="-12" font-size="9" text-anchor="middle">
-        <tspan fill="#d97706">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">ξ</tspan> × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>（聲音強度）</tspan>
+        <tspan fill="#d97706">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">ξ</tspan> × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>{L.legend_I}</tspan>
         <tspan fill="#475569"> · </tspan>
-        <tspan fill="#0e7490">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">V</tspan> = <tspan font-style="italic">W</tspan>（一週期之功）</tspan>
+        <tspan fill="#0e7490">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">V</tspan> = <tspan font-style="italic">W</tspan>{L.legend_W}</tspan>
       </text>
       <!-- Axes (with arrowheads) -->
       <line x1="0" y1="170" x2="0" y2="0" stroke="#1e3a5f" stroke-width="2"
@@ -356,9 +458,9 @@
         fill="#1e3a5f"
         text-anchor="middle"
         font-weight="500"
-        transform="rotate(-90 -18 85)">壓力 <tspan font-style="italic">p</tspan></text>
+        transform="rotate(-90 -18 85)">{L.axis_pressure} <tspan font-style="italic">p</tspan></text>
       <text x="120" y="190" font-size="11" fill="#1e3a5f" text-anchor="middle"
-        >位移 <tspan font-style="italic">ξ</tspan> / 體積 <tspan font-style="italic">V</tspan>（歸一化）</text>
+        >{isEn ? "Displacement" : "位移"} <tspan font-style="italic">ξ</tspan> / {isEn ? "Volume" : "體積"} <tspan font-style="italic">V</tspan> {isEn ? "(normalized)" : "（歸一化）"}</text>
 
       <!-- p–ξ filled cycle (orange) — primary trace = I projection -->
       <path
@@ -400,13 +502,13 @@
     <!-- ═══════════ Panel 4: T-x diagram ═══════════ -->
     <g id="ta-tx" transform="translate(20, 490)">
       <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
-        (d) 氣塊 溫度–位置（<tspan font-style="italic">T</tspan>–<tspan font-style="italic">x</tspan>）軌跡
+        {L.panel_d}
       </text>
       <text x="120" y="-12" font-size="9" fill="#15803d" text-anchor="middle">
-        形似 3D 熵（<tspan font-style="italic">S</tspan>）–位移（<tspan font-style="italic">ξ</tspan>）投影：以溫度替代熵
+        {L.panel_d_note1}
       </text>
       <text x="120" y="-2" font-size="9" fill="#475569" text-anchor="middle">
-        （絕熱時 d<tspan font-style="italic">T</tspan> ∝ d<tspan font-style="italic">S</tspan>，環面積 ∝ <tspan font-style="italic">Q</tspan> 但量綱不同）
+        {L.panel_d_note2}
       </text>
       <!-- Axes (240 wide × 200 tall — taller so panel matches Biwa height) -->
       <line x1="0" y1="200" x2="0" y2="0" stroke="#1e3a5f" stroke-width="2"
@@ -420,9 +522,9 @@
         fill="#1e3a5f"
         text-anchor="middle"
         font-weight="500"
-        transform="rotate(-90 -18 100)">溫度 <tspan font-style="italic">T</tspan></text>
+        transform="rotate(-90 -18 100)">{L.axis_temperature} <tspan font-style="italic">T</tspan></text>
       <text x="120" y="220" font-size="11" fill="#1e3a5f" text-anchor="middle"
-        >位移 <tspan font-style="italic">ξ</tspan></text>
+        >{L.axis_displacement} <tspan font-style="italic">ξ</tspan></text>
 
       <!-- Wall (plate) temperature gradient — orange. -->
       <line
@@ -441,7 +543,7 @@
         font-size="10"
         font-weight="500"
         fill="#ea580c"
-        text-anchor="start">壁溫梯度</text>
+        text-anchor="start">{L.wall_gradient}</text>
 
       <!-- Gas temperature ellipse / loop trace.
            Color: a darker variant of the Q-projection green (#16a34a) — close
@@ -467,14 +569,14 @@
         fill="#1e3a5f"
         text-anchor="middle"
         font-weight="600"
-        >(e) 氣塊 (<tspan font-style="italic">p</tspan>, <tspan font-style="italic">S</tspan>, <tspan font-style="italic">ξ</tspan>) 3D 軌道</text>
+        >{L.panel_e}</text>
       <text
         x="180"
         y="-12"
         font-size="9"
         fill="#475569"
         text-anchor="middle"
-        >投影面積 × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>（聲音強度）, <tspan font-style="italic">Q</tspan>（熱流）, <tspan font-style="italic">w</tspan>（功源）</text>
+        >{L.panel_e_note}</text>
 
       <!-- 3D box wireframe + axis arrows + ellipse + dot. JS draws into these. -->
       <g id="ta-biwa-box" stroke="#1e3a5f" fill="none"></g>
@@ -528,7 +630,7 @@
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">壓力 <tspan font-style="italic">p</tspan></text>
+        text-anchor="middle">{L.axis_pressure} <tspan font-style="italic">p</tspan></text>
       <text
         id="ta-biwa-label-s"
         x="0"
@@ -536,7 +638,7 @@
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">熵 <tspan font-style="italic">S</tspan></text>
+        text-anchor="middle">{L.axis_entropy} <tspan font-style="italic">S</tspan></text>
       <text
         id="ta-biwa-label-xi"
         x="0"
@@ -544,34 +646,27 @@
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">位移 <tspan font-style="italic">ξ</tspan></text>
+        text-anchor="middle">{L.axis_displacement} <tspan font-style="italic">ξ</tspan></text>
 
       <!-- Vertical legend on the right side of the cube. -->
       <g transform="translate(255, 60)">
         <line x1="0" y1="0" x2="18" y2="0" stroke="#d97706" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="4" font-size="10" fill="#1e3a5f"><tspan font-style="italic">p</tspan>–<tspan font-style="italic">ξ</tspan> 投影 = <tspan font-weight="600" font-style="italic" fill="#d97706">I</tspan></text>
+        <text x="24" y="4" font-size="10" fill="#1e3a5f"><tspan font-style="italic">p</tspan>–<tspan font-style="italic">ξ</tspan> {L.proj_pxi} = <tspan font-weight="600" font-style="italic" fill="#d97706">I</tspan></text>
         <line x1="0" y1="22" x2="18" y2="22" stroke="#16a34a" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="26" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">ξ</tspan> 投影 ≈ <tspan font-weight="600" font-style="italic" fill="#16a34a">Q</tspan></text>
+        <text x="24" y="26" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">ξ</tspan> {L.proj_sxi} ≈ <tspan font-weight="600" font-style="italic" fill="#16a34a">Q</tspan></text>
         <line x1="0" y1="44" x2="18" y2="44" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="48" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">p</tspan> 投影 = <tspan font-weight="600" font-style="italic" fill="#7c3aed">w</tspan></text>
+        <text x="24" y="48" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">p</tspan> {L.proj_sp} = <tspan font-weight="600" font-style="italic" fill="#7c3aed">w</tspan></text>
       </g>
     </g>
   </svg>
 
   <figcaption class="ta-caption">
     <p>
-      <strong>圖：駐波型熱聲機制（4 模式）</strong>
-      氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 <i>p</i>–<i>ξ</i>（聲音強度 <i>I</i> 之概念）與青色虛線 <i>p</i>–<i>V</i>（一週期之功 <i>W</i>）。左下「<i>T</i>—<i>x</i> 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（<i>p</i>, <i>S</i>, <i>ξ</i>）三量之同步軌跡及其三個 2D 投影同時呈現。
+      <strong>{isEn ? "Figure: " : "圖："}{L.caption_title}</strong>
+      {L.caption_body}
     </p>
     <p class="ta-attrib">
-      Swift 動畫部分概念基於 G. W. Swift, <em
-        >Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators</em
-      >，物理參數沿用 LANL bookAnimations 之
-      <code>standing.py</code>
-      （LA-UR 99-895；Condensed Matter and Thermal Physics Group, Los Alamos National
-      Laboratory）。3D 軌道圖之概念取自 T. Biwa,
-      <em>Introduction to Thermoacoustic Devices</em>（World Scientific, 2017）, Fig 6.2。
-      本實作為網頁原生重製，依各方授權聲明使用。
+      {L.attribution_pre}<em>{L.attribution_book_title}</em>{L.attribution_post}
     </p>
   </figcaption>
 </figure>
@@ -1010,11 +1105,13 @@
     }
 
     const stackTitle = root.querySelector<SVGTextElement>("#ta-stack-title")!;
+    // Mode titles are rendered server-side into data-stack-* attributes by the
+    // bilingual frontmatter so we can stay locale-aware without re-loading JS.
     const titleByMode: Record<Mode, string> = {
-      flat: "(a) 共鳴管 + 中段片堆 · 均溫模式（無壁溫梯度）",
-      refrigerator: "(a) 共鳴管 + 中段片堆 + 左端曲柄活塞 · 製冷模式",
-      critical: "(a) 共鳴管 + 中段片堆 · 臨界模式（梯度恰等於氣塊絕熱）",
-      engine: "(a) 共鳴管 + 中段片堆 · 引擎模式（∇T > 0，右熱左冷）",
+      flat: root.dataset.stackFlat ?? "",
+      refrigerator: root.dataset.stackRefrigerator ?? "",
+      critical: root.dataset.stackCritical ?? "",
+      engine: root.dataset.stackEngine ?? "",
     };
 
     function applyMode(newMode: Mode) {
