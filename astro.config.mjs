@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import icon from "astro-icon";
 import tailwindcss from "@tailwindcss/vite";
 import remarkMath from "remark-math";
@@ -14,7 +15,7 @@ export default defineConfig({
       prefixDefaultLocale: false,
     },
   },
-  integrations: [mdx(), icon()],
+  integrations: [mdx(), icon(), sitemap()],
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],

@@ -29,3 +29,9 @@ pnpm-debug.log*
 
 # misc
 *.log
+
+# Legacy WP export + ORCID dumps (local-only reference data)
+_legacy/
+
+# SVG conversion backups (kept locally for rollback, not for git)
+*.svg.bak
