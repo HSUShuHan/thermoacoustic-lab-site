@@ -318,6 +318,14 @@ const heroNews = (await getCollection("news"))
             const journalUrl =
               p.data.url ||
               (p.data.doi ? `https://doi.org/${p.data.doi}` : null);
+            const q = p.data.ranking ?? "";
+            const qColor = q.startsWith("Q1")
+              ? "bg-emerald-50 text-emerald-700"
+              : q.startsWith("Q2")
+                ? "bg-sky-50 text-sky-700"
+                : q.startsWith("Q3")
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-gray-100 text-gray-700";
             const inner = (
               <>
                 <p class="text-sm text-brand-500">{p.data.year}</p>
@@ -330,6 +338,25 @@ const heroNews = (await getCollection("news"))
                   )}
                 </p>
                 <p class="mt-1 text-sm italic text-gray-600">{p.data.venue}</p>
+                {p.data.type === "journal" && (
+                  <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                    {p.data.impact_factor !== undefined && (
+                      <span class="rounded bg-brand-50 px-2 py-0.5 font-medium text-brand-700">
+                        IF {p.data.impact_factor}
+                      </span>
+                    )}
+                    {p.data.ranking && (
+                      <span class:list={["rounded px-2 py-0.5 font-medium", qColor]}>
+                        {p.data.ranking}
+                      </span>
+                    )}
+                    {p.data.not_indexed && (
+                      <span class="rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
+                        無 IF（not indexed）
+                      </span>
+                    )}
+                  </div>
+                )}
               </>
             );
             return (
