@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 760" font-family="'Noto Sans TC', 'Inter', sans-serif" fill="#1f2937">
+  <defs>
+    <!-- Pink-to-white vertical gradient: hot/dense near wall (bottom) → faded at top -->
+    <linearGradient id="tbl-gradient" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#f7b4af" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#f7b4af" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#f7b4af" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Diagonal hatching pattern for the solid wall -->
+    <pattern id="hatch" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="20" stroke="#1f2937" stroke-width="2"/>
+    </pattern>
+    <!-- Arrowhead for vertical δα axis -->
+    <marker id="arrow-up" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M 0 10 L 5 0 L 10 10 z" fill="#1f2937"/>
+    </marker>
+    <!-- Arrowhead for double-sided oscillation arrows -->
+    <marker id="arrow-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f2937"/>
+    </marker>
+    <marker id="arrow-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 10 0 L 0 5 L 10 10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+
+  <!-- ============ Background thermal boundary gradient over the whole figure ============ -->
+  <rect x="0" y="0" width="1400" height="680" fill="url(#tbl-gradient)"/>
+
+  <!-- ============ Bottom solid wall (hatched) ============ -->
+  <rect x="0" y="640" width="1400" height="60" fill="url(#hatch)"/>
+  <rect x="0" y="640" width="1400" height="60" fill="#f7b4af" fill-opacity="0.4"/>
+  <line x1="0" y1="640" x2="1400" y2="640" stroke="#1f2937" stroke-width="3"/>
+
+  <!-- 固體壁 label centered on wall (with bg box) -->
+  <rect x="620" y="660" width="170" height="40" fill="#1f2937"/>
+  <text x="705" y="688" font-size="22" font-weight="600" fill="white" text-anchor="middle">固體壁</text>
+  <text x="705" y="722" font-size="16" font-style="italic" fill="#475569" text-anchor="middle">solid wall</text>
+
+  <!-- ============ δα boundary-layer arrow on left ============ -->
+  <line x1="80" y1="640" x2="80" y2="280" stroke="#1f2937" stroke-width="3" marker-end="url(#arrow-up)"/>
+  <text x="110" y="430" font-size="32" font-weight="500">溫度邊界層</text>
+  <text x="110" y="458" font-size="20" font-style="italic" fill="#475569">thermal boundary layer</text>
+  <text x="170" y="510" font-size="34" font-style="italic">
+    δ<tspan font-size="24" baseline-shift="sub">α</tspan>
+  </text>
+
+  <!-- ============ Top region: 絕熱可逆過程 (adiabatic reversible) ============ -->
+  <text x="700" y="120" font-size="34" font-weight="500" text-anchor="middle">絕熱可逆過程</text>
+  <text x="700" y="150" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">adiabatic reversible process</text>
+  <!-- control volume box (dashed, near top-right) -->
+  <g transform="translate(1110 100)">
+    <rect x="-40" y="-35" width="80" height="70" fill="none" stroke="#1f2937" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <!-- oscillation double-arrow inside -->
+    <line x1="-65" y1="0" x2="65" y2="0" stroke="#1f2937" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+    <!-- leader + label below -->
+    <path d="M -10 38 Q -30 65 -80 80" fill="none" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="-90" y="92" font-size="20" text-anchor="end">往復振動微小控制體積</text>
+    <text x="-90" y="112" font-size="14" font-style="italic" fill="#475569" text-anchor="end">oscillating differential control volume</text>
+  </g>
+
+  <!-- ============ Middle region: 不可逆過程 (irreversible) ============ -->
+  <text x="700" y="340" font-size="34" font-weight="500" text-anchor="middle">不可逆過程</text>
+  <text x="700" y="370" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">irreversible process</text>
+
+  <!-- ============ Lower region: 等溫可逆過程 (isothermal reversible) ============ -->
+  <text x="700" y="550" font-size="34" font-weight="500" text-anchor="middle">等溫可逆過程</text>
+  <text x="700" y="580" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">isothermal reversible process</text>
+  <!-- control volume box (dashed, near wall) -->
+  <g transform="translate(1110 580)">
+    <rect x="-40" y="-30" width="80" height="60" fill="none" stroke="#1f2937" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <line x1="-65" y1="0" x2="65" y2="0" stroke="#1f2937" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+  </g>
+</svg>

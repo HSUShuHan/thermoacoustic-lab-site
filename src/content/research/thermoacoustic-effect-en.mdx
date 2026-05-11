@@ -84,6 +84,30 @@ This sentence captures the essence of the thermoacoustic mechanism.
 
 Figure 2 makes the picture concrete. A row of gas parcels sits inside a channel; the steep positive axial temperature gradient imposed on the channel is shown by the red-to-blue gradient. When a parcel is perturbed, it absorbs heat from the wall at the hot side and releases heat at the cold side. Because heat absorption sustains compression / expansion across the back-and-forth motion, the initial perturbation grows into a stable oscillation.
 
+For this back-and-forth heat exchange to actually drive the cycle, the gas parcel and the channel wall must operate in the right heat-transfer regime. The crucial ratio is **thermal-boundary-layer thickness $\delta_\alpha$** versus **channel radius $r$**:
+
+<figure class="my-8 max-w-4xl mx-auto">
+  <img src="/images/research/thermal-boundary-cross.svg" alt="Fig. 4: three regimes of the thermal boundary layer δα relative to channel radius r" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 4: Three regimes of the thermal boundary layer thickness <i>δ<sub>α</sub></i> relative to channel radius <i>r</i> ⁠—
+    when $r/\delta_\alpha \gg 1$ the parcel exchanges almost no heat with the wall and behaves adiabatically;
+    when $r/\delta_\alpha \approx 1$ the boundary layer fills much of the cross-section and irreversible heat transfer occurs;
+    when $r/\delta_\alpha \ll 1$ the parcel is isothermal with the wall.
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-4xl mx-auto">
+  <img src="/images/research/adia-reverse-process.svg" alt="Fig. 5: distance from the wall determines the thermodynamic process undergone by an oscillating gas parcel" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    Fig. 5: Distance from the wall determines the parcel's thermodynamic process ⁠—
+    far from the wall ($\gg \delta_\alpha$) the parcel is adiabatic and reversible;
+    within $\delta_\alpha$ the process is irreversible (this is the source of the thermoacoustic effect);
+    pressed against the wall ($\ll \delta_\alpha$) the parcel is isothermal and reversible.
+  </figcaption>
+</figure>
+
+The irreversible regime is where the thermoacoustic effect actually lives: neither fully adiabatic (so the wall can transfer heat) nor fully isothermal (so a phase lag remains and pressure can do work). Regenerators and stacks are engineered precisely so that the channel radius $r$ and the operating-frequency $\delta_\alpha$ fall on the same scale.
+
 ---
 
 ## Why this matters — from piston-less Stirling engines to thermoacoustic engines

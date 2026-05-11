@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440" font-family="'Noto Sans TC', 'Inter', sans-serif" fill="#1f2937">
+  <!-- ============ Left: adiabatic — r/δα >> 1 (thin pink ring) ============ -->
+  <g transform="translate(150 180)">
+    <circle r="90" fill="white" stroke="#111" stroke-width="6"/>
+    <!-- thin pink annulus -->
+    <circle r="90" fill="none" stroke="#f7b4af" stroke-width="6"/>
+    <!-- bottom label r/δα >> 1 -->
+    <text x="0" y="140" font-size="32" text-anchor="middle">
+      <tspan font-style="italic">r</tspan>/<tspan font-style="italic">δ<tspan font-size="24" baseline-shift="sub">α</tspan></tspan> ≫ 1
+    </text>
+    <!-- title -->
+    <text x="0" y="200" font-size="36" font-weight="600" text-anchor="middle">絕熱過程</text>
+    <text x="0" y="232" font-size="20" font-style="italic" text-anchor="middle" fill="#475569">adiabatic process</text>
+  </g>
+
+  <!-- ============ Middle: irreversible — r/δα ≈ 1 (thick annulus, δα labeled) ============ -->
+  <g transform="translate(440 180)">
+    <!-- outer circle + filled pink annulus -->
+    <circle r="90" fill="#f7b4af" stroke="#111" stroke-width="6"/>
+    <!-- inner white circle (adiabatic core) -->
+    <circle r="36" fill="white"/>
+    <!-- diameter brackets on left side -->
+    <line x1="-110" y1="-90" x2="-110" y2="90" stroke="#111" stroke-width="2"/>
+    <line x1="-115" y1="-90" x2="-105" y2="-90" stroke="#111" stroke-width="2"/>
+    <line x1="-115" y1="90" x2="-105" y2="90" stroke="#111" stroke-width="2"/>
+    <text x="-140" y="-30" font-size="20" text-anchor="middle">流</text>
+    <text x="-140" y="-8" font-size="20" text-anchor="middle">道</text>
+    <text x="-140" y="14" font-size="20" text-anchor="middle">直</text>
+    <text x="-140" y="36" font-size="20" text-anchor="middle">徑</text>
+    <text x="-90" y="6" font-size="28" text-anchor="middle">
+      2<tspan font-style="italic">r</tspan>
+    </text>
+    <!-- δα bracket on top-right -->
+    <line x1="42" y1="-90" x2="42" y2="-50" stroke="#111" stroke-width="2"/>
+    <line x1="36" y1="-90" x2="48" y2="-90" stroke="#111" stroke-width="2"/>
+    <line x1="36" y1="-50" x2="48" y2="-50" stroke="#111" stroke-width="2"/>
+    <text x="62" y="-66" font-size="24" font-style="italic">
+      δ<tspan font-size="18" baseline-shift="sub">α</tspan>
+    </text>
+    <!-- 熱邊界層 label with leader to annulus -->
+    <line x1="-80" y1="-80" x2="-15" y2="-72" stroke="#111" stroke-width="1.5"/>
+    <text x="-86" y="-90" font-size="20" text-anchor="end">熱邊界層</text>
+    <text x="-86" y="-72" font-size="14" font-style="italic" text-anchor="end" fill="#475569">thermal boundary layer</text>
+    <!-- bottom label r/δα ≈ 1 -->
+    <text x="0" y="140" font-size="32" text-anchor="middle">
+      <tspan font-style="italic">r</tspan>/<tspan font-style="italic">δ<tspan font-size="24" baseline-shift="sub">α</tspan></tspan> ≈ 1
+    </text>
+    <text x="0" y="200" font-size="36" font-weight="600" text-anchor="middle">不可逆過程</text>
+    <text x="0" y="232" font-size="20" font-style="italic" text-anchor="middle" fill="#475569">irreversible process</text>
+  </g>
+
+  <!-- ============ Right: isothermal — r/δα << 1 (filled) ============ -->
+  <g transform="translate(730 180)">
+    <circle r="90" fill="#f7b4af" stroke="#111" stroke-width="6"/>
+    <!-- 流道固體壁 label with leader to outer ring -->
+    <line x1="60" y1="-72" x2="20" y2="-88" stroke="#111" stroke-width="1.5"/>
+    <text x="66" y="-90" font-size="20">流道固體壁</text>
+    <text x="66" y="-72" font-size="14" font-style="italic" fill="#475569">channel wall</text>
+    <!-- bottom label r/δα << 1 -->
+    <text x="0" y="140" font-size="32" text-anchor="middle">
+      <tspan font-style="italic">r</tspan>/<tspan font-style="italic">δ<tspan font-size="24" baseline-shift="sub">α</tspan></tspan> ≪ 1
+    </text>
+    <text x="0" y="200" font-size="36" font-weight="600" text-anchor="middle">等溫過程</text>
+    <text x="0" y="232" font-size="20" font-style="italic" text-anchor="middle" fill="#475569">isothermal process</text>
+  </g>
+</svg>

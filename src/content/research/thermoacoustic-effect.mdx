@@ -86,6 +86,28 @@ active: true
 
 進一步以圖 2 來理解熱聲效應，流道中有一系列流體氣塊（gas parcel），施加於流道上之急遽正軸向溫度梯度以紅藍漸層色表示。當氣塊受到微小擾動，造成氣塊於流道高溫處吸收固體壁熱能、低溫處放熱，如此往復位移過程中，因氣團的吸放熱使壓力的收縮與膨脹得以持續，進而造成初始擾動增幅成穩定振盪。
 
+要讓上述「往復吸放熱」的循環真正發生，氣塊與固體壁之間必須處於合適的熱傳遞區制。決定此區制的關鍵是 **熱（溫度）邊界層厚度 $\delta_\alpha$** 與流道半徑 $r$ 的比值：
+
+<figure class="my-8 max-w-4xl mx-auto">
+  <img src="/images/research/thermal-boundary-cross.svg" alt="圖 4：流道斷面之熱邊界層 δα 與半徑 r 比值的三種區制" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 4：流道斷面之熱邊界層厚度 <i>δ<sub>α</sub></i> 與半徑 <i>r</i> 比值的三種區制 ——
+    $r/\delta_\alpha \gg 1$ 時氣塊與壁來不及熱交換、近乎絕熱；
+    $r/\delta_\alpha \approx 1$ 時邊界層佔據主要截面、發生不可逆熱傳；
+    $r/\delta_\alpha \ll 1$ 時氣塊全然與壁等溫。
+  </figcaption>
+</figure>
+
+<figure class="my-8 max-w-4xl mx-auto">
+  <img src="/images/research/adia-reverse-process.svg" alt="圖 5：往復振動氣塊與固體壁距離決定熱力學過程種類" class="w-full" />
+  <figcaption class="mt-2 text-center text-sm text-gray-600">
+    圖 5：氣塊距壁面距離決定其往復過程之熱力學性質 —— 遠離壁面（$\gg \delta_\alpha$）近絕熱可逆；
+    處於 $\delta_\alpha$ 之內某處則為不可逆過程（熱聲效應之來源）；緊貼壁面（$\ll \delta_\alpha$）則為等溫可逆。
+  </figcaption>
+</figure>
+
+「不可逆過程」區域才是熱聲效應實際發生的場所——既非完全絕熱（壁無熱可傳）、也非完全等溫（無相位差可累積壓力做功）。蓄熱器（regenerator）與片堆（stack）的設計目的，便是讓流道半徑 $r$ 與工作頻率下的 $\delta_\alpha$ 落在相近尺度。
+
 ---
 
 ## 研究重要性 — 無活塞史特靈引擎 → 熱聲引擎
