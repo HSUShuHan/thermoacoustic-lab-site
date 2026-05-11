@@ -186,11 +186,11 @@ const L = isEn
       <!-- Resonator: open-LEFT + closed-RIGHT (right hot convention).
            Piston/crank assembly drives the open left end (refrigerator only). -->
       <!-- Top wall -->
-      <line x1="0" y1="0" x2="680" y2="0" stroke="#1e3a5f" stroke-width="3"></line>
+      <line x1="0" y1="0" x2="680" y2="0" stroke="#0f172a" stroke-width="5"></line>
       <!-- Bottom wall -->
-      <line x1="0" y1="110" x2="680" y2="110" stroke="#1e3a5f" stroke-width="3"></line>
+      <line x1="0" y1="110" x2="680" y2="110" stroke="#0f172a" stroke-width="5"></line>
       <!-- Right closed end (hot side in engine convention) -->
-      <line x1="680" y1="0" x2="680" y2="110" stroke="#1e3a5f" stroke-width="3"></line>
+      <line x1="680" y1="0" x2="680" y2="110" stroke="#0f172a" stroke-width="5"></line>
       <!-- (Left end: open — no vertical wall) -->
 
       <!-- Wave fronts (xi-sheets): 23 vertical tracer lines that oscillate
@@ -1227,11 +1227,15 @@ const L = isEn
 
       // Slider-crank piston assembly (visible only in refrigerator mode via CSS).
       // Crank rotates at ωt; wrist x derived from constant rod-length constraint.
-      const cpx = CRANK_CX + CRANK_R * cwt; // crank pin x (orbits)
-      const cpy = CRANK_CY + CRANK_R * swt; // crank pin y
-      // Piston is to the RIGHT of crank center → use + sqrt(...)
+      // Phase-shift by π (use -cwt/-swt) so the piston is at its LEFTMOST
+      // (retracted) position at wt=0 — keeps it in phase with the negated
+      // wavefront / parcel formulas (which place gas at left extreme at wt=0).
+      const cpx = CRANK_CX - CRANK_R * cwt; // crank pin x (orbits)
+      const cpy = CRANK_CY - CRANK_R * swt; // crank pin y
+      // Piston is to the RIGHT of crank center → use + sqrt(...).
+      // sin² invariant under sign flip, so sqrt term unchanged.
       const wristX =
-        CRANK_CX +
+        CRANK_CX -
         CRANK_R * cwt +
         Math.sqrt(ROD_LEN * ROD_LEN - CRANK_R * CRANK_R * swt * swt);
       const wxs = wristX.toFixed(1);
