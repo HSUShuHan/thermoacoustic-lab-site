@@ -84,13 +84,13 @@ This sentence captures the essence of the thermoacoustic mechanism.
 
 Figure 2 makes the picture concrete. A row of gas parcels sits inside a channel; the steep positive axial temperature gradient imposed on the channel is shown by the red-to-blue gradient. When a parcel is perturbed, it absorbs heat from the wall at the hot side and releases heat at the cold side. Because heat absorption sustains compression / expansion across the back-and-forth motion, the initial perturbation grows into a stable oscillation.
 
-For this back-and-forth heat exchange to actually drive the cycle, the gas parcel and the channel wall must operate in the right heat-transfer regime. The decisive parameter is the ratio of the **thermal penetration depth** $\delta_\alpha = \sqrt{\alpha/\omega}$ (with $\alpha$ the fluid's thermal diffusivity) to the channel radius $r$. The dimensionless group
+For this back-and-forth heat exchange to actually drive the cycle, the gas parcel and the channel wall must operate in the right heat-transfer regime. The decisive parameter is the ratio of the **thermal penetration depth** $\delta_\alpha = \sqrt{2\alpha/\omega}$ (with $\alpha$ the fluid's thermal diffusivity) to the channel radius $r$. Defining the **thermal relaxation time** $\tau_\alpha = r^2/(2\alpha)$ — the characteristic time for heat to diffuse across a parcel inside a channel of radius $r$ — the dimensionless group can be written as
 
 $$
-\omega \tau_\alpha = \left(\dfrac{r}{\delta_\alpha}\right)^2,
+\omega \tau_\alpha = \left(\dfrac{r}{\delta_\alpha}\right)^2.
 $$
 
-with $\tau_\alpha = r^2/\alpha$ the thermal-diffusion timescale, captures simultaneously the geometric ratio $r/\delta_\alpha$ and the ratio of oscillation timescale to thermal-diffusion timescale. Fig. 4(a) shows the three regimes as cross-sections of the flow channel; Fig. 4(b) maps the same regimes onto the distance from the wall:
+Physically, $\omega\tau_\alpha$ is the competition between "one acoustic oscillation period" and "the time for heat to diffuse across the channel": when $\omega\tau_\alpha$ is large, the parcel oscillates too fast for heat to traverse the channel and the process is nearly adiabatic and reversible; when $\omega\tau_\alpha$ is small, heat has ample time to fully diffuse and the process is isothermal and reversible; at $\omega\tau_\alpha \approx 1$, the two timescales are comparable, heat transfer is only partly complete, and the process is irreversible. Fig. 4(a) shows the three regimes as cross-sections of the flow channel; Fig. 4(b) maps the same regimes onto the distance from the wall:
 
 <figure class="my-8 max-w-5xl mx-auto">
   <div class="grid items-start gap-6 md:grid-cols-2">
