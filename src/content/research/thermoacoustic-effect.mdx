@@ -30,7 +30,7 @@ active: true
 <figure class="my-8 max-w-3xl mx-auto">
   <img src="/images/research/kibitsu-sondhauss-rijke.svg" alt="圖 1：(a) 吉備津釜、(b) Sondhauss tube、(c) Rijke tube" class="w-full" />
   <figcaption class="mt-2 text-center text-sm text-gray-600">
-    圖 1：早期熱聲裝置 —— (a) 吉備津釜、(b) Sondhauss tube、(c) Rijke tube。
+    圖 1：早期熱聲裝置：(a) 吉備津釜、(b) Sondhauss tube、(c) Rijke tube。
   </figcaption>
 </figure>
 
@@ -95,23 +95,21 @@ $$
 其物理意義為「聲學振盪一週期內、熱擴散能否走完整段流道半徑」之競爭：當 $\omega\tau_\alpha$ 大，氣塊振盪太快、熱來不及傳，趨近絕熱可逆；反之 $\omega\tau_\alpha$ 小則熱有充分時間傳完，趨近等溫可逆；於 $\omega\tau_\alpha \approx 1$ 時兩時間尺度相當，熱傳僅部分完成，產生不可逆過程。圖 3(a) 從流道斷面看不同 $\omega\tau_\alpha$ 區制；圖 3(b) 從側視角度看同一氣塊與壁面距離不同時所對應之熱力學過程：
 
 <figure class="my-8 max-w-5xl mx-auto">
-  <div class="grid items-end gap-6 md:grid-cols-2">
-    <div class="flex flex-col">
-      <p class="mb-2 text-center text-sm font-medium text-brand-700">(a) 流道斷面視角</p>
-      <img src="/images/research/thermal-boundary-cross.svg" alt="圖 3(a)：流道斷面之 ωτα 三區制" class="w-full" />
-    </div>
-    <div class="flex flex-col">
-      <p class="mb-2 text-center text-sm font-medium text-brand-700">(b) 氣塊與壁面距離視角</p>
-      <img src="/images/research/adia-reverse-process.svg" alt="圖 3(b)：往復氣塊與固體壁距離決定熱力學過程種類" class="mx-auto w-[85%]" />
-    </div>
+  <div class="grid gap-6 md:grid-cols-2">
+    <p class="text-center text-sm font-medium text-brand-700">(a) 流道斷面視角</p>
+    <p class="text-center text-sm font-medium text-brand-700">(b) 氣塊與壁面距離視角</p>
+  </div>
+  <div class="mt-2 grid items-end gap-6 md:grid-cols-2">
+    <img src="/images/research/thermal-boundary-cross.svg" alt="圖 3(a)：流道斷面之 ωτα 三區制" class="w-full" />
+    <img src="/images/research/adia-reverse-process.svg" alt="圖 3(b)：往復氣塊與固體壁距離決定熱力學過程種類" class="mx-auto w-[85%]" />
   </div>
   <figcaption class="mt-4 text-center text-sm text-gray-600">
-    圖 3：熱（溫度）穿透深度 <i>δ<sub>α</sub></i> 決定氣塊與固體壁間之熱傳區制 ——
-    $\omega\tau_\alpha \gg 1$ 為絕熱可逆；$\omega\tau_\alpha \approx 1$ 為不可逆（熱聲效應之來源）；$\omega\tau_\alpha \ll 1$ 為等溫可逆。
+    圖 3：熱（溫度）穿透深度 <i>δ<sub>α</sub></i> 決定氣塊與固體壁間之熱傳區制；
+    $\omega\tau_\alpha \gg 1$ 為絕熱可逆，$\omega\tau_\alpha \approx 1$ 為不可逆（熱聲效應之來源），$\omega\tau_\alpha \ll 1$ 為等溫可逆。
   </figcaption>
 </figure>
 
-「不可逆過程」區域才是熱聲效應實際發生的場所——既非完全絕熱（壁無熱可傳）、也非完全等溫（無相位差可累積壓力做功）。蓄熱器（regenerator）與片堆（stack）的設計目的，便是讓流道半徑 $r$ 與工作頻率下的 $\delta_\alpha$ 落在相近尺度。
+「不可逆過程」區域才是熱聲效應實際發生的場所：既非完全絕熱（壁無熱可傳），也非完全等溫（無相位差可累積壓力做功）。蓄熱器（regenerator）與片堆（stack）的設計目的，便是讓流道半徑 $r$ 與工作頻率下的 $\delta_\alpha$ 落在相近尺度。
 
 ---
 
@@ -126,7 +124,7 @@ $$
 <figure class="my-8 max-w-3xl mx-auto">
   <img src="/images/research/stirling-vs-thermoacoustic.svg" alt="圖 4(a)：α 型史特靈引擎與行波型熱聲引擎之構造對比" class="w-full" />
   <figcaption class="mt-2 text-center text-sm text-gray-600">
-    圖 4(a)：α 型史特靈引擎（左）與行波型熱聲引擎（右）構造對比 ——
+    圖 4(a)：α 型史特靈引擎（左）與行波型熱聲引擎（右）構造對比，
     後者以聲波代替機械活塞，省去密封滑動部件。
   </figcaption>
 </figure>
@@ -141,8 +139,8 @@ $$
 <figure class="my-8 max-w-3xl mx-auto">
   <img src="/images/research/wavephase.svg" alt="圖 4(c)：行波聲波之壓力與速度同相關係" class="w-full" />
   <figcaption class="mt-2 text-center text-sm text-gray-600">
-    圖 4(c)：行波聲波之壓力 <i>p</i> 與體積流速 <i>U</i> 同相關係 ——
-    史特靈循環之熱力學基礎。
+    圖 4(c)：行波聲波之壓力 <i>p</i> 與體積流速 <i>U</i> 同相關係，
+    為史特靈循環之熱力學基礎。
   </figcaption>
 </figure>
 
