@@ -86,17 +86,23 @@ active: true
 
 進一步以圖 2 來理解熱聲效應，流道中有一系列流體氣塊（gas parcel），施加於流道上之急遽正軸向溫度梯度以紅藍漸層色表示。當氣塊受到微小擾動，造成氣塊於流道高溫處吸收固體壁熱能、低溫處放熱，如此往復位移過程中，因氣團的吸放熱使壓力的收縮與膨脹得以持續，進而造成初始擾動增幅成穩定振盪。
 
-要讓上述「往復吸放熱」的循環真正發生，氣塊與固體壁之間必須處於合適的熱傳區制；決定此區制的關鍵是 **溫度穿透深度** $\delta_\alpha$（thermal penetration depth）與聲學角頻率 $\omega$ 之乘積，亦即 $\omega \tau_\alpha$（其中 $\tau_\alpha = \delta_\alpha^2/\alpha$ 為熱擴散時間尺度）。圖 4(a) 從流道斷面看不同 $\omega\tau_\alpha$ 區制；圖 4(b) 從側視角度看同一氣塊與壁面距離不同時所對應之熱力學過程：
+要讓上述「往復吸放熱」的循環真正發生，氣塊與固體壁之間必須處於合適的熱傳區制；決定此區制的關鍵是 **溫度穿透深度** $\delta_\alpha$（thermal penetration depth，$\delta_\alpha = \sqrt{\alpha/\omega}$，$\alpha$ 為流體之熱擴散係數）與流道半徑 $r$ 之比值。引入無因次參數
+
+$$
+\omega \tau_\alpha = \left(\dfrac{r}{\delta_\alpha}\right)^2
+$$
+
+其中 $\tau_\alpha = r^2/\alpha$ 為熱擴散時間尺度，便可以一個量同時反映「幾何尺度（$r$）／邊界層厚度（$\delta_\alpha$）」與「振盪時間／熱擴散時間」之比。圖 4(a) 從流道斷面看不同 $\omega\tau_\alpha$ 區制；圖 4(b) 從側視角度看同一氣塊與壁面距離不同時所對應之熱力學過程：
 
 <figure class="my-8 max-w-5xl mx-auto">
-  <div class="grid gap-6 md:grid-cols-2">
-    <div>
+  <div class="grid items-start gap-6 md:grid-cols-2">
+    <div class="flex flex-col">
+      <p class="mb-2 text-center text-sm font-medium text-brand-700">(a) 流道斷面視角</p>
       <img src="/images/research/thermal-boundary-cross.svg" alt="圖 4(a)：流道斷面之 ωτα 三區制" class="w-full" />
-      <p class="mt-2 text-center text-sm text-gray-600">(a) 流道斷面視角</p>
     </div>
-    <div>
+    <div class="flex flex-col">
+      <p class="mb-2 text-center text-sm font-medium text-brand-700">(b) 氣塊與壁面距離視角</p>
       <img src="/images/research/adia-reverse-process.svg" alt="圖 4(b)：往復氣塊與固體壁距離決定熱力學過程種類" class="w-full" />
-      <p class="mt-2 text-center text-sm text-gray-600">(b) 氣塊與壁面距離視角</p>
     </div>
   </div>
   <figcaption class="mt-4 text-center text-sm text-gray-600">

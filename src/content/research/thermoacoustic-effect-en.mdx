@@ -84,17 +84,23 @@ This sentence captures the essence of the thermoacoustic mechanism.
 
 Figure 2 makes the picture concrete. A row of gas parcels sits inside a channel; the steep positive axial temperature gradient imposed on the channel is shown by the red-to-blue gradient. When a parcel is perturbed, it absorbs heat from the wall at the hot side and releases heat at the cold side. Because heat absorption sustains compression / expansion across the back-and-forth motion, the initial perturbation grows into a stable oscillation.
 
-For this back-and-forth heat exchange to actually drive the cycle, the gas parcel and the channel wall must operate in the right heat-transfer regime. The decisive parameter is the **thermal penetration depth** $\delta_\alpha$ multiplied by the acoustic angular frequency $\omega$ — i.e. $\omega\tau_\alpha$ with $\tau_\alpha = \delta_\alpha^2/\alpha$ the thermal-diffusion timescale. Fig. 4(a) shows the three regimes as cross-sections of the flow channel; Fig. 4(b) shows the same regimes mapped onto the distance from the wall:
+For this back-and-forth heat exchange to actually drive the cycle, the gas parcel and the channel wall must operate in the right heat-transfer regime. The decisive parameter is the ratio of the **thermal penetration depth** $\delta_\alpha = \sqrt{\alpha/\omega}$ (with $\alpha$ the fluid's thermal diffusivity) to the channel radius $r$. The dimensionless group
+
+$$
+\omega \tau_\alpha = \left(\dfrac{r}{\delta_\alpha}\right)^2,
+$$
+
+with $\tau_\alpha = r^2/\alpha$ the thermal-diffusion timescale, captures simultaneously the geometric ratio $r/\delta_\alpha$ and the ratio of oscillation timescale to thermal-diffusion timescale. Fig. 4(a) shows the three regimes as cross-sections of the flow channel; Fig. 4(b) maps the same regimes onto the distance from the wall:
 
 <figure class="my-8 max-w-5xl mx-auto">
-  <div class="grid gap-6 md:grid-cols-2">
-    <div>
+  <div class="grid items-start gap-6 md:grid-cols-2">
+    <div class="flex flex-col">
+      <p class="mb-2 text-center text-sm font-medium text-brand-700">(a) Cross-section view</p>
       <img src="/images/research/thermal-boundary-cross.svg" alt="Fig. 4(a): three ωτα regimes seen as flow-channel cross-sections" class="w-full" />
-      <p class="mt-2 text-center text-sm text-gray-600">(a) Cross-section view</p>
     </div>
-    <div>
+    <div class="flex flex-col">
+      <p class="mb-2 text-center text-sm font-medium text-brand-700">(b) Distance-from-wall view</p>
       <img src="/images/research/adia-reverse-process.svg" alt="Fig. 4(b): the regime depends on the gas parcel's distance from the wall" class="w-full" />
-      <p class="mt-2 text-center text-sm text-gray-600">(b) Distance-from-wall view</p>
     </div>
   </div>
   <figcaption class="mt-4 text-center text-sm text-gray-600">
