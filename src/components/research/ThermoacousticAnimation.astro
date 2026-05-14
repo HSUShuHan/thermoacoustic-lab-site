@@ -48,9 +48,14 @@ const L = isEn
       caption_body:
         "A cyan gas parcel oscillates inside the stack. The top-left p–ξ / p–V panel overlays two trajectories: orange p–ξ (acoustic intensity I) and dashed cyan p–V (work per cycle W). The bottom-left T–x panel shows the parcel's temperature–position ellipse; the orange dashed line is the wall temperature gradient. The bottom-right 3D orbit panel synchronizes (p, S, ξ) and its three 2D projections.",
       attribution_pre: "Animation concepts based partially on G. W. Swift, ",
-      attribution_book_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_swift_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_swift_pub: " (Springer, 2nd ed., 2017)",
+      attribution_mid:
+        "; physics parameters follow LANL bookAnimations' standing.py (Los Alamos National Laboratory). The 3D-orbit concept is taken from T. Biwa, ",
+      attribution_biwa_title: "Introduction to Thermoacoustic Devices",
+      attribution_biwa_pub: " (World Scientific, 2021)",
       attribution_post:
-        "; physics parameters follow LANL bookAnimations' standing.py (Los Alamos National Laboratory). The 3D-orbit concept is taken from T. Biwa, Introduction to Thermoacoustic Devices (Springer, 2023). This implementation is a native browser remake under the respective licenses.",
+        ". This implementation is a native browser remake under the respective licenses.",
       stack_title_flat: "(a) Resonator + stack · uniform mode (no wall T gradient)",
       stack_title_refrigerator: "(a) Resonator + stack + left-end crank piston · refrigerator mode",
       stack_title_critical: "(a) Resonator + stack · critical mode (gradient equals parcel adiabatic)",
@@ -90,9 +95,14 @@ const L = isEn
       caption_body:
         "氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 p–ξ（聲音強度 I 之概念）與青色虛線 p–V（一週期之功 W）。左下「T—x 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（p, S, ξ）三量之同步軌跡及其三個 2D 投影同時呈現。",
       attribution_pre: "Swift 動畫部分概念基於 G. W. Swift, ",
-      attribution_book_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_swift_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
+      attribution_swift_pub: "（Springer, 2nd ed., 2017）",
+      attribution_mid:
+        "，物理參數沿用 LANL bookAnimations 之 standing.py（Los Alamos National Laboratory）。3D 軌道圖之概念取自 T. Biwa, ",
+      attribution_biwa_title: "Introduction to Thermoacoustic Devices",
+      attribution_biwa_pub: "（World Scientific, 2021）",
       attribution_post:
-        "，物理參數沿用 LANL bookAnimations 之 standing.py（Los Alamos National Laboratory）。3D 軌道圖之概念取自 T. Biwa, Introduction to Thermoacoustic Devices (Springer, 2023)。本實作為網頁原生重製，依各方授權聲明使用。",
+        "。本實作為網頁原生重製，依各方授權聲明使用。",
       stack_title_flat: "(a) 共鳴管 + 片堆 · 均溫模式（無壁溫梯度）",
       stack_title_refrigerator: "(a) 共鳴管 + 片堆 + 左端曲柄活塞 · 製冷模式",
       stack_title_critical: "(a) 共鳴管 + 片堆 · 臨界模式（梯度恰等於氣塊絕熱）",
@@ -754,7 +764,17 @@ const L = isEn
       {L.caption_body}
     </p>
     <p class="ta-attrib">
-      {L.attribution_pre}<em>{L.attribution_book_title}</em>{L.attribution_post}
+      {L.attribution_pre}
+      <a href="https://doi.org/10.1007/978-3-319-66933-5" target="_blank" rel="noopener noreferrer">
+        <em>{L.attribution_swift_title}</em>
+      </a>
+      {L.attribution_swift_pub}
+      {L.attribution_mid}
+      <a href="https://doi.org/10.1142/y0023" target="_blank" rel="noopener noreferrer">
+        <em>{L.attribution_biwa_title}</em>
+      </a>
+      {L.attribution_biwa_pub}
+      {L.attribution_post}
     </p>
   </figcaption>
 </figure>
