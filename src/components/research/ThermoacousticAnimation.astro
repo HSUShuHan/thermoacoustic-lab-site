@@ -433,10 +433,9 @@ const L = isEn
         stroke-width="0"
         marker-end="url(#ta-heat)"></line>
 
-      <!-- Ghost neighbor parcels (semi-transparent) — convey that the
-           central parcel is one of many adjacent parcels in the stack
-           channel. Clipped to panel bounds so they disappear when
-           translated past the edge. JS updates x and width every frame. -->
+      <!-- Ghost neighbor parcels (semi-transparent) + their own radial heat
+           arrows. Clipped to panel bounds so they disappear when translated
+           past the edge. JS updates x / width / stroke-width every frame. -->
       <g clip-path="url(#ta-closeup-clip)">
         <rect
           id="ta-parcel-big-l"
@@ -462,6 +461,46 @@ const L = isEn
           stroke-opacity="0.3"
           stroke-width="1"
           rx="4"></rect>
+        <line
+          id="ta-heat-top-l"
+          x1="0"
+          y1="50"
+          x2="0"
+          y2="18"
+          stroke="#dc2626"
+          stroke-opacity="0.4"
+          stroke-width="0"
+          marker-end="url(#ta-heat)"></line>
+        <line
+          id="ta-heat-bot-l"
+          x1="0"
+          y1="120"
+          x2="0"
+          y2="152"
+          stroke="#dc2626"
+          stroke-opacity="0.4"
+          stroke-width="0"
+          marker-end="url(#ta-heat)"></line>
+        <line
+          id="ta-heat-top-r"
+          x1="280"
+          y1="50"
+          x2="280"
+          y2="18"
+          stroke="#dc2626"
+          stroke-opacity="0.4"
+          stroke-width="0"
+          marker-end="url(#ta-heat)"></line>
+        <line
+          id="ta-heat-bot-r"
+          x1="280"
+          y1="120"
+          x2="280"
+          y2="152"
+          stroke="#dc2626"
+          stroke-opacity="0.4"
+          stroke-width="0"
+          marker-end="url(#ta-heat)"></line>
       </g>
 
       <!-- The big parcel — JS updates its x and width -->
@@ -963,6 +1002,10 @@ const L = isEn
     const crankPin = $("ta-crank-pin") as unknown as SVGCircleElement;
     const heatTop = $("ta-heat-top-line") as unknown as SVGLineElement;
     const heatBot = $("ta-heat-bot-line") as unknown as SVGLineElement;
+    const heatTopL = $("ta-heat-top-l") as unknown as SVGLineElement;
+    const heatBotL = $("ta-heat-bot-l") as unknown as SVGLineElement;
+    const heatTopR = $("ta-heat-top-r") as unknown as SVGLineElement;
+    const heatBotR = $("ta-heat-bot-r") as unknown as SVGLineElement;
     const biwaBox = $("ta-biwa-box") as unknown as SVGGElement;
     const biwaAxes = $("ta-biwa-axes") as unknown as SVGGElement;
     const biwaEllipse = $("ta-biwa-ellipse") as unknown as SVGPathElement;
@@ -1307,7 +1350,7 @@ const L = isEn
       const cwClamped = Math.max(8, cw);
       parcelBig.setAttribute("x", (cx - cwClamped / 2).toFixed(1));
       parcelBig.setAttribute("width", cwClamped.toFixed(1));
-      const GHOST_DX = 140;
+      const GHOST_DX = 180;
       parcelBigL.setAttribute("x", (cx - GHOST_DX - cwClamped / 2).toFixed(1));
       parcelBigL.setAttribute("width", cwClamped.toFixed(1));
       parcelBigR.setAttribute("x", (cx + GHOST_DX - cwClamped / 2).toFixed(1));
@@ -1347,12 +1390,27 @@ const L = isEn
       const w = Math.min(8, Math.abs(shaftW) * 14);
 
       const xs = cx.toFixed(1);
+      const xsL = (cx - GHOST_DX).toFixed(1);
+      const xsR = (cx + GHOST_DX).toFixed(1);
       heatTop.setAttribute("x1", xs);
       heatTop.setAttribute("x2", xs);
       heatBot.setAttribute("x1", xs);
       heatBot.setAttribute("x2", xs);
-      heatTop.setAttribute("stroke-width", w.toFixed(1));
-      heatBot.setAttribute("stroke-width", w.toFixed(1));
+      heatTopL.setAttribute("x1", xsL);
+      heatTopL.setAttribute("x2", xsL);
+      heatBotL.setAttribute("x1", xsL);
+      heatBotL.setAttribute("x2", xsL);
+      heatTopR.setAttribute("x1", xsR);
+      heatTopR.setAttribute("x2", xsR);
+      heatBotR.setAttribute("x1", xsR);
+      heatBotR.setAttribute("x2", xsR);
+      const ws = w.toFixed(1);
+      heatTop.setAttribute("stroke-width", ws);
+      heatBot.setAttribute("stroke-width", ws);
+      heatTopL.setAttribute("stroke-width", ws);
+      heatBotL.setAttribute("stroke-width", ws);
+      heatTopR.setAttribute("stroke-width", ws);
+      heatBotR.setAttribute("stroke-width", ws);
 
       // Geometry constants for the (resized) close-up panel:
       //   top plate inner = y=12, parcel = y=58..112, bottom plate inner = y=158
@@ -1364,12 +1422,28 @@ const L = isEn
         heatTop.setAttribute("y2", "52");
         heatBot.setAttribute("y1", "152");
         heatBot.setAttribute("y2", "118");
+        heatTopL.setAttribute("y1", "18");
+        heatTopL.setAttribute("y2", "52");
+        heatBotL.setAttribute("y1", "152");
+        heatBotL.setAttribute("y2", "118");
+        heatTopR.setAttribute("y1", "18");
+        heatTopR.setAttribute("y2", "52");
+        heatBotR.setAttribute("y1", "152");
+        heatBotR.setAttribute("y2", "118");
       } else {
         // Heat OUT of parcel to BOTH plates
         heatTop.setAttribute("y1", "52");
         heatTop.setAttribute("y2", "18");
         heatBot.setAttribute("y1", "118");
         heatBot.setAttribute("y2", "152");
+        heatTopL.setAttribute("y1", "52");
+        heatTopL.setAttribute("y2", "18");
+        heatBotL.setAttribute("y1", "118");
+        heatBotL.setAttribute("y2", "152");
+        heatTopR.setAttribute("y1", "52");
+        heatTopR.setAttribute("y2", "18");
+        heatBotR.setAttribute("y1", "118");
+        heatBotR.setAttribute("y2", "152");
       }
 
       requestAnimationFrame(frame);
