@@ -354,10 +354,11 @@ const L = isEn
       </g>
 
       <!-- Yellow oval highlight: zoom region around the tracked parcel.
-           Centered between two wavefront lines (x=525 and x=550) so the
-           parcel sits exactly mid-channel; size bounds parcel motion (~±15 px). -->
+           Centered ON the wavefront line at x=525 (Swift convention —
+           parcel position = ξ(x₀, t) of one ξ-sheet); size bounds parcel
+           motion (~±15 px). -->
       <ellipse
-        cx="537.5"
+        cx="525"
         cy="55"
         rx="22"
         ry="14"
@@ -366,11 +367,11 @@ const L = isEn
         stroke-width="1.5"
         stroke-dasharray="3 2"></ellipse>
 
-      <!-- The moving parcel: centered between wavefronts at x=525 and x=550
-           (rest position 537.5). JS updates x and width every frame. -->
+      <!-- The moving parcel: drawn ON the wavefront line at x=525 (Swift
+           convention). JS updates x and width every frame. -->
       <rect
         id="ta-parcel-stack"
-        x="535.5"
+        x="523"
         y="50"
         width="4"
         height="10"
@@ -426,6 +427,34 @@ const L = isEn
         stroke="#dc2626"
         stroke-width="0"
         marker-end="url(#ta-heat)"></line>
+
+      <!-- Ghost neighbor parcels (semi-transparent) — convey that the
+           central parcel is one of many adjacent parcels in the stack
+           channel. JS updates x and width every frame. -->
+      <rect
+        id="ta-parcel-big-l"
+        x="25"
+        y="58"
+        width="50"
+        height="54"
+        fill="#0891b2"
+        fill-opacity="0.3"
+        stroke="#0e7490"
+        stroke-opacity="0.3"
+        stroke-width="1"
+        rx="4"></rect>
+      <rect
+        id="ta-parcel-big-r"
+        x="205"
+        y="58"
+        width="50"
+        height="54"
+        fill="#0891b2"
+        fill-opacity="0.3"
+        stroke="#0e7490"
+        stroke-opacity="0.3"
+        stroke-width="1"
+        rx="4"></rect>
 
       <!-- The big parcel — JS updates its x and width -->
       <rect
@@ -818,10 +847,10 @@ const L = isEn
   const WAVE_AMP = 25;
   const WAVE_SMALL = 4;
 
-  // Parcel rest position — sits midway between two adjacent wavefront
-  // tracer lines (x=525 and x=550) so the parcel is mid-channel rather
-  // than overlapping a wavefront line.
-  const STACK_X0 = 537.5;
+  // Parcel rest position — co-located with the wavefront line at x=525.
+  // Following Swift's convention: parcel position = ξ(x₀, t) of one
+  // ξ-sheet (i.e., the parcel IS that material surface).
+  const STACK_X0 = 525;
   const PARCEL_W0 = 4;
   const PARCEL_W_AMP = 1.2;
 
@@ -906,6 +935,8 @@ const L = isEn
 
     const parcelStack = $("ta-parcel-stack") as unknown as SVGRectElement;
     const parcelBig = $("ta-parcel-big") as unknown as SVGRectElement;
+    const parcelBigL = $("ta-parcel-big-l") as unknown as SVGRectElement;
+    const parcelBigR = $("ta-parcel-big-r") as unknown as SVGRectElement;
     const pvDot = $("ta-pv-dot") as unknown as SVGCircleElement;
     const pvDotV = $("ta-pv-dot-V") as unknown as SVGCircleElement;
     const pvLoop = $("ta-pv-loop") as unknown as SVGPathElement;
@@ -1258,12 +1289,21 @@ const L = isEn
       crankPin.setAttribute("cx", cpxs);
       crankPin.setAttribute("cy", cpys);
 
-      // Close-up parcel
+      // Close-up parcel + two ghost neighbours.
+      // Ghosts share the centre parcel's instantaneous size and translate
+      // by a fixed offset GHOST_DX so the trio reads as a row of identical
+      // parcels in the same channel — conveys the sense of front-and-back
+      // coupling between adjacent ξ-sheets.
       const cx = CLOSEUP_X0 + s.parcelXNorm * CLOSEUP_AMP_X;
       const cw = PARCEL_BIG_W0 + (s.parcelSize - 1) * PARCEL_BIG_W_AMP * 3;
       const cwClamped = Math.max(8, cw);
       parcelBig.setAttribute("x", (cx - cwClamped / 2).toFixed(1));
       parcelBig.setAttribute("width", cwClamped.toFixed(1));
+      const GHOST_DX = 90;
+      parcelBigL.setAttribute("x", (cx - GHOST_DX - cwClamped / 2).toFixed(1));
+      parcelBigL.setAttribute("width", cwClamped.toFixed(1));
+      parcelBigR.setAttribute("x", (cx + GHOST_DX - cwClamped / 2).toFixed(1));
+      parcelBigR.setAttribute("width", cwClamped.toFixed(1));
 
       // PV dots — primary p–ξ trace + secondary p–V trace (both moving)
       const pvX = PV_CX + s.parcelXNorm * PV_AMP_X;
