@@ -354,9 +354,10 @@ const L = isEn
       </g>
 
       <!-- Yellow oval highlight: zoom region around the tracked parcel.
-           Centered on the wavefront at x0=530; size bounds parcel motion (~±15 px). -->
+           Centered between two wavefront lines (x=525 and x=550) so the
+           parcel sits exactly mid-channel; size bounds parcel motion (~±15 px). -->
       <ellipse
-        cx="530"
+        cx="537.5"
         cy="55"
         rx="22"
         ry="14"
@@ -365,11 +366,11 @@ const L = isEn
         stroke-width="1.5"
         stroke-dasharray="3 2"></ellipse>
 
-      <!-- The moving parcel: locked to wavefront at x0=530, co-moves with it.
-           JS updates x and width every frame. -->
+      <!-- The moving parcel: centered between wavefronts at x=525 and x=550
+           (rest position 537.5). JS updates x and width every frame. -->
       <rect
         id="ta-parcel-stack"
-        x="528"
+        x="535.5"
         y="50"
         width="4"
         height="10"
@@ -817,9 +818,10 @@ const L = isEn
   const WAVE_AMP = 25;
   const WAVE_SMALL = 4;
 
-  // Parcel rest position — co-moves with wavefront at x0=530 (right side
-  // of resonator, near the closed/hot end in right-hot convention).
-  const STACK_X0 = 530;
+  // Parcel rest position — sits midway between two adjacent wavefront
+  // tracer lines (x=525 and x=550) so the parcel is mid-channel rather
+  // than overlapping a wavefront line.
+  const STACK_X0 = 537.5;
   const PARCEL_W0 = 4;
   const PARCEL_W_AMP = 1.2;
 
