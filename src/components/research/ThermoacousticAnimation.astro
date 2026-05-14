@@ -162,6 +162,11 @@ const L = isEn
       >
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e3a5f"></path>
       </marker>
+      <!-- Clip ghost neighbour parcels to the close-up panel bounds so they
+           disappear when they translate past the panel edge. -->
+      <clipPath id="ta-closeup-clip">
+        <rect x="0" y="0" width="280" height="170"></rect>
+      </clipPath>
       <!-- Wall-temperature gradients for the close-up panel.
            Convention: x positive to the right; engine has ∇T > 0 → right hot,
            left cold. Direction is the SAME across refrigerator/critical/engine
@@ -430,31 +435,34 @@ const L = isEn
 
       <!-- Ghost neighbor parcels (semi-transparent) — convey that the
            central parcel is one of many adjacent parcels in the stack
-           channel. JS updates x and width every frame. -->
-      <rect
-        id="ta-parcel-big-l"
-        x="25"
-        y="58"
-        width="50"
-        height="54"
-        fill="#0891b2"
-        fill-opacity="0.3"
-        stroke="#0e7490"
-        stroke-opacity="0.3"
-        stroke-width="1"
-        rx="4"></rect>
-      <rect
-        id="ta-parcel-big-r"
-        x="205"
-        y="58"
-        width="50"
-        height="54"
-        fill="#0891b2"
-        fill-opacity="0.3"
-        stroke="#0e7490"
-        stroke-opacity="0.3"
-        stroke-width="1"
-        rx="4"></rect>
+           channel. Clipped to panel bounds so they disappear when
+           translated past the edge. JS updates x and width every frame. -->
+      <g clip-path="url(#ta-closeup-clip)">
+        <rect
+          id="ta-parcel-big-l"
+          x="-25"
+          y="58"
+          width="50"
+          height="54"
+          fill="#0891b2"
+          fill-opacity="0.3"
+          stroke="#0e7490"
+          stroke-opacity="0.3"
+          stroke-width="1"
+          rx="4"></rect>
+        <rect
+          id="ta-parcel-big-r"
+          x="255"
+          y="58"
+          width="50"
+          height="54"
+          fill="#0891b2"
+          fill-opacity="0.3"
+          stroke="#0e7490"
+          stroke-opacity="0.3"
+          stroke-width="1"
+          rx="4"></rect>
+      </g>
 
       <!-- The big parcel — JS updates its x and width -->
       <rect
@@ -1299,7 +1307,7 @@ const L = isEn
       const cwClamped = Math.max(8, cw);
       parcelBig.setAttribute("x", (cx - cwClamped / 2).toFixed(1));
       parcelBig.setAttribute("width", cwClamped.toFixed(1));
-      const GHOST_DX = 90;
+      const GHOST_DX = 140;
       parcelBigL.setAttribute("x", (cx - GHOST_DX - cwClamped / 2).toFixed(1));
       parcelBigL.setAttribute("width", cwClamped.toFixed(1));
       parcelBigR.setAttribute("x", (cx + GHOST_DX - cwClamped / 2).toFixed(1));
