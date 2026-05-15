@@ -30,6 +30,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
     .narukama-bg-figure {
       left: 50%;
       max-width: 70%;
+      opacity: 0.25;
     }
   }
   .narukama-bg-figure :global(svg) {
@@ -64,20 +65,21 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
   }
   @media (max-width: 900px) {
     .narukama-bg-fade {
+      /* Stronger white wash than desktop — content is content over the
+         narukama directly on mobile, so we trade some flame presence for
+         readability. */
       background:
         linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0.85) 0%,
-          rgba(255, 255, 255, 0.30) 25%,
-          rgba(255, 255, 255, 0.05) 50%,
-          rgba(255, 255, 255, 0.30) 75%,
-          rgba(255, 255, 255, 0.85) 100%
+          180deg,
+          rgba(255, 255, 255, 0.65) 0%,
+          rgba(255, 255, 255, 0.55) 40%,
+          rgba(255, 255, 255, 0.65) 100%
         ),
         radial-gradient(
-          ellipse 480px 460px at 50% 55%,
-          rgba(255, 186, 89, 0.16) 0%,
-          rgba(255, 122, 48, 0.08) 32%,
-          rgba(232, 58, 26, 0.03) 55%,
+          ellipse 460px 440px at 50% 55%,
+          rgba(255, 186, 89, 0.12) 0%,
+          rgba(255, 122, 48, 0.06) 32%,
+          rgba(232, 58, 26, 0.02) 55%,
           transparent 78%
         );
     }
