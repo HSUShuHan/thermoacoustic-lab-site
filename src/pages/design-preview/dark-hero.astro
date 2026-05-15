@@ -1,17 +1,9 @@
 ---
 // PROTOTYPE — not linked from main nav. Visit /design-preview/dark-hero to view.
-// Phase 4b: full Narukama SVG (steamer + cauldron + water + flames + steam +
-// sound wavefronts + embers) ported from Claude Design's HeroFlame.jsx.
+// Phase 4b (revised): narukama lives in the BACKGROUND layer (low opacity,
+// fade-gradient overlay for legibility), with copy on the left and a
+// smoked-glass news panel on the right — matches Claude Design's home-v3.
 import NarukamaHero from "~/components/NarukamaHero.astro";
-
-const embers = [
-  { left: "38%", delay: 0,   duration: 4.2, drift:  16 },
-  { left: "48%", delay: 1.1, duration: 5.0, drift: -10 },
-  { left: "54%", delay: 2.0, duration: 4.6, drift:  22 },
-  { left: "42%", delay: 2.8, duration: 5.4, drift: -18 },
-  { left: "60%", delay: 3.4, duration: 4.0, drift:  10 },
-  { left: "50%", delay: 4.5, duration: 4.8, drift: -14 },
-];
 ---
 
 <!doctype html>
@@ -135,17 +127,143 @@ const embers = [
         padding-bottom: 2px;
       }
 
-      /* Hero */
-      .hero { padding: 80px 0 64px; position: relative; }
+      /* Hero — narukama in background, 2-column copy/news on top */
+      .hero {
+        position: relative;
+        padding: 96px 0;
+        isolation: isolate;
+        overflow: hidden;
+      }
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .hero-bg-figure {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 440px;
+        max-width: 42%;
+        transform: translate(-50%, -50%);
+        opacity: 0.42;
+        filter: saturate(0.95);
+        pointer-events: none;
+      }
+      .hero-bg-figure svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .hero-bg-fade {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg,
+            var(--dk-bg)         0%,
+            rgba(5, 8, 15, 0.55) 20%,
+            rgba(5, 8, 15, 0.18) 50%,
+            rgba(5, 8, 15, 0.55) 80%,
+            var(--dk-bg)         100%),
+          radial-gradient(ellipse 560px 460px at 50% 55%,
+            rgba(255, 186, 89, 0.16) 0%,
+            rgba(255, 122, 48, 0.10) 28%,
+            rgba(232, 58, 26, 0.05) 50%,
+            transparent 75%);
+        z-index: 1;
+      }
       .hero-grid {
+        position: relative;
+        z-index: 2;
         display: grid;
         grid-template-columns: 1fr;
         gap: 40px;
-        align-items: center;
+        align-items: start;
       }
       @media (min-width: 900px) {
-        .hero-grid { grid-template-columns: 1fr 1fr; gap: 64px; }
+        .hero-grid {
+          grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+          gap: 56px;
+        }
       }
+
+      /* News panel on right side of hero */
+      .hero-news {
+        background: rgba(13, 20, 34, 0.55);
+        border: 1px solid var(--dk-border-strong);
+        border-radius: 4px;
+        padding: 18px 20px 14px;
+        backdrop-filter: blur(14px) saturate(1.2);
+        -webkit-backdrop-filter: blur(14px) saturate(1.2);
+        position: relative;
+        z-index: 3;
+      }
+      .hero-news__head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .hero-news__rule {
+        width: 24px;
+        height: 2px;
+        background: var(--flame-orange);
+        box-shadow: 0 0 8px rgba(255, 122, 48, 0.55);
+      }
+      .hero-news__label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--flame-orange);
+      }
+      .hero-news__more {
+        margin-left: auto;
+        background: none;
+        border: 0;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dk-fg-3);
+        cursor: pointer;
+      }
+      .hero-news__more:hover { color: var(--flame-orange); }
+      .hero-news__list { list-style: none; margin: 0; padding: 0; }
+      .hero-news__list li {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 0;
+        border-top: 1px solid var(--dk-border);
+      }
+      .hero-news__list li:first-child { border-top: 0; padding-top: 0; }
+      .hero-news__list li:last-child { padding-bottom: 0; }
+      .hero-news__meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dk-fg-3);
+        letter-spacing: 0.04em;
+      }
+      .hero-news__meta .kind {
+        padding: 1px 6px;
+        border-radius: 2px;
+        background: rgba(255, 122, 48, 0.12);
+        color: var(--flame-orange);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 10px;
+      }
+      .hero-news__title {
+        color: var(--dk-fg-1);
+        font-size: 13.5px;
+        line-height: 1.5;
+        text-decoration: none;
+        transition: color 150ms ease-out;
+      }
+      .hero-news__title:hover { color: var(--flame-orange); }
 
       .status-pill {
         display: inline-flex;
@@ -230,46 +348,8 @@ const embers = [
         color: var(--flame-orange);
       }
 
-      /* Narukama SVG stage */
-      .flame-stage {
-        position: relative;
-        width: 100%;
-        max-width: 440px;
-        margin: 0 auto;
-        aspect-ratio: 360 / 510;
-      }
-      .flame-stage svg {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-      .flame-note {
-        text-align: center;
-        font-size: 11px;
-        font-family: var(--font-mono);
-        color: var(--dk-fg-4);
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        margin-top: 12px;
-      }
-      /* Embers — small floating particles rising from the flame area */
-      .ember {
-        position: absolute;
-        bottom: 14%;
-        width: 3px;
-        height: 3px;
-        border-radius: 50%;
-        background: var(--flame-yellow);
-        box-shadow: 0 0 6px var(--flame-orange);
-        opacity: 0;
-        pointer-events: none;
-      }
-      @keyframes ember-rise {
-        0%   { opacity: 0;   transform: translate(0, 0)        scale(0.6); }
-        20%  { opacity: 0.95; }
-        70%  { opacity: 0.6; }
-        100% { opacity: 0;   transform: translate(var(--drift), -340px) scale(1.2); }
-      }
+      /* (Inline narukama / embers / flame-note styles removed —
+         narukama now lives in the absolute background layer.) */
 
       /* Section header */
       .section { padding: 64px 0; }
@@ -398,11 +478,20 @@ const embers = [
 
     <main>
       <section class="hero">
+        <!-- Background narukama — centred, fade overlay on top for legibility -->
+        <div class="hero-bg" aria-hidden="true">
+          <div class="hero-bg-figure">
+            <NarukamaHero />
+          </div>
+          <div class="hero-bg-fade"></div>
+        </div>
+
         <div class="container hero-grid">
+          <!-- LEFT: copy -->
           <div>
             <div class="status-pill">
               <span class="status-dot"></span>
-              <span>正在運轉 · 24 小時無休</span>
+              <span>熱聲研究 · NTUT</span>
             </div>
             <h1 class="hero-title">熱聲實驗室</h1>
             <div class="hero-subtitle">Thermoacoustic Lab</div>
@@ -414,18 +503,45 @@ const embers = [
               <a href="#" class="btn btn-secondary">加入實驗室</a>
             </div>
           </div>
-          <div>
-            <div class="flame-stage">
-              <NarukamaHero />
-              {embers.map((s) => (
-                <span
-                  class="ember"
-                  style={`left: ${s.left}; --drift: ${s.drift}px; animation: ember-rise ${s.duration}s ease-out ${s.delay}s infinite;`}
-                />
-              ))}
-            </div>
-            <div class="flame-note">narukama 鳴釜 · 1568</div>
-          </div>
+
+          <!-- RIGHT: news panel (smoked glass) -->
+          <aside class="hero-news" aria-label="近況">
+            <header class="hero-news__head">
+              <div class="hero-news__rule"></div>
+              <span class="hero-news__label">近況 · Latest</span>
+              <button class="hero-news__more">全部 →</button>
+            </header>
+            <ul class="hero-news__list">
+              <li>
+                <div class="hero-news__meta">
+                  <span>2026-05-10</span>
+                  <span class="kind">animation</span>
+                </div>
+                <a class="hero-news__title" href="#">網站新增駐波型熱聲機制互動動畫</a>
+              </li>
+              <li>
+                <div class="hero-news__meta">
+                  <span>2025-11-10</span>
+                  <span class="kind">conference</span>
+                </div>
+                <a class="hero-news__title" href="#">實驗室一行參與日本仙台 ICFD 2025</a>
+              </li>
+              <li>
+                <div class="hero-news__meta">
+                  <span>2024-11</span>
+                  <span class="kind">publication</span>
+                </div>
+                <a class="hero-news__title" href="#">Applied Energy — 熱聲史特靈液柱引擎之阻抗匹配</a>
+              </li>
+              <li>
+                <div class="hero-news__meta">
+                  <span>2024-05</span>
+                  <span class="kind">publication</span>
+                </div>
+                <a class="hero-news__title" href="#">Physics of Fluids — 濕熱聲引擎中的凝結爆衝</a>
+              </li>
+            </ul>
+          </aside>
         </div>
       </section>
 
