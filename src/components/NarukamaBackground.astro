@@ -30,8 +30,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
     .narukama-bg-figure {
       left: 50%;
       max-width: 70%;
-      opacity: 0.35;
-      filter: grayscale(1);
+      opacity: 0.3;
     }
   }
   .narukama-bg-figure :global(svg) {
@@ -65,16 +64,23 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
     z-index: 1;
   }
   @media (max-width: 900px) {
-    /* Narukama is grayscale on mobile (see .narukama-bg-figure rule above);
-       drop the warm halo from the overlay so it matches. Pure white wash
-       keeps content readable. */
+    /* Bamboo steamer + lower opacity already tame the narukama on mobile;
+       fade overlay is a soft full-screen white wash + a faint warm halo. */
     .narukama-bg-fade {
-      background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.55) 0%,
-        rgba(255, 255, 255, 0.50) 40%,
-        rgba(255, 255, 255, 0.55) 100%
-      );
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.50) 0%,
+          rgba(255, 255, 255, 0.45) 40%,
+          rgba(255, 255, 255, 0.50) 100%
+        ),
+        radial-gradient(
+          ellipse 460px 440px at 50% 55%,
+          rgba(255, 186, 89, 0.10) 0%,
+          rgba(255, 122, 48, 0.05) 32%,
+          rgba(232, 58, 26, 0.02) 55%,
+          transparent 78%
+        );
     }
   }
 </style>
