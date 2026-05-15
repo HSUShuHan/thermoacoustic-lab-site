@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
 
 const allRaw = await getCollection("news");
 const baseEntries = allRaw.filter((n) => !n.slug.endsWith("-en"));
@@ -47,9 +48,9 @@ const rendered = await Promise.all(
             <h2 class="mt-1 text-xl font-semibold text-brand-900">
               <a href={`#${baseSlug}`} class="hover:text-accent-700">{n.data.title_en ?? n.data.title}</a>
             </h2>
-            <div class="prose prose-brand mt-4 max-w-none text-gray-700">
+            <Prose>
               <Content />
-            </div>
+            </Prose>
           </li>
         ))}
       </ol>
