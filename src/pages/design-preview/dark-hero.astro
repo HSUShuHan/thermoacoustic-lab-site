@@ -1,8 +1,17 @@
 ---
 // PROTOTYPE — not linked from main nav. Visit /design-preview/dark-hero to view.
-// Tests Claude Design's dark theme + Narukama flame hero direction with a
-// simplified radial-gradient flame (full Narukama SVG with animations is
-// reserved for a phase 4b port if this direction proves out).
+// Phase 4b: full Narukama SVG (steamer + cauldron + water + flames + steam +
+// sound wavefronts + embers) ported from Claude Design's HeroFlame.jsx.
+import NarukamaHero from "~/components/NarukamaHero.astro";
+
+const embers = [
+  { left: "38%", delay: 0,   duration: 4.2, drift:  16 },
+  { left: "48%", delay: 1.1, duration: 5.0, drift: -10 },
+  { left: "54%", delay: 2.0, duration: 4.6, drift:  22 },
+  { left: "42%", delay: 2.8, duration: 5.4, drift: -18 },
+  { left: "60%", delay: 3.4, duration: 4.0, drift:  10 },
+  { left: "50%", delay: 4.5, duration: 4.8, drift: -14 },
+];
 ---
 
 <!doctype html>
@@ -221,62 +230,45 @@
         color: var(--flame-orange);
       }
 
-      /* Flame visual (simplified — gradient blob, not full Narukama) */
-      .flame-wrap {
+      /* Narukama SVG stage */
+      .flame-stage {
         position: relative;
-        min-height: 460px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        aspect-ratio: 360 / 510;
       }
-      .flame-core {
-        position: absolute;
-        width: 320px;
-        height: 460px;
-        background: radial-gradient(
-          ellipse at 50% 70%,
-          var(--flame-core) 0%,
-          var(--flame-yellow) 18%,
-          var(--flame-orange) 38%,
-          var(--flame-red) 62%,
-          rgba(122, 22, 10, 0.4) 80%,
-          transparent 100%
-        );
-        filter: blur(2px);
-        animation: flicker 3s ease-in-out infinite alternate;
-        mix-blend-mode: screen;
-      }
-      .flame-glow {
-        position: absolute;
-        width: 480px;
-        height: 480px;
-        background: radial-gradient(
-          circle,
-          rgba(255, 122, 48, 0.3) 0%,
-          rgba(232, 58, 26, 0.15) 35%,
-          transparent 70%
-        );
-        animation: glow 4s ease-in-out infinite alternate;
-      }
-      @keyframes flicker {
-        0% { transform: scale(1) translateY(0); opacity: 0.95; }
-        50% { transform: scale(1.04, 0.97) translateY(-2px); opacity: 1; }
-        100% { transform: scale(0.98, 1.03) translateY(2px); opacity: 0.92; }
-      }
-      @keyframes glow {
-        0% { transform: scale(1); opacity: 0.8; }
-        100% { transform: scale(1.08); opacity: 1; }
+      .flame-stage svg {
+        width: 100%;
+        height: 100%;
+        display: block;
       }
       .flame-note {
-        position: absolute;
-        bottom: -8px;
+        text-align: center;
         font-size: 11px;
         font-family: var(--font-mono);
         color: var(--dk-fg-4);
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        text-align: center;
-        width: 100%;
+        margin-top: 12px;
+      }
+      /* Embers — small floating particles rising from the flame area */
+      .ember {
+        position: absolute;
+        bottom: 14%;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--flame-yellow);
+        box-shadow: 0 0 6px var(--flame-orange);
+        opacity: 0;
+        pointer-events: none;
+      }
+      @keyframes ember-rise {
+        0%   { opacity: 0;   transform: translate(0, 0)        scale(0.6); }
+        20%  { opacity: 0.95; }
+        70%  { opacity: 0.6; }
+        100% { opacity: 0;   transform: translate(var(--drift), -340px) scale(1.2); }
       }
 
       /* Section header */
@@ -422,9 +414,16 @@
               <a href="#" class="btn btn-secondary">加入實驗室</a>
             </div>
           </div>
-          <div class="flame-wrap">
-            <div class="flame-glow"></div>
-            <div class="flame-core"></div>
+          <div>
+            <div class="flame-stage">
+              <NarukamaHero />
+              {embers.map((s) => (
+                <span
+                  class="ember"
+                  style={`left: ${s.left}; --drift: ${s.drift}px; animation: ember-rise ${s.duration}s ease-out ${s.delay}s infinite;`}
+                />
+              ))}
+            </div>
             <div class="flame-note">narukama 鳴釜 · 1568</div>
           </div>
         </div>
