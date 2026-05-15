@@ -67,8 +67,11 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
       .proto-banner a { color: var(--flame-orange); text-decoration: underline; }
       .proto-banner code { font-family: var(--font-mono); }
 
-      /* Header */
+      /* Header — sticky on scroll, above the fixed narukama bg */
       .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
         background: rgba(5, 8, 15, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
@@ -134,14 +137,10 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         isolation: isolate;
         overflow: hidden;
       }
-      .hero-bg {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-      }
+      /* Narukama + fade kept FIXED to viewport so it persists while scrolling.
+         pointer-events: none so they don't block clicks on content above. */
       .hero-bg-figure {
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
         width: 440px;
@@ -150,6 +149,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         opacity: 0.42;
         filter: saturate(0.95);
         pointer-events: none;
+        z-index: 0;
       }
       .hero-bg-figure svg {
         width: 100%;
@@ -157,7 +157,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         display: block;
       }
       .hero-bg-fade {
-        position: absolute;
+        position: fixed;
         inset: 0;
         background:
           linear-gradient(90deg,
@@ -171,6 +171,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
             rgba(255, 122, 48, 0.10) 28%,
             rgba(232, 58, 26, 0.05) 50%,
             transparent 75%);
+        pointer-events: none;
         z-index: 1;
       }
       .hero-grid {
@@ -351,8 +352,13 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
       /* (Inline narukama / embers / flame-note styles removed —
          narukama now lives in the absolute background layer.) */
 
-      /* Section header */
-      .section { padding: 64px 0; }
+      /* Section header — relative + z-index so it sits ABOVE the fixed
+         narukama background (which has z-index 0 / 1). */
+      .section {
+        padding: 64px 0;
+        position: relative;
+        z-index: 2;
+      }
       .section-rule {
         width: 48px;
         height: 2px;
@@ -672,8 +678,10 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         line-height: 1.4;
       }
 
-      /* Footer */
+      /* Footer — also above fixed narukama; opaque bg covers it */
       .footer {
+        position: relative;
+        z-index: 2;
         background: #02050a;
         border-top: 1px solid var(--dk-border);
         padding: 48px 0 32px;
@@ -711,8 +719,10 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         color: var(--dk-fg-4);
       }
 
-      /* Compare strip */
+      /* Compare strip — also above fixed narukama */
       .compare {
+        position: relative;
+        z-index: 2;
         border-top: 1px solid var(--dk-border);
         padding: 40px 0 80px;
         font-size: 13px;
