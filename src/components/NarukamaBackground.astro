@@ -1,0 +1,52 @@
+---
+// Fixed-position narukama atmospheric background + white-tinted fade overlay.
+// Render at the top of <body> on pages that want the persistent flame.
+// Sections / Footer must use `relative z-10` (or higher) to layer above.
+import NarukamaHero from "~/components/NarukamaHero.astro";
+---
+
+<div class="narukama-bg-figure" aria-hidden="true">
+  <NarukamaHero />
+</div>
+<div class="narukama-bg-fade" aria-hidden="true"></div>
+
+<style>
+  .narukama-bg-figure {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 440px;
+    max-width: 42%;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .narukama-bg-figure :global(svg) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .narukama-bg-fade {
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.70) 18%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0.70) 82%,
+        rgba(255, 255, 255, 0.95) 100%
+      ),
+      radial-gradient(
+        ellipse 600px 500px at 50% 55%,
+        rgba(255, 186, 89, 0.18) 0%,
+        rgba(255, 122, 48, 0.10) 32%,
+        rgba(232, 58, 26, 0.04) 55%,
+        transparent 78%
+      );
+    pointer-events: none;
+    z-index: 1;
+  }
+</style>
