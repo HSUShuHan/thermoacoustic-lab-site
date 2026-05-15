@@ -11,12 +11,15 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
 <div class="narukama-bg-fade" aria-hidden="true"></div>
 
 <style>
-  /* Narukama positioned right-of-centre (centre at left:72%); fade gradient
-     re-weighted so the strong white sits over the left text column. */
+  /* Narukama centred on the news card column of the max-w-6xl layout.
+     Container = 1152px, padding 24, gap 48 → each col 528px wide; news card
+     centre sits 288px right of container centre. calc() anchors to that
+     geometry so the alignment holds across viewport widths > 1152;
+     on narrower viewports (single-column hero) it falls back gracefully. */
   .narukama-bg-figure {
     position: fixed;
     top: 50%;
-    left: 72%;
+    left: calc(50% + 288px);
     width: 440px;
     max-width: 42%;
     transform: translate(-50%, -50%);
@@ -29,6 +32,9 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
     height: auto;
     display: block;
   }
+  /* Fade overlay: strong white on left (keeps hero copy crisp), transparent
+     window at news-card column (~50% + 288px in viewport space), gentle
+     edge fade on right. Radial warm halo follows the narukama centre. */
   .narukama-bg-fade {
     position: fixed;
     inset: 0;
@@ -37,12 +43,12 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         90deg,
         rgba(255, 255, 255, 0.95) 0%,
         rgba(255, 255, 255, 0.85) 30%,
-        rgba(255, 255, 255, 0.40) 55%,
-        rgba(255, 255, 255, 0.05) 72%,
-        rgba(255, 255, 255, 0.35) 100%
+        rgba(255, 255, 255, 0.50) 50%,
+        rgba(255, 255, 255, 0.10) 68%,
+        rgba(255, 255, 255, 0.30) 100%
       ),
       radial-gradient(
-        ellipse 600px 500px at 72% 55%,
+        ellipse 600px 500px at 68% 55%,
         rgba(255, 186, 89, 0.18) 0%,
         rgba(255, 122, 48, 0.10) 32%,
         rgba(232, 58, 26, 0.04) 55%,
