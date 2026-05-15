@@ -116,9 +116,8 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         isolation: isolate;
         overflow: hidden;
       }
-      /* Lower opacity than dark version (warm flame against white reads loud).
-         Slight grayscale + saturate trim to keep it as background atmosphere
-         rather than a focal element. */
+      /* Narukama against white reads loudly — keep enough opacity to have
+         visual presence but tone via fade overlay edges so text stays readable. */
       .hero-bg-figure {
         position: fixed;
         top: 50%;
@@ -126,8 +125,7 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         width: 440px;
         max-width: 42%;
         transform: translate(-50%, -50%);
-        opacity: 0.18;
-        filter: saturate(0.8) brightness(1.05);
+        opacity: 0.5;
         pointer-events: none;
         z-index: 0;
       }
@@ -138,15 +136,15 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         background:
           linear-gradient(90deg,
             rgba(255, 255, 255, 0.95) 0%,
-            rgba(255, 255, 255, 0.55) 20%,
-            rgba(255, 255, 255, 0.18) 50%,
-            rgba(255, 255, 255, 0.55) 80%,
+            rgba(255, 255, 255, 0.70) 18%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0.70) 82%,
             rgba(255, 255, 255, 0.95) 100%),
-          radial-gradient(ellipse 560px 460px at 50% 55%,
-            rgba(255, 186, 89, 0.10) 0%,
-            rgba(255, 122, 48, 0.06)  28%,
-            rgba(232, 58, 26, 0.03)   50%,
-            transparent 75%);
+          radial-gradient(ellipse 600px 500px at 50% 55%,
+            rgba(255, 186, 89, 0.18) 0%,
+            rgba(255, 122, 48, 0.10) 32%,
+            rgba(232, 58, 26, 0.04)  55%,
+            transparent 78%);
         pointer-events: none;
         z-index: 1;
       }
