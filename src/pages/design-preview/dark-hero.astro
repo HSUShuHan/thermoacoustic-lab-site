@@ -432,6 +432,285 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
       }
       .card:hover .card-link { color: var(--flame-orange); }
 
+      /* PI block (faculty) */
+      .pi-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+        align-items: start;
+      }
+      @media (min-width: 768px) {
+        .pi-grid { grid-template-columns: 240px 1fr; gap: 48px; }
+      }
+      .pi-card {
+        background: var(--dk-bg-card);
+        border: 1px solid var(--dk-border);
+        border-radius: 4px;
+        padding: 24px;
+      }
+      .pi-photo {
+        width: 100%;
+        aspect-ratio: 1;
+        background: linear-gradient(135deg, #1d242f 0%, #0a0e15 100%);
+        border: 1px solid var(--dk-border);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dk-fg-4);
+        font-size: 11px;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .pi-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--dk-fg-1);
+        margin: 16px 0 4px;
+      }
+      .pi-role {
+        font-size: 13px;
+        color: var(--dk-fg-3);
+        font-family: var(--font-mono);
+        letter-spacing: 0.04em;
+      }
+      .pi-affil { color: var(--dk-fg-2); font-size: 14px; line-height: 1.6; }
+      .pi-interests { margin-top: 20px; }
+      .pi-interests-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--flame-orange);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .pi-interests ul { list-style: none; padding: 0; margin: 0; }
+      .pi-interests li {
+        padding: 6px 0;
+        border-top: 1px solid var(--dk-border);
+        color: var(--dk-fg-2);
+        font-size: 14px;
+      }
+      .pi-interests li:first-child { border-top: 0; }
+      .pi-interests li::before {
+        content: '·';
+        color: var(--flame-orange);
+        margin-right: 8px;
+      }
+
+      /* Publications row (dark variant of step 3 design) */
+      .pub-row {
+        display: grid;
+        grid-template-columns: 56px 1fr 80px;
+        gap: 16px;
+        align-items: start;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--dk-border);
+      }
+      @media (min-width: 768px) {
+        .pub-row { grid-template-columns: 80px 1fr 100px; gap: 24px; }
+      }
+      .pub-list-dark {
+        list-style: none;
+        margin: 24px 0 0;
+        padding: 0;
+        border-top: 1px solid var(--dk-border);
+      }
+      .pub-year {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--flame-orange);
+        font-weight: 500;
+      }
+      .pub-title-dark {
+        display: block;
+        color: var(--dk-fg-1);
+        font-weight: 600;
+        line-height: 1.45;
+        text-decoration: none;
+        transition: color 150ms;
+      }
+      .pub-title-dark:hover { color: var(--flame-orange); }
+      .pub-authors-dark { font-size: 13px; color: var(--dk-fg-2); margin-top: 4px; }
+      .pub-venue-dark {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--dk-fg-3);
+        font-style: italic;
+        margin-top: 2px;
+      }
+      .pub-chip {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-right: 6px;
+        margin-top: 8px;
+      }
+      .pub-chip.if {
+        background: rgba(255, 122, 48, 0.12);
+        color: var(--flame-orange);
+      }
+      .pub-chip.q1 {
+        background: rgba(16, 185, 129, 0.14);
+        color: #6ee7b7;
+      }
+      .pub-kind-dark {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--dk-fg-3);
+        text-align: right;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* Projects row */
+      .project-card-dark {
+        background: var(--dk-bg-card);
+        border: 1px solid var(--dk-border);
+        border-radius: 4px;
+        padding: 20px 24px;
+        margin-bottom: 14px;
+      }
+      .project-meta-dark {
+        display: flex;
+        gap: 14px;
+        align-items: baseline;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dk-fg-3);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .project-meta-dark .funder {
+        color: var(--flame-orange);
+        background: rgba(255, 122, 48, 0.12);
+        padding: 1px 8px;
+        border-radius: 2px;
+      }
+      .project-meta-dark .budget {
+        margin-left: auto;
+        color: var(--flame-orange);
+        font-weight: 600;
+      }
+      .project-title-dark {
+        margin-top: 8px;
+        font-size: 17px;
+        color: var(--dk-fg-1);
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      /* Media (video) grid */
+      .media-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 24px;
+      }
+      @media (min-width: 768px) { .media-grid { grid-template-columns: 1fr 1fr; } }
+      .media-card {
+        background: var(--dk-bg-card);
+        border: 1px solid var(--dk-border);
+        border-radius: 4px;
+        overflow: hidden;
+        transition: 200ms ease-out;
+      }
+      .media-card:hover {
+        border-color: rgba(255, 122, 48, 0.4);
+        transform: translateY(-1px);
+      }
+      .media-thumb {
+        aspect-ratio: 16/9;
+        background:
+          linear-gradient(180deg, rgba(255, 122, 48, 0.18), rgba(232, 58, 26, 0.06)),
+          var(--dk-bg-elev);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dk-fg-4);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        position: relative;
+      }
+      .media-thumb::after {
+        content: '';
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 122, 48, 0.9);
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 24px rgba(255, 122, 48, 0.5);
+      }
+      .media-thumb::before {
+        content: '▶';
+        position: absolute;
+        font-size: 16px;
+        color: #1a0a05;
+        z-index: 1;
+        margin-left: 4px;
+      }
+      .media-meta-row { padding: 14px 18px; }
+      .media-year-dark {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dk-fg-3);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .media-title-dark {
+        margin-top: 4px;
+        color: var(--dk-fg-1);
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      /* Footer */
+      .footer {
+        background: #02050a;
+        border-top: 1px solid var(--dk-border);
+        padding: 48px 0 32px;
+        margin-top: 64px;
+        color: var(--dk-fg-3);
+        font-size: 13px;
+      }
+      .footer h4 {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        color: var(--flame-orange);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0 0 8px;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      @media (min-width: 768px) {
+        .footer-grid { grid-template-columns: 1.4fr 1fr 1fr; }
+      }
+      .footer p { margin: 4px 0; line-height: 1.6; }
+      .footer a { color: var(--dk-fg-2); text-decoration: none; }
+      .footer a:hover { color: var(--flame-orange); }
+      .footer-copy {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--dk-border);
+        font-size: 11px;
+        font-family: var(--font-mono);
+        display: flex;
+        justify-content: space-between;
+        color: var(--dk-fg-4);
+      }
+
       /* Compare strip */
       .compare {
         border-top: 1px solid var(--dk-border);
@@ -577,6 +856,147 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
         </div>
       </section>
 
+      <!-- PI block -->
+      <section class="section">
+        <div class="container">
+          <div class="section-rule"></div>
+          <div class="eyebrow">Principal Investigator</div>
+          <h2>指導教授</h2>
+          <div class="pi-grid">
+            <div>
+              <div class="pi-photo">PI photo · 240 × 240</div>
+              <div class="pi-name">許書涵</div>
+              <div class="pi-role">Assoc. Prof. Shu-Han Hsu</div>
+            </div>
+            <div class="pi-card">
+              <div class="pi-affil">國立臺北科技大學機械工程系 副教授</div>
+              <div class="pi-affil" style="color: var(--dk-fg-3); font-size: 13px;">
+                日本東北大學工學博士，機械機能創成專攻
+              </div>
+              <div class="pi-interests">
+                <div class="pi-interests-label">Research Interests</div>
+                <ul>
+                  <li>熱聲效應實驗調查</li>
+                  <li>熱聲引擎與熱聲製冷機設計與開發</li>
+                  <li>非線性熱聲現象探索</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Selected publications -->
+      <section class="section">
+        <div class="container">
+          <div class="section-rule"></div>
+          <div class="eyebrow">Selected Publications</div>
+          <h2>精選發表</h2>
+          <ul class="pub-list-dark">
+            <li class="pub-row">
+              <span class="pub-year">2024</span>
+              <div>
+                <a class="pub-title-dark" href="#">
+                  Impedance matching for investigating operational conditions in thermoacoustic Stirling fluidic engine
+                </a>
+                <div class="pub-authors-dark"><strong>Shu-Han Hsu</strong>, Zhe-Yi Liao</div>
+                <div class="pub-venue-dark">Applied Energy</div>
+                <span class="pub-chip if">IF 10.1</span>
+                <span class="pub-chip q1">Q1 (1/223) Building &amp; Construction · Scopus</span>
+              </div>
+              <span class="pub-kind-dark">Journal</span>
+            </li>
+            <li class="pub-row">
+              <span class="pub-year">2024</span>
+              <div>
+                <a class="pub-title-dark" href="#">
+                  Condensation shock induced in wet thermoacoustic prime mover
+                </a>
+                <div class="pub-authors-dark"><strong>Shu-Han Hsu</strong>, Hong-En Lin</div>
+                <div class="pub-venue-dark">Physics of Fluids</div>
+                <span class="pub-chip if">IF 4.6</span>
+                <span class="pub-chip q1">Q1 (2/34) Physics, Fluids &amp; Plasmas · JCR</span>
+              </div>
+              <span class="pub-kind-dark">Journal</span>
+            </li>
+            <li class="pub-row">
+              <span class="pub-year">2023</span>
+              <div>
+                <a class="pub-title-dark" href="#">
+                  Estimation of limit cycle amplitude after onset threshold of thermoacoustic Stirling engine
+                </a>
+                <div class="pub-authors-dark"><strong>Shu-Han Hsu</strong>, Yi-Ting Li</div>
+                <div class="pub-venue-dark">Experimental Thermal and Fluid Science</div>
+                <span class="pub-chip if">IF 3.2</span>
+                <span class="pub-chip q1">Q1 (7/68) Energy — Nuclear Energy &amp; Engineering · Scopus</span>
+              </div>
+              <span class="pub-kind-dark">Journal</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Recent projects -->
+      <section class="section">
+        <div class="container">
+          <div class="section-rule"></div>
+          <div class="eyebrow">Projects</div>
+          <h2>近期計畫</h2>
+          <div style="margin-top: 24px;">
+            <div class="project-card-dark">
+              <div class="project-meta-dark">
+                <span class="funder">國科會</span>
+                <span>2024-08 ~ 2025-07</span>
+                <span class="budget">NT$ 850K</span>
+              </div>
+              <div class="project-title-dark">動態系統觀點之非燃燒熱聲不穩定調查</div>
+            </div>
+            <div class="project-card-dark">
+              <div class="project-meta-dark">
+                <span class="funder">國科會</span>
+                <span>2023-08 ~ 2024-07</span>
+                <span class="budget">NT$ 759K</span>
+              </div>
+              <div class="project-title-dark">熱聲發電原型機開發</div>
+            </div>
+            <div class="project-card-dark">
+              <div class="project-meta-dark">
+                <span class="funder">科技部</span>
+                <span>2019-08 ~ 2022-07</span>
+                <span class="budget">NT$ 3,004K</span>
+              </div>
+              <div class="project-title-dark">使用濕蓄熱器與液柱之行波型熱聲引擎</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Media -->
+      <section class="section">
+        <div class="container">
+          <div class="section-rule"></div>
+          <div class="eyebrow">Media</div>
+          <h2>影像紀錄</h2>
+          <div class="media-grid">
+            <div class="media-card">
+              <div class="media-thumb">video thumbnail</div>
+              <div class="media-meta-row">
+                <div class="media-year-dark">2024</div>
+                <div class="media-title-dark">濕熱聲引擎中的凝結爆衝</div>
+              </div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb">video thumbnail</div>
+              <div class="media-meta-row">
+                <div class="media-year-dark">2024</div>
+                <div class="media-title-dark">熱聲史特靈液柱引擎之阻抗匹配</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Compare / return strip -->
       <section class="compare">
         <div class="container">
           這是視覺方向測試頁。原 live site light theme 仍正常運作 ——
@@ -584,6 +1004,33 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
           <a href="/publications">發表頁（已採用 Design 之 filter 樣式）</a>
         </div>
       </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-grid">
+            <div>
+              <h4>熱聲實驗室 · Thermoacoustic Lab</h4>
+              <p>10608 台北市忠孝東路三段 1 號<br />綜合科館 614-2A</p>
+              <p>國立臺北科技大學機械工程系</p>
+            </div>
+            <div>
+              <h4>Contact</h4>
+              <p>📞 (02) 2771-2171 #2086</p>
+              <p>📧 <a href="mailto:bookhsu@ntut.edu.tw">bookhsu@ntut.edu.tw</a></p>
+            </div>
+            <div>
+              <h4>Links</h4>
+              <p><a href="#">ORCID</a></p>
+              <p><a href="#">NTUT</a></p>
+            </div>
+          </div>
+          <div class="footer-copy">
+            <span>© 2026 Thermoacoustic Lab</span>
+            <span>thermoacoustictw.org</span>
+          </div>
+        </div>
+      </footer>
     </main>
   </body>
 </html>
