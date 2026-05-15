@@ -11,10 +11,12 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
 <div class="narukama-bg-fade" aria-hidden="true"></div>
 
 <style>
+  /* Narukama positioned right-of-centre (centre at left:72%); fade gradient
+     re-weighted so the strong white sits over the left text column. */
   .narukama-bg-figure {
     position: fixed;
     top: 50%;
-    left: 50%;
+    left: 72%;
     width: 440px;
     max-width: 42%;
     transform: translate(-50%, -50%);
@@ -34,13 +36,13 @@ import NarukamaHero from "~/components/NarukamaHero.astro";
       linear-gradient(
         90deg,
         rgba(255, 255, 255, 0.95) 0%,
-        rgba(255, 255, 255, 0.70) 18%,
-        rgba(255, 255, 255, 0.05) 50%,
-        rgba(255, 255, 255, 0.70) 82%,
-        rgba(255, 255, 255, 0.95) 100%
+        rgba(255, 255, 255, 0.85) 30%,
+        rgba(255, 255, 255, 0.40) 55%,
+        rgba(255, 255, 255, 0.05) 72%,
+        rgba(255, 255, 255, 0.35) 100%
       ),
       radial-gradient(
-        ellipse 600px 500px at 50% 55%,
+        ellipse 600px 500px at 72% 55%,
         rgba(255, 186, 89, 0.18) 0%,
         rgba(255, 122, 48, 0.10) 32%,
         rgba(232, 58, 26, 0.04) 55%,
