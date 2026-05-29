@@ -1,0 +1,278 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import AirColumnWaveAnimation from "~/components/research/AirColumnWaveAnimation.astro";
+import katex from "katex";
+
+// KaTeX CSS is loaded globally via global.css; render to HTML here.
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+
+// Geometry for the k–ω "waterfall": snapshots of the traveling wave
+// p'(x) = |P|cos(kx − ωt) at t = 0, T/4, … , T stacked downward. A tracked
+// crest marches right (slope = wave speed c); horizontal period = λ (→ k),
+// vertical span = T (→ ω).
+const waterfall = (() => {
+  const x0 = 62,
+    x1 = 596,
+    amp = 15,
+    cycles = 2.8,
+    N = 150,
+    rows = 5,
+    rowGap = 50,
+    topY = 48;
+  const lamPx = (x1 - x0) / cycles;
+  const series: { y: number; pts: string; label: string }[] = [];
+  const crest: { x: number; y: number }[] = [];
+  const labels = ["0", "T/4", "T/2", "3T/4", "T"];
+  for (let j = 0; j < rows; j++) {
+    const yc = topY + j * rowGap;
+    let pts = "";
+    for (let i = 0; i <= N; i++) {
+      const fx = i / N;
+      const ph = cycles * 2 * Math.PI * fx - (j * Math.PI) / 2;
+      const x = x0 + (x1 - x0) * fx;
+      const y = yc - amp * Math.cos(ph);
+      pts += `${x.toFixed(1)},${y.toFixed(1)} `;
+    }
+    series.push({ y: yc, pts: pts.trim(), label: labels[j] });
+    crest.push({ x: x0 + (x1 - x0) * ((1 + j / 4) / cycles), y: yc - amp });
+  }
+  const lamX1 = x0 + (x1 - x0) * (1 / cycles);
+  return {
+    series,
+    crest,
+    x0,
+    x1,
+    topY,
+    lamX1,
+    lamX2: lamX1 + lamPx,
+    bottomY: topY + (rows - 1) * rowGap,
+  };
+})();
+---
+
+<BaseLayout
+  lang="en"
+  title="Animations · Primer: Standing &amp; Traveling Waves in a Gas Column"
+  description="Acoustics primer animation: traveling and standing waves in a resonance tube and their superposition; displacement/pressure nodes and antinodes, the complex representation, boundary conditions and harmonics, and the p′–u′ phase relationship. The prerequisite for understanding thermoacoustic engines."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      Standing &amp; Traveling Waves in a Gas Column
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      Primer · 氣柱中的駐波與行波
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      Before tackling the
+      <a href="/en/research/animations/standing-wave" class="underline hover:text-accent-600">standing-wave</a>
+      and traveling-wave thermoacoustic mechanisms, build the most basic acoustic
+      intuition: sound is the <strong>longitudinal</strong> oscillation of gas
+      parcels. Watch the parcels form compressions and rarefactions, contrast a
+      <strong>traveling wave</strong> (the dense/sparse regions move along) with a
+      <strong>standing wave</strong> (nodes/antinodes stay fixed), and see that a
+      standing wave is just the superposition of
+      <strong>two counter-propagating traveling waves</strong>.
+    </p>
+  </section>
+
+  <AirColumnWaveAnimation lang="en" />
+
+  <section class="mt-8 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">The math</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Complex representation: time ↔ frequency</h3>
+    <p class="mt-2 text-gray-700">
+      The acoustic perturbations (displacement, volume flow rate, pressure…) are all <strong>real</strong> functions of space and time. To carry both amplitude and phase in one object we use the <strong>complex representation</strong>: let <span set:html={m("\\mathsf{a}'(x,t)")} /> stand for any perturbation, write it as a <strong>frequency-domain complex amplitude</strong> <span set:html={m("\\mathsf{A}(x)")} /> times the time factor <span set:html={m("e^{i\\omega t}")} />, and <strong>take the real part</strong> for the physical quantity (Swift/Rott <span set:html={m("e^{+i\\omega t}")} /> convention):
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\mathsf{a}'(x,t)=\\operatorname{Re}\\!\\big\\{\\mathsf{A}(x)\\,e^{i\\omega t}\\big\\}, \\qquad \\mathsf{A}(x)=|\\mathsf{A}|\\,e^{i\\varphi}")} />
+    <p class="mt-3 text-gray-700">By <strong>Euler's formula</strong> the time factor splits into cosine and sine:</p>
+    <div class="mt-2 overflow-x-auto" set:html={md("e^{i\\omega t}=\\cos\\omega t + i\\sin\\omega t")} />
+    <p class="mt-3 text-gray-700">
+      It is a <strong>unit vector of length 1 rotating counter-clockwise at <span set:html={m("\\omega")} /></strong> in the complex plane (period <span set:html={m("T=2\\pi/\\omega")} />); multiplying by <span set:html={m("\\mathsf{A}")} /> <strong>scales it by <span set:html={m("|\\mathsf{A}|")} /> and rotates it by <span set:html={m("\\varphi")} /></strong>. So case carries meaning: a <strong>lowercase primed</strong> <span set:html={m("\\mathsf{a}'")} /> = real time-domain quantity, an <strong>uppercase</strong> <span set:html={m("\\mathsf{A}")} /> = complex frequency-domain amplitude. The <strong>complex-plane</strong> panel under "Advanced analysis" draws exactly this rotating <span set:html={m("\\mathsf{A}\\,e^{i\\omega t}")} />, whose <span set:html={m("\\operatorname{Re}")} />-axis <strong>projection</strong> is <span set:html={m("\\mathsf{a}'")} />.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Pressure field: traveling, standing, superposition</h3>
+    <p class="mt-2 text-gray-700">
+      Working in the acoustic pressure <span set:html={m("p'")} /> (complex amplitude <span set:html={m("P")} />) is the most direct. The <strong>traveling</strong> wave (toward <span set:html={m("+x")} />) and <strong>standing</strong> wave are:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{traveling: }\\ p' = |P|\\cos(kx-\\omega t) = \\operatorname{Re}\\{P\\,e^{i\\omega t}\\}, \\quad P=|P|\\,e^{-ikx}")} />
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{standing: }\\ p' = |P|\\cos(kx)\\cos(\\omega t) = \\operatorname{Re}\\{P\\,e^{i\\omega t}\\}, \\quad P=|P|\\cos(kx)")} />
+    <p class="mt-3 text-gray-700">
+      A standing wave is exactly the superposition of <strong>two equal-amplitude counter-propagating traveling waves</strong> (product-to-sum) — what the animation's "Superposition" mode draws:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("|P|\\cos(kx)\\cos(\\omega t) = \\tfrac{|P|}{2}\\cos(kx-\\omega t) + \\tfrac{|P|}{2}\\cos(kx+\\omega t)")} />
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Wave parameters: <span set:html={m("k,\\ \\omega,\\ f,\\ \\lambda")} /></h3>
+    <p class="mt-2 text-gray-700">
+      The <strong>angular frequency</strong> <span set:html={m("\\omega")} /> is the phase rate in <strong>time</strong> (radians per second); the <strong>wavenumber</strong> <span set:html={m("k")} /> is the phase rate in <strong>space</strong> (radians per metre); <span set:html={m("f")} /> is frequency, <span set:html={m("\\lambda")} /> wavelength, <span set:html={m("c")} /> sound speed:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\omega = 2\\pi f, \\qquad k = \\frac{2\\pi}{\\lambda} = \\frac{\\omega}{c}")} />
+    <p class="mt-3 text-gray-700">
+      Stacking the <strong>spatial waveform</strong> of the traveling wave <span set:html={m("p'=|P|\\cos(kx-\\omega t)")} /> at successive times (<span set:html={m("t=0,\\ T/4,\\ \\dots,\\ T")} />) makes both periods and the propagation obvious: along <strong>x</strong> it repeats every <strong>wavelength <span set:html={m("\\lambda")} /></strong> (→ <span set:html={m("k")} />); down the page it repeats every <strong>period <span set:html={m("T")} /></strong> (→ <span set:html={m("\\omega")} />); the tracked <strong>crest marches diagonally</strong>, its slope being the wave speed <span set:html={m("c")} />:
+    </p>
+    <figure class="m-0 mt-3 overflow-x-auto rounded-lg border border-brand-100 p-2">
+      <svg viewBox="0 0 660 300" class="w-full" style="min-width:540px" role="img" aria-label="waterfall of wave snapshots in time showing wavelength, period and propagation">
+        <line x1="44" y1={waterfall.topY - 18} x2="44" y2={waterfall.bottomY + 26} stroke="#cbd5e1" stroke-width="1"></line>
+        <polygon points={`44,${waterfall.bottomY + 30} 40,${waterfall.bottomY + 22} 48,${waterfall.bottomY + 22}`} fill="#94a3b8"></polygon>
+        <text x="30" y={waterfall.bottomY + 30} font-size="13" font-style="italic" fill="#475569">t</text>
+        <line x1="44" y1={waterfall.bottomY + 26} x2={waterfall.x1 + 16} y2={waterfall.bottomY + 26} stroke="#cbd5e1" stroke-width="1"></line>
+        <polygon points={`${waterfall.x1 + 20},${waterfall.bottomY + 26} ${waterfall.x1 + 12},${waterfall.bottomY + 22} ${waterfall.x1 + 12},${waterfall.bottomY + 30}`} fill="#94a3b8"></polygon>
+        <text x={waterfall.x1 + 24} y={waterfall.bottomY + 30} font-size="13" font-style="italic" fill="#475569">x</text>
+        <line x1={waterfall.lamX1} y1={waterfall.topY - 28} x2={waterfall.lamX2} y2={waterfall.topY - 28} stroke="#dc2626" stroke-width="1.5"></line>
+        <polygon points={`${waterfall.lamX1},${waterfall.topY - 28} ${waterfall.lamX1 + 6},${waterfall.topY - 31} ${waterfall.lamX1 + 6},${waterfall.topY - 25}`} fill="#dc2626"></polygon>
+        <polygon points={`${waterfall.lamX2},${waterfall.topY - 28} ${waterfall.lamX2 - 6},${waterfall.topY - 31} ${waterfall.lamX2 - 6},${waterfall.topY - 25}`} fill="#dc2626"></polygon>
+        <text x={(waterfall.lamX1 + waterfall.lamX2) / 2} y={waterfall.topY - 33} text-anchor="middle" font-size="14" font-style="italic" fill="#dc2626">λ</text>
+        <line x1="612" y1={waterfall.topY} x2="612" y2={waterfall.bottomY} stroke="#0e7490" stroke-width="1.5"></line>
+        <polygon points={`612,${waterfall.topY} 609,${waterfall.topY + 6} 615,${waterfall.topY + 6}`} fill="#0e7490"></polygon>
+        <polygon points={`612,${waterfall.bottomY} 609,${waterfall.bottomY - 6} 615,${waterfall.bottomY - 6}`} fill="#0e7490"></polygon>
+        <text x="620" y={(waterfall.topY + waterfall.bottomY) / 2 + 4} font-size="14" font-style="italic" fill="#0e7490">T</text>
+        {waterfall.series.map((s) => (
+          <>
+            <text x="36" y={s.y + 4} text-anchor="end" font-size="11" fill="#94a3b8">{s.label}</text>
+            <polyline points={s.pts} fill="none" stroke="#334155" stroke-width="1.8"></polyline>
+          </>
+        ))}
+        <polyline points={waterfall.crest.map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ")} fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"></polyline>
+        {waterfall.crest.map((c) => (
+          <circle cx={c.x} cy={c.y} r="3" fill="#dc2626"></circle>
+        ))}
+        <line x1={waterfall.crest[1].x} y1={waterfall.crest[1].y} x2={waterfall.crest[1].x} y2={waterfall.crest[3].y} stroke="#94a3b8" stroke-width="1"></line>
+        <line x1={waterfall.crest[1].x} y1={waterfall.crest[3].y} x2={waterfall.crest[3].x} y2={waterfall.crest[3].y} stroke="#94a3b8" stroke-width="1"></line>
+        <text x={waterfall.crest[1].x - 7} y={(waterfall.crest[1].y + waterfall.crest[3].y) / 2 + 4} text-anchor="end" font-size="11" font-style="italic" fill="#64748b" stroke="#ffffff" stroke-width="3" paint-order="stroke">Δt</text>
+        <text x={(waterfall.crest[1].x + waterfall.crest[3].x) / 2} y={waterfall.crest[3].y - 6} text-anchor="middle" font-size="11" font-style="italic" fill="#64748b" stroke="#ffffff" stroke-width="3" paint-order="stroke">Δx</text>
+        <text x={waterfall.crest[3].x + 14} y={waterfall.crest[2].y - 2} font-size="13" font-style="italic" fill="#dc2626" stroke="#ffffff" stroke-width="3" paint-order="stroke">c = Δx/Δt</text>
+      </svg>
+    </figure>
+    <p class="mt-2 text-xs text-gray-500" set:html={`Horizontal = space (period ${m("\\lambda")}, giving ${m("k=2\\pi/\\lambda")}); vertical = time (top to bottom is one period ${m("T")}, giving ${m("\\omega=2\\pi/T")}); the slope of the crest line is the wave speed ${m("c=f\\lambda=\\omega/k")}.`} />
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Volume flow rate, and the <span set:html={m("p'")} />–<span set:html={m("u'")} /> phase difference (the key)</h3>
+    <p class="mt-2 text-gray-700">
+      The <strong>volume flow rate</strong> <span set:html={m("u'")} /> (complex amplitude <span set:html={m("U")} />) is the cross-sectional area × particle velocity (<span set:html={m("S")} /> = area, <span set:html={m("\\rho")} /> = density). The linear momentum equation <span set:html={m("\\rho\\,\\partial u/\\partial t = -\\partial p'/\\partial x")} /> links it directly to the pressure field above:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("U = \\frac{iS}{\\omega\\rho}\\,\\frac{dP}{dx}")} />
+    <p class="mt-3 text-gray-700">
+      <strong>The whole point is the phase difference <span set:html={m("\\Delta\\varphi")} /> between pressure <span set:html={m("p'")} /> and volume flow rate <span set:html={m("u'")} /></strong> (the angle between the <span set:html={m("P")} /> and <span set:html={m("U")} /> phasors in the complex plane):
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>Traveling</strong>: substituting <span set:html={m("P=|P|e^{-ikx}")} /> gives <span set:html={m("U=(|P|/Z_0)e^{-ikx}")} />, so <span set:html={m("P")} />, <span set:html={m("U")} /> are <strong>in phase</strong> (<span set:html={m("\\Delta\\varphi=0^\\circ")} />) → <span set:html={m("p'")} />, <span set:html={m("u'")} /> oscillate together.</li>
+      <li><strong>Standing</strong>: substituting <span set:html={m("P=|P|\\cos(kx)")} /> gives <span set:html={m("U\\propto -i\\sin(kx)")} />, so <span set:html={m("P")} />, <span set:html={m("U")} /> are <strong><span set:html={m("90^\\circ")} /> apart</strong> (<span set:html={m("\\Delta\\varphi=90^\\circ")} />) → when one is maximal the other is zero.</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      This phase difference is the argument of the <strong>acoustic impedance</strong> <span set:html={m("Z=P/U")} /> (since <span set:html={m("U")} /> is the volume flow rate, <span set:html={m("P/U")} /> is the <strong>acoustic impedance</strong>; with particle velocity <span set:html={m("p/u")} /> it would be the <strong>specific</strong> acoustic impedance. Characteristic value <span set:html={m("Z_0=\\rho c/S")} />):
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{traveling: }\\ Z=Z_0\\ (\\text{real}) \\Rightarrow \\Delta\\varphi=0^\\circ; \\qquad \\text{standing: }\\ Z=i\\,Z_0\\cot(kx)\\ (\\text{imag.}) \\Rightarrow \\Delta\\varphi=90^\\circ")} />
+    <p class="mt-3 text-gray-700">
+      The two trajectory panels draw the same fact differently: the <strong><span set:html={m("p'")} />–<span set:html={m("u'")} /> trajectory</strong> degenerates to a line at <span set:html={m("0^\\circ")} /> and opens to an ellipse at <span set:html={m("90^\\circ")} />; the <strong><span set:html={m("p'")} />–<span set:html={m("\\xi'")} /> trajectory</strong> is the reverse. Dragging the "Termination" slider (partial standing wave) sweeps the angle <strong>continuously</strong> from <span set:html={m("0^\\circ")} /> to <span set:html={m("90^\\circ")} /> with all three panels in sync.
+    </p>
+  </section>
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">How to read the animation</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① Gas parcels in the tube</h3>
+    <p class="mt-2 text-gray-700">
+      The top band is the gas column; the dots are gas parcels oscillating along the axis. Where they <strong>bunch up</strong> = compression (high pressure); where they <strong>spread out</strong> = rarefaction (low pressure). Each parcel only moves back and forth about its rest position — what moves (or not) is the <em>pattern</em> of compressions, not the bulk gas.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② Displacement <span set:html={m("\\xi'(x)")} /> and volume flow rate <span set:html={m("u'(x)")} /></h3>
+    <p class="mt-2 text-gray-700">
+      Below the tube, the first <strong style="color:#0e7490">teal</strong> curve is the parcel <strong>displacement <span set:html={m("\\xi'")} /></strong>; the second <strong style="color:#7c3aed">violet</strong> curve is the <strong>volume flow rate <span set:html={m("u'")} /></strong>. In standing-wave mode you get fixed <strong>displacement nodes</strong> (grey dots, no motion) and <strong>antinodes</strong> (teal dots, maximal swing).
+    </p>
+    <p class="mt-2 text-gray-700">
+      Displacement and volume flow rate share the <strong>same positions in space</strong> (same nodes/antinodes) but are <strong><span set:html={m("90^\\circ")} /> apart in time</strong>: as a parcel passes its equilibrium (<span set:html={m("\\xi' = 0")} />) the flow rate is maximal; at maximum displacement it is zero — like a pendulum. Untick "Volume flow" to hide it.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ Pressure <span set:html={m("p'(x)")} /></h3>
+    <p class="mt-2 text-gray-700">
+      The red curve is the acoustic <strong>pressure</strong>. Key idea: pressure and displacement are <strong><span set:html={m("90^\\circ")} /> apart in space</strong> — <em>a displacement node is a pressure antinode and vice versa</em> — because pressure ∝ <span set:html={m("-\\partial\\xi'/\\partial x")} />, so it peaks where the displacement varies fastest.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ Superposition: standing = two counter-propagating waves</h3>
+    <p class="mt-2 text-gray-700">
+      Switch to "Superposition": the panel overlays a <strong style="color:#2563eb">right-moving</strong> and a <strong style="color:#d97706">left-moving</strong> wave plus their sum. The two slide along, yet the sum's <strong>nodes stay put</strong> — that is what a standing wave is.
+    </p>
+    <p class="mt-2 text-gray-700">
+      This mode adds a <strong>Termination</strong> slider. Physically it is how well the end is impedance-matched: the incident right-moving wave hits the end and reflects a left-moving wave, whose amplitude ratio <span set:html={m("|R| = A_L/A_R")} /> is the <strong>reflection coefficient</strong>, set by the terminating impedance <span set:html={m("Z_L")} /> and the characteristic impedance <span set:html={m("Z_0=\\rho c/S")} /> via <span set:html={m("R = (Z_L-Z_0)/(Z_L+Z_0)")} />:
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><span set:html={m("Z_L = Z_0")} /> (<strong>matched / anechoic</strong>) → <span set:html={m("R=0")} /> → <strong>pure traveling</strong>; all energy absorbed, no reflection.</li>
+      <li><span set:html={m("Z_L \\to \\infty")} /> (rigid closed end) or <span set:html={m("Z_L=0")} /> (open end) → <span set:html={m("|R|=1")} /> → <strong>pure standing</strong>.</li>
+      <li>Intermediate impedance → <span set:html={m("0<|R|<1")} /> → <strong>partial standing wave</strong>.</li>
+    </ul>
+    <p class="mt-2 text-gray-700">
+      So "superposition" is really the single continuous axis of <strong>terminating impedance</strong>. As you drag from matched to fully reflecting, the nodes lock from "filled-in moving compressions" into "perfectly still"; the two panels follow: the Lissajous opens from a line <strong>continuously into an ellipse</strong> and the phasor angle <span set:html={m("\\angle(P,U)")} /> sweeps <span set:html={m("0^\\circ")} /> to <span set:html={m("90^\\circ")} />. The readout shows <span set:html={m("|R|")} /> and the normalized terminating impedance <span set:html={m("Z_L/Z_0=(1+|R|)/(1-|R|)")} /> (the standing-wave ratio SWR).
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">Boundaries &amp; harmonics</h2>
+    <p class="mt-2 text-gray-700">
+      An open or closed end is just the two extremes of terminating acoustic impedance: a <strong>closed end</strong> = rigid wall, <span set:html={m("Z_L\\to\\infty")} /> (gas can't move) → <strong>displacement node / pressure antinode</strong>, <span set:html={m("R=+1")} />; an <strong>open end</strong> = pressure release, <span set:html={m("Z_L=0")} /> → <strong>displacement antinode / pressure node</strong>, <span set:html={m("R=-1")} />. Both are <span set:html={m("|R|=1")} /> <strong>full reflection</strong>, so ideal open/closed ends give a <strong>pure standing wave</strong> (no traveling part) — open vs closed only sets the reflection <em>phase</em> (node or antinode at the end), which sets the allowed harmonics:
+    </p>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4">Boundary</th>
+          <th class="py-2 pr-4">Allowed harmonics</th>
+          <th class="py-2">Example</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Closed–closed / Open–open</td>
+          <td class="py-2 pr-4">all integers <span set:html={m("n")} /> (fundamental + all harmonics)</td>
+          <td class="py-2">sealed cavity, open-pipe instruments</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">Closed–open</td>
+          <td class="py-2 pr-4">odd harmonics only (1, 3, 5…)</td>
+          <td class="py-2">stopped pipe, one Kundt's-tube configuration</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="mt-3 text-sm text-gray-500">
+      Because "open/closed ends + allowed harmonics" is a two-end <strong>resonant-cavity</strong> idea, the boundary selector <strong>only appears in "Standing" mode</strong>; in traveling (no reflection) and superposition (single-end partial reflection, described by the Termination slider) it is hidden.
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">Time &amp; frequency domain</h2>
+    <p class="mt-2 text-gray-700">
+      <strong>Time domain</strong>: fix a position <span set:html={m("x_0")} />; the standing-wave displacement there is a <strong>single-frequency</strong> simple-harmonic oscillation <span set:html={m("\\xi'(x_0,t) = |\\Xi|\\sin(kx_0)\\cos(\\omega_n t)")} />.
+    </p>
+    <p class="mt-3 text-gray-700">
+      <strong>Frequency domain</strong>: the boundaries admit only a discrete set of resonances, so the spectrum is a <strong>line spectrum</strong> (a harmonic series). For a tube of length <span set:html={m("L")} />:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{closed–closed / open–open: }\\quad f_n = n\\,\\frac{c}{2L}, \\quad n = 1,2,3,\\dots")} />
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{closed–open: }\\quad f_n = (2n-1)\\,\\frac{c}{4L}, \\quad n = 1,2,3,\\dots")} />
+    <p class="mt-3 text-gray-700">
+      The <strong>spectrum strip</strong> below the animation plots this: red marks the selected harmonic <span set:html={m("f_n")} />, the rest are the other resonances that boundary allows. Closed–open keeps only odd harmonics, so the lines are <span set:html={m("f_1, 3f_1, 5f_1, \\dots")} />
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">⑤ The <span set:html={m("p'")} />–<span set:html={m("u'")} /> phase: the key to thermoacoustic engines</h2>
+    <p class="mt-2 text-gray-700">
+      The bottom-right panel plots pressure <span set:html={m("p'")} /> against volume flow rate <span set:html={m("u'")} /> at one probe point over time:
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li>
+        <strong>Traveling</strong>: <span set:html={m("p'")} /> and <span set:html={m("u'")} /> are <strong>in phase</strong> (<span set:html={m("0^\\circ")} />) → a <strong>diagonal line</strong>. Power <span set:html={m("\\langle p'u'\\rangle \\neq 0")} />; energy is transported one way.
+      </li>
+      <li>
+        <strong>Standing</strong>: <span set:html={m("p'")} /> and <span set:html={m("u'")} /> are <strong><span set:html={m("90^\\circ")} /> apart</strong> → an <strong>ellipse</strong>. Net power <span set:html={m("\\langle p'u'\\rangle = 0")} />; energy sloshes in place.
+      </li>
+    </ul>
+    <p class="mt-4 text-gray-700">
+      This is the physical meaning of the <strong>acoustic impedance</strong> <span set:html={m("Z=P/U")} /> argument. The time-averaged power <span set:html={m("\\langle p'u'\\rangle = \\tfrac12\\,\\mathrm{Re}\\{P\\,U^{*}\\}")} /> is non-zero only when <span set:html={m("Z")} /> has a real part (traveling); a purely imaginary <span set:html={m("Z")} /> (standing) is reactive, with zero net power. Lissajous → line ↔ real impedance, → ellipse ↔ imaginary impedance.
+    </p>
+    <p class="mt-3 text-gray-700">
+      This is exactly what separates <strong>traveling-wave</strong> from <strong>standing-wave thermoacoustic engines</strong>: the traveling-wave type (Stirling / TASHE) exploits in-phase <span set:html={m("p'")} />–<span set:html={m("u'")} /> for a near-isothermal cycle, while the standing-wave type uses the <span set:html={m("90^\\circ")} /> phase lag together with the "deliberately imperfect" thermal-contact delay between parcel and wall. Once this clicks, the thermoacoustic-mechanism animations make far more sense.
+    </p>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/en/research/animations" class="underline hover:text-accent-600">← Back to animations</a>
+      <a href="/en/research/animations/standing-wave" class="underline hover:text-accent-600">Standing-wave mechanism</a>
+    </p>
+  </section>
+</BaseLayout>

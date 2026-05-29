@@ -1,0 +1,1156 @@
+---
+// Air-column resonance: standing wave vs traveling wave (teaching primer).
+// Native <canvas> + requestAnimationFrame, no framework island.
+// This is the acoustics prerequisite for the thermoacoustic-mechanism
+// animations: it builds intuition for displacement/pressure mode shapes,
+// nodes/antinodes, "standing wave = two counter-propagating traveling waves",
+// and the p–u time-phase relationship (in-phase for traveling, 90° for
+// standing) that motivates traveling- vs standing-wave engine architectures.
+
+import katex from "katex";
+// inline KaTeX render for symbol labels (CSS loaded globally via global.css)
+const mi = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const isEn = lang === "en";
+
+const L = isEn
+  ? {
+      mode: "Wave mode",
+      grp_wave: "WAVE",
+      grp_view: "VIEW",
+      m_travel: "Traveling",
+      m_stand: "Standing",
+      m_super: "Superposition",
+      mix: "Termination",
+      mix_travel: "Z = ρc (matched · traveling)",
+      mix_stand: "|R| = 1 (rigid · standing)",
+      boundary: "Boundary",
+      bound_na: "infinite / anechoic — N/A for a traveling wave",
+      b_cc: "Closed–closed",
+      b_oo: "Open–open",
+      b_co: "Closed–open",
+      harmonic: "Harmonic n",
+      play: "Play",
+      pause: "Pause",
+      speed: "Speed",
+      show: "Show",
+      v_disp: "Displacement",
+      v_pres: "Pressure",
+      v_vel: "Volume flow",
+      tube: "Gas column (resonance tube)",
+      disp_axis: "Displacement ξ(x)",
+      pres_axis: "Pressure p(x)",
+      node: "node",
+      antinode: "antinode",
+      right_wave: "Right-moving",
+      left_wave: "Left-moving",
+      sum_wave: "Sum (standing)",
+      probe: "probe",
+      phase_title: "p–u at the probe point (over time)",
+      phase_note_travel: "Traveling wave: p and u are IN phase → diagonal line.",
+      phase_note_stand: "Standing wave: p and u are 90° out of phase → ellipse.",
+      phase_p: "pressure p",
+      phase_u: "velocity u",
+      phasor_cap: "Complex plane: Ξ, U, P phasors",
+      lissajous_pu_cap: "p–u trajectory",
+      lissajous_pxi_cap: "p–ξ trajectory",
+      pxi_note:
+        "p–ξ is the mirror image: a line for a standing wave, an ellipse for a traveling wave. Its loop area ∝ ∮p dξ = ⟨pu⟩·(2π/ω) is the acoustic intensity — the same p–ξ loop used in the thermoacoustic-mechanism animation.",
+      phase_impedance:
+        "Acoustic impedance Z = P / U (volume flow rate U): real for a traveling wave (P, U in phase, power flows), purely imaginary for a standing wave (90° apart, reactive, zero net power).",
+      advanced: "▸ Advanced analysis: spectrum · complex phasors · p–u / p–ξ trajectories",
+      spectrum_title: "Frequency domain · resonance spectrum",
+      spectrum_note:
+        "A single mode is one tone at fₙ; the tube admits only a discrete set of resonances (a line spectrum). Current mode highlighted.",
+      caption:
+        "Particles oscillate longitudinally inside the tube; compressions and rarefactions appear where they bunch up and spread out. A traveling wave carries these regions along; a standing wave holds them fixed (nodes/antinodes). The bottom-right panel plots pressure vs particle velocity at one probe point: a line for a traveling wave (in phase), an ellipse for a standing wave (90° out of phase).",
+    }
+  : {
+      mode: "波的型態",
+      grp_wave: "波",
+      grp_view: "播放／顯示",
+      m_travel: "行波",
+      m_stand: "駐波",
+      m_super: "行波駐波疊加",
+      mix: "終端阻抗",
+      mix_travel: "Z = ρc（匹配·行波）",
+      mix_stand: "|R| = 1（剛性·駐波）",
+      boundary: "邊界條件",
+      bound_na: "無限長／無反射端 — 行波不適用",
+      b_cc: "兩端閉",
+      b_oo: "兩端開",
+      b_co: "一端閉一端開",
+      harmonic: "諧波 n",
+      play: "播放",
+      pause: "暫停",
+      speed: "速度",
+      show: "顯示",
+      v_disp: "位移",
+      v_pres: "壓力",
+      v_vel: "體積流速",
+      tube: "氣柱（共鳴管）",
+      disp_axis: "位移 ξ(x)",
+      pres_axis: "壓力 p(x)",
+      node: "節點",
+      antinode: "腹點",
+      right_wave: "右行波",
+      left_wave: "左行波",
+      sum_wave: "兩者之和（駐波）",
+      probe: "探測點",
+      phase_title: "探測點的 p–u 關係（隨時間）",
+      phase_note_travel: "行波：p 與 u 同相 → 對角線。",
+      phase_note_stand: "駐波：p 與 u 差 90° → 橢圓。",
+      phase_p: "壓力 p",
+      phase_u: "質點速度 u",
+      phasor_cap: "複數平面：Ξ、U、P 相量",
+      lissajous_pu_cap: "p–u 軌跡",
+      lissajous_pxi_cap: "p–ξ 軌跡",
+      pxi_note:
+        "p–ξ 與 p–u 互補：駐波時是直線、行波時是橢圓。其環面積 ∝ ∮p dξ = ⟨pu⟩·(2π/ω) 即聲強度 — 與熱聲機制動畫中的 p–ξ 環是同一個東西。",
+      phase_impedance:
+        "聲阻抗 Z = P / U（U 為體積流速）：行波時為實數（P、U 同相、能量持續傳輸），駐波時為純虛數（差 90°、電抗性、淨功為零）。",
+      advanced: "▸ 進階分析：頻譜 · 複數相量 · p–u / p–ξ 軌跡",
+      spectrum_title: "頻域 · 共振頻譜",
+      spectrum_note:
+        "單一模態在時域是頻率 fₙ 的單音；管子只允許離散的共振頻率（線狀頻譜）。當前模態以紅色標示。",
+      caption:
+        "管內質點沿軸向往復振盪；粒子聚攏處為壓縮（高壓），疏散處為稀疏（低壓）。行波會把疏密區一路帶著走；駐波則讓它們固定原地（出現節點/腹點）。右下角畫的是某一探測點上「壓力 vs 質點速度」：行波時兩者同相成一條線，駐波時差 90° 成橢圓 — 這正是行波型 / 駐波型熱聲引擎的分野根源。",
+    };
+---
+
+<figure
+  class="acw-anim my-6 rounded-lg border border-brand-100 bg-white p-4 sm:p-6"
+  data-lang={lang}
+>
+  <!-- Controls (sticky: float below the site header while scrolling) -->
+  <div class="acw-controls sticky top-[68px] z-20 -mx-4 -mt-4 mb-1 flex flex-col gap-3 border-b border-brand-100 bg-white/95 px-4 py-3 text-sm backdrop-blur sm:-mx-6 sm:-mt-6 sm:px-6">
+    <!-- Group 1 · the wave: mode · boundary · harmonic -->
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400">{L.grp_wave}</span>
+      <div class="acw-modes inline-flex overflow-hidden rounded border border-brand-200">
+        <button data-mode="traveling" class="acw-seg px-3 py-1">{L.m_travel}</button>
+        <button data-mode="standing" class="acw-seg px-3 py-1 border-l border-brand-200">{L.m_stand}</button>
+        <button data-mode="superposition" class="acw-seg px-3 py-1 border-l border-brand-200">{L.m_super}</button>
+      </div>
+      <!-- Boundary group: shown only in standing (resonant-cavity) mode -->
+      <div class="acw-bound-wrap hidden items-center gap-4">
+        <div class="hidden h-5 w-px bg-brand-200 sm:block"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-brand-600">{L.boundary}</span>
+          <div class="acw-bounds inline-flex overflow-hidden rounded border border-brand-200">
+            <button data-bound="cc" class="acw-seg px-3 py-1">{L.b_cc}</button>
+            <button data-bound="oo" class="acw-seg px-3 py-1 border-l border-brand-200">{L.b_oo}</button>
+            <button data-bound="co" class="acw-seg px-3 py-1 border-l border-brand-200">{L.b_co}</button>
+          </div>
+        </div>
+      </div>
+      <div class="hidden h-5 w-px bg-brand-200 sm:block"></div>
+      <div class="flex items-center gap-2">
+        <span class="text-brand-600">{L.harmonic}</span>
+        <button class="acw-nminus rounded border border-brand-200 px-2 py-1 leading-none">−</button>
+        <span class="acw-nval w-6 text-center font-mono font-semibold text-brand-900">1</span>
+        <button class="acw-nplus rounded border border-brand-200 px-2 py-1 leading-none">+</button>
+      </div>
+    </div>
+
+    <!-- Group 2 · playback & display -->
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400">{L.grp_view}</span>
+      <div class="flex items-center gap-2">
+        <button class="acw-play rounded bg-brand-800 px-3 py-1 font-medium text-white hover:bg-brand-700">{L.pause}</button>
+        <span class="text-brand-600">{L.speed}</span>
+        <input class="acw-speed" type="range" min="0.1" max="2" step="0.1" value="1" />
+      </div>
+      <div class="hidden h-5 w-px bg-brand-200 sm:block"></div>
+      <div class="flex items-center gap-3">
+        <span class="text-brand-600">{L.show}</span>
+        <label class="flex items-center gap-1"><input class="acw-vdisp" type="checkbox" checked /> {L.v_disp}</label>
+        <label class="flex items-center gap-1"><input class="acw-vpres" type="checkbox" checked /> {L.v_pres}</label>
+        <label class="flex items-center gap-1"><input class="acw-vvel" type="checkbox" checked /> {L.v_vel}</label>
+      </div>
+    </div>
+
+    <!-- Superposition mix slider (only in superposition mode) -->
+    <div class="acw-mixrow hidden items-center gap-3 rounded bg-brand-50 px-3 py-2">
+      <span class="font-medium text-brand-700">{L.mix}</span>
+      <span class="text-xs text-brand-500" set:html={`${mi("Z_L=Z_0")}${isEn ? " (matched · traveling)" : "（匹配·行波）"}`} />
+      <input class="acw-mix" type="range" min="0" max="1" step="0.01" value="1" />
+      <span class="text-xs text-brand-500" set:html={`${mi("|R|=1")}${isEn ? " (rigid · standing)" : "（剛性·駐波）"}`} />
+      <span class="ml-2 text-xs text-brand-700">
+        <span set:html={mi("|R|")} /> = <span class="acw-Rval font-mono"></span>　<span set:html={mi("Z_L/Z_0")} /> = <span class="acw-Zval font-mono"></span><span class="text-brand-400"> (= SWR)</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Main canvas -->
+  <canvas class="acw-main mt-4 w-full" style="display:block"></canvas>
+
+  <!-- Legend -->
+  <div class="acw-legend mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-brand-600"></div>
+
+  <!-- Advanced analysis (collapsible): spectrum + complex plane + Lissajous -->
+  <details open class="acw-advanced mt-5 border-t border-brand-100 pt-2">
+    <summary class="acw-adv-summary cursor-pointer select-none list-none py-1 text-sm font-medium text-brand-700 hover:text-accent-600 [&::-webkit-details-marker]:hidden" set:html={isEn ? `▸ Advanced: spectrum · phasors · ${mi("p'")}–${mi("u'")} / ${mi("p'")}–${mi("\\xi'")} trajectories` : `▸ 進階分析：頻譜 · 複數相量 · ${mi("p'")}–${mi("u'")} / ${mi("p'")}–${mi("\\xi'")} 軌跡`} />
+
+
+  <!-- Frequency-domain spectrum -->
+  <div class="mt-4 pt-2">
+    <p class="text-sm font-medium text-brand-800">{L.spectrum_title}</p>
+    <canvas class="acw-spectrum mt-1 w-full" style="display:block"></canvas>
+    <p class="mt-1 text-xs text-gray-600" set:html={isEn ? `A single mode is one tone at ${mi("f_n")}; the tube admits only a discrete set of resonances (a line spectrum). Current mode highlighted.` : `單一模態在時域是頻率 ${mi("f_n")} 的單音；管子只允許離散的共振頻率（線狀頻譜），當前模態以紅色標示。`} />
+  </div>
+
+  <!-- Phase panels: complex plane (phasors) + p–u + p–ξ Lissajous -->
+  <div class="mt-5 border-t border-brand-100 pt-4">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <figure class="m-0">
+        <canvas class="acw-phasor w-full" style="display:block"></canvas>
+        <figcaption class="mt-1 text-center text-xs text-brand-600" set:html={`${isEn ? "Complex plane: " : "複數平面："}${mi("\\Xi")}, ${mi("U")}, ${mi("P")}${isEn ? " phasors" : " 相量"}`} />
+      </figure>
+      <figure class="m-0">
+        <canvas class="acw-phase w-full" style="display:block"></canvas>
+        <figcaption class="mt-1 text-center text-xs text-brand-600" set:html={`${mi("p'")}–${mi("u'")}${isEn ? " trajectory" : " 軌跡"}`} />
+      </figure>
+      <figure class="m-0">
+        <canvas class="acw-phasexi w-full" style="display:block"></canvas>
+        <figcaption class="mt-1 text-center text-xs text-brand-600" set:html={`${mi("p'")}–${mi("\\xi'")}${isEn ? " trajectory" : " 軌跡"}`} />
+      </figure>
+    </div>
+    <div class="mt-3 text-sm text-gray-700">
+      <p class="font-medium text-brand-800" set:html={`${mi("p'")}–${mi("u'")}${isEn ? " at the probe point (over time)" : " 在探測點隨時間的關係"}`} />
+      <p class="acw-phase-note mt-1 text-gray-600"></p>
+      <p class="mt-2 text-xs text-gray-500">{L.phase_impedance}</p>
+      <p class="mt-1 text-xs text-gray-500">{L.pxi_note}</p>
+    </div>
+  </div>
+  </details>
+
+  <figcaption class="mt-4 text-sm leading-relaxed text-gray-600">{L.caption}</figcaption>
+</figure>
+
+<script>
+  type Mode = "traveling" | "standing" | "superposition";
+  type Bound = "cc" | "oo" | "co";
+
+  const COL = {
+    wall: "#1e3a5f", // brand-800
+    tube: "#f1f5f9", // brand-50
+    particle: "#334155", // brand-600
+    probe: "#dc2626", // accent-600
+    disp: "#0e7490", // teal — displacement
+    pres: "#dc2626", // accent red — pressure
+    right: "#2563eb", // blue — right-moving component
+    left: "#d97706", // amber — left-moving component
+    sum: "#1e3a5f", // brand-800 — sum
+    vel: "#7c3aed", // violet — velocity
+    axis: "#cbd5e1", // brand-200
+    label: "#475569", // brand-500
+  };
+
+  const TWO_PI = Math.PI * 2;
+  const PERIOD = 4.0; // seconds per cycle at speed 1
+  const N_PARTICLES = 90;
+
+  // Math-variable font: KaTeX's italic math face (loaded globally via the
+  // KaTeX CSS) so canvas symbol labels look like real math, not plain text.
+  // CJK glyphs in mixed labels fall back per-glyph to a system font.
+  const MF = (px: number, bold = false) =>
+    `${bold ? "bold " : ""}italic ${px}px 'KaTeX_Math','STIX Two Math','Cambria Math','Times New Roman',serif`;
+  // upright (roman) math face — for operators like Re, Im, ∠
+  const MFR = (px: number) =>
+    `${px}px 'KaTeX_Main','STIX Two Math','Cambria Math','Times New Roman',serif`;
+  if (typeof document !== "undefined" && (document as any).fonts?.load) {
+    (document as any).fonts.load("italic 16px 'KaTeX_Math'");
+  }
+
+  // Mode shape s(x) on x∈[0,1] and its type, for a given boundary + harmonic.
+  // Convention: closed end → displacement node, open end → displacement antinode.
+  //   cc: s = sin(kx),  k = nπ        (n = 1,2,3,…)
+  //   oo: s = cos(kx),  k = nπ        (n = 1,2,3,…)
+  //   co: s = sin(kx),  k = (2n−1)π/2 (odd harmonics)
+  // Pressure ∝ −∂ξ/∂x, i.e. 90° spatially shifted from displacement.
+  function modeShape(bound: Bound, n: number) {
+    if (bound === "oo") return { k: n * Math.PI, type: "cos" as const };
+    if (bound === "co") return { k: ((2 * n - 1) * Math.PI) / 2, type: "sin" as const };
+    return { k: n * Math.PI, type: "sin" as const }; // cc
+  }
+
+  function initAnimation(root: HTMLElement) {
+    const isEn = root.getAttribute("data-lang") === "en";
+    const t = (zh: string, en: string) => (isEn ? en : zh);
+
+    const main = root.querySelector<HTMLCanvasElement>(".acw-main")!;
+    const phase = root.querySelector<HTMLCanvasElement>(".acw-phase")!;
+    const phasexi = root.querySelector<HTMLCanvasElement>(".acw-phasexi")!;
+    const phasor = root.querySelector<HTMLCanvasElement>(".acw-phasor")!;
+    const spectrum = root.querySelector<HTMLCanvasElement>(".acw-spectrum")!;
+    const mctx = main.getContext("2d")!;
+    const pctx = phase.getContext("2d")!;
+    const xctx = phasexi.getContext("2d")!;
+    const fctx = phasor.getContext("2d")!;
+    const sctx = spectrum.getContext("2d")!;
+    const legendEl = root.querySelector<HTMLElement>(".acw-legend")!;
+    const phaseNote = root.querySelector<HTMLElement>(".acw-phase-note")!;
+
+    // State
+    let mode: Mode = "standing";
+    let bound: Bound = "cc";
+    let n = 1;
+    let playing = true;
+    let speed = 1;
+    let showDisp = true;
+    let showVel = true;
+    let showPres = true;
+    let mixR = 1; // superposition: AL/AR ratio (0 = traveling, 1 = standing)
+    let tau = 0; // phase ωt, accumulated
+
+    // Phase-clock trace history (probe p,u over recent time)
+    const trail: { p: number; u: number; xi: number }[] = [];
+
+    // ── Field functions ────────────────────────────────────────────────
+    // Returns displacement ξ(x,τ) for x∈[0,1]. Amplitude normalized to ~1.
+    function shapeVal(k: number, type: "sin" | "cos", x: number) {
+      return type === "sin" ? Math.sin(k * x) : Math.cos(k * x);
+    }
+
+    // Amplitudes of the right- and left-moving components. Every mode is a
+    // pair of counter-propagating waves:
+    //   traveling     → AR=1,  AL=0        (pure progressive)
+    //   standing      → AR=AL=0.5          (pure standing)
+    //   superposition → AR,AL set by mixR slider (partial standing wave),
+    //                   normalized so the antinode amplitude stays 1.
+    //   mixR = AL/AR ∈ [0,1]: 0 = pure traveling, 1 = pure standing.
+    function amps() {
+      if (mode === "traveling") return { AR: 1, AL: 0 };
+      if (mode === "standing") return { AR: 0.5, AL: 0.5 };
+      const s = 1 + mixR;
+      return { AR: 1 / s, AL: mixR / s };
+    }
+
+    // General field: ξ = AR·f(kx−τ) + AL·f(kx+τ), f = sin (sin-type) or cos.
+    // which: 'disp' = ξ, 'pres' ∝ −∂ξ/∂x (÷k), 'vel' = ∂ξ/∂τ.
+    function genField(x: number, which: "disp" | "pres" | "vel", tt: number) {
+      const { k, type } = modeShape(bound, n);
+      const { AR, AL } = amps();
+      const a = k * x - tt;
+      const b = k * x + tt;
+      if (type === "sin") {
+        if (which === "disp") return AR * Math.sin(a) + AL * Math.sin(b);
+        if (which === "pres") return -(AR * Math.cos(a) + AL * Math.cos(b));
+        return -AR * Math.cos(a) + AL * Math.cos(b); // vel
+      } else {
+        if (which === "disp") return AR * Math.cos(a) + AL * Math.cos(b);
+        if (which === "pres") return AR * Math.sin(a) + AL * Math.sin(b);
+        return AR * Math.sin(a) - AL * Math.sin(b); // vel
+      }
+    }
+
+    const disp = (x: number, tt = tau) => genField(x, "disp", tt);
+    const pres = (x: number, tt = tau) => genField(x, "pres", tt);
+    const vel = (x: number, tt = tau) => genField(x, "vel", tt);
+
+    // Decomposed components, scaled by the current right/left amplitudes.
+    function rightComp(x: number) {
+      const { k, type } = modeShape(bound, n);
+      const { AR } = amps();
+      return AR * (type === "sin" ? Math.sin(k * x - tau) : Math.cos(k * x - tau));
+    }
+    function leftComp(x: number) {
+      const { k, type } = modeShape(bound, n);
+      const { AL } = amps();
+      return AL * (type === "sin" ? Math.sin(k * x + tau) : Math.cos(k * x + tau));
+    }
+
+    // Node / antinode positions of DISPLACEMENT on [0,1]
+    function dispNodes() {
+      const { k, type } = modeShape(bound, n);
+      const nodes: number[] = [];
+      const anti: number[] = [];
+      const steps = 2000;
+      let prev = shapeVal(k, type, 0);
+      for (let i = 1; i <= steps; i++) {
+        const x = i / steps;
+        const v = shapeVal(k, type, x);
+        if (prev === 0 || prev * v < 0) nodes.push(x - 0.5 / steps); // sign change → node
+        prev = v;
+      }
+      // antinodes where |s| ≈ 1
+      const m = Math.max(1, Math.round((k / Math.PI) * 2)); // rough count
+      for (let i = 0; i <= m; i++) {
+        const x = i / m;
+        if (Math.abs(Math.abs(shapeVal(k, type, x)) - 1) < 0.02) anti.push(x);
+      }
+      return { nodes, anti };
+    }
+
+    // Probe point: a generic interior point where BOTH displacement and
+    // pressure are non-zero (kx ≈ π/4), so the standing-wave p–u ellipse and
+    // the p̂/û phasor angle are both clearly visible (a displacement antinode
+    // would put pressure at a node → p ≈ 0 → degenerate figure).
+    function probeX() {
+      const { k } = modeShape(bound, n);
+      const x = Math.PI / 4 / k;
+      return Math.min(0.96, Math.max(0.04, x));
+    }
+
+    // ── Layout / sizing ─────────────────────────────────────────────────
+    let W = 0,
+      H = 0,
+      dpr = 1;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = main.clientWidth;
+      W = cssW;
+      // height = tube band + node labels + one row per shown curve
+      const nCurves =
+        (showDisp ? 1 : 0) + (showVel ? 1 : 0) + (showPres ? 1 : 0);
+      H = 176 + 30 + nCurves * Math.max(70, cssW * 0.13);
+      main.width = Math.round(W * dpr);
+      main.height = Math.round(H * dpr);
+      main.style.height = H + "px";
+      mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const ps = phase.clientWidth || 220; // square fills its grid cell
+      phase.width = Math.round(ps * dpr);
+      phase.height = Math.round(ps * dpr);
+      phase.style.height = ps + "px";
+      pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const xs = phasexi.clientWidth || 220;
+      phasexi.width = Math.round(xs * dpr);
+      phasexi.height = Math.round(xs * dpr);
+      phasexi.style.height = xs + "px";
+      xctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const fs = phasor.clientWidth || 220;
+      phasor.width = Math.round(fs * dpr);
+      phasor.height = Math.round(fs * dpr);
+      phasor.style.height = fs + "px";
+      fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const specW = spectrum.clientWidth || cssW;
+      const specH = 88;
+      spectrum.width = Math.round(specW * dpr);
+      spectrum.height = Math.round(specH * dpr);
+      spectrum.style.height = specH + "px";
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // the spectrum is not part of the RAF loop → redraw it after any resize
+      // (otherwise a ResizeObserver tick clears it and it stays blank)
+      drawSpectrum();
+    }
+
+    // ── Drawing ─────────────────────────────────────────────────────────
+    const PAD = 44; // left padding for axis labels
+    const RPAD = 16;
+
+    function xPix(x: number) {
+      return PAD + x * (W - PAD - RPAD);
+    }
+
+    function drawMain() {
+      mctx.clearRect(0, 0, W, H);
+      const innerW = W - PAD - RPAD;
+
+      // vertical band layout (extra top room for the +x axis arrow)
+      const tubeY = 44;
+      const tubeH = Math.min(120, H * 0.34);
+      const tubeCY = tubeY + tubeH / 2;
+      let curY = tubeY + tubeH + (mode !== "traveling" ? 40 : 18);
+      const nCurves = (showDisp ? 1 : 0) + (showVel ? 1 : 0) + (showPres ? 1 : 0);
+      const curveH = nCurves > 0 ? (H - curY - 12) / nCurves : 0;
+
+      const { nodes, anti } = dispNodes();
+
+      // ---- Tube + particles ----
+      // tube body
+      mctx.fillStyle = COL.tube;
+      mctx.fillRect(PAD, tubeY, innerW, tubeH);
+      // walls (top/bottom always solid; ends depend on boundary)
+      mctx.strokeStyle = COL.wall;
+      mctx.lineWidth = 3;
+      mctx.beginPath();
+      mctx.moveTo(PAD, tubeY);
+      mctx.lineTo(PAD + innerW, tubeY);
+      mctx.moveTo(PAD, tubeY + tubeH);
+      mctx.lineTo(PAD + innerW, tubeY + tubeH);
+      mctx.stroke();
+      const xL = PAD;
+      const xR = PAD + innerW;
+      if (mode === "superposition") {
+        // Partial standing wave: left = driver/source, right = impedance
+        // termination whose look morphs with |R| (mixR): anechoic absorber
+        // wedges (|R|→0) ↔ reflecting wall (|R|→1).
+        const R0 = mixR;
+        // left = driver/source emitting the incident (right-moving) wave.
+        // Thin driver bar + two blue arrows pointing into the tube.
+        mctx.fillStyle = COL.wall;
+        mctx.fillRect(xL - 4, tubeY + 3, 4, tubeH - 6);
+        mctx.strokeStyle = COL.right;
+        mctx.fillStyle = COL.right;
+        mctx.lineWidth = 2.5;
+        for (const ay of [tubeY + tubeH * 0.32, tubeY + tubeH * 0.68]) {
+          mctx.beginPath();
+          mctx.moveTo(xL + 4, ay);
+          mctx.lineTo(xL + 26, ay);
+          mctx.stroke();
+          mctx.beginPath();
+          mctx.moveTo(xL + 26, ay);
+          mctx.lineTo(xL + 19, ay - 5);
+          mctx.lineTo(xL + 19, ay + 5);
+          mctx.closePath();
+          mctx.fill();
+        }
+        // Termination colour interpolates green (matched / absorbing, |R|=0)
+        // → red (fully reflecting, |R|=1) so the changing boundary is obvious.
+        const lerp = (a: number, b: number) => Math.round(a + (b - a) * R0);
+        const termColor = `rgb(${lerp(22, 220)},${lerp(163, 38)},${lerp(74, 38)})`;
+        // green absorber wedges (matched look) — fade out as R→1
+        const wN = 7,
+          wD = 15;
+        mctx.fillStyle = "#16a34a";
+        mctx.globalAlpha = (1 - R0) * 0.9;
+        for (let i = 0; i < wN; i++) {
+          const y0 = tubeY + 4 + ((tubeH - 8) * i) / wN;
+          const y1 = tubeY + 4 + ((tubeH - 8) * (i + 1)) / wN;
+          mctx.beginPath();
+          mctx.moveTo(xR, y0);
+          mctx.lineTo(xR, y1);
+          mctx.lineTo(xR - wD, (y0 + y1) / 2);
+          mctx.closePath();
+          mctx.fill();
+        }
+        // red reflecting wall — fade in as R→1
+        mctx.globalAlpha = R0;
+        mctx.strokeStyle = "#dc2626";
+        mctx.lineWidth = 4;
+        mctx.beginPath();
+        mctx.moveTo(xR, tubeY);
+        mctx.lineTo(xR, tubeY + tubeH);
+        mctx.stroke();
+        mctx.globalAlpha = 1;
+        // always-visible colour bar just outside the end → green↔red by |R|
+        mctx.fillStyle = termColor;
+        mctx.fillRect(xR + 3, tubeY, 7, tubeH);
+      } else {
+        // closed = solid wall, open = dashed gap. A pure traveling wave is an
+        // infinite / anechoic tube → no reflecting wall at either end.
+        const leftClosed = mode !== "traveling" && (bound === "cc" || bound === "co");
+        const rightClosed = mode !== "traveling" && bound === "cc";
+        mctx.lineWidth = 4;
+        mctx.strokeStyle = COL.wall;
+        mctx.beginPath();
+        if (leftClosed) {
+          mctx.moveTo(xL, tubeY);
+          mctx.lineTo(xL, tubeY + tubeH);
+        }
+        if (rightClosed) {
+          mctx.moveTo(xR, tubeY);
+          mctx.lineTo(xR, tubeY + tubeH);
+        }
+        mctx.stroke();
+        mctx.setLineDash([4, 4]);
+        mctx.strokeStyle = COL.label;
+        mctx.lineWidth = 1.5;
+        mctx.beginPath();
+        if (!leftClosed) {
+          mctx.moveTo(xL, tubeY);
+          mctx.lineTo(xL, tubeY + tubeH);
+        }
+        if (!rightClosed) {
+          mctx.moveTo(xR, tubeY);
+          mctx.lineTo(xR, tubeY + tubeH);
+        }
+        mctx.stroke();
+        mctx.setLineDash([]);
+      }
+
+      const inset = 5;
+      const bandTop = tubeY + inset;
+      const bandH = tubeH - 2 * inset;
+
+      // ---- Particle band (sengpielaudio style): a dense grid of dots that
+      // bunch into vertical stripes where the gas is compressed. The bunching
+      // itself shows compression/rarefaction; we additionally make compressed
+      // dots larger and darker (grayscale only) to make 疏密 pop. ----
+      const dispScale = innerW * 0.03; // larger swing → stronger bunching
+      const NCOLS = 180;
+      const NROWS = 6;
+      for (let c = 0; c < NCOLS; c++) {
+        const xe = (c + 0.5) / NCOLS; // equilibrium
+        const px = xPix(xe) + disp(xe) * dispScale;
+        const comp = pres(xe); // ∝ local compression (+ = dense, − = sparse)
+        const r = Math.max(0.6, 1.5 + comp * 1.6);
+        mctx.globalAlpha = Math.min(1, Math.max(0.25, 0.55 + comp * 0.45));
+        mctx.fillStyle = COL.particle;
+        for (let rIdx = 0; rIdx < NROWS; rIdx++) {
+          const py = bandTop + (bandH * (rIdx + 0.5)) / NROWS;
+          mctx.beginPath();
+          mctx.arc(px, py, r, 0, TWO_PI);
+          mctx.fill();
+        }
+      }
+      mctx.globalAlpha = 1;
+
+      // ---- Node / antinode markers on the tube (standing & superposition) ----
+      if (mode !== "traveling") {
+        const { nodes: dn, anti: da } = dispNodes();
+        mctx.textAlign = "center";
+        mctx.font = "bold 10px ui-sans-serif, system-ui";
+        for (const xn of dn) {
+          // displacement node = pressure antinode
+          mctx.fillStyle = "#64748b";
+          mctx.fillText("N", xPix(xn), tubeY + tubeH + 13);
+        }
+        for (const xa of da) {
+          // displacement antinode = pressure node
+          mctx.fillStyle = COL.disp;
+          mctx.fillText("A", xPix(xa), tubeY + tubeH + 13);
+        }
+        mctx.textAlign = "left";
+        mctx.fillStyle = COL.label;
+        mctx.font = "10px ui-sans-serif, system-ui";
+        mctx.fillText(
+          t("N = 位移節點（密度變化最大 = 壓力腹點）  A = 位移腹點（= 壓力節點）",
+            "N = displacement node (max density swing = pressure antinode)   A = displacement antinode (= pressure node)"),
+          PAD,
+          tubeY + tubeH + 26,
+        );
+      }
+
+      // probe marker
+      const pxp = xPix(probeX());
+      mctx.strokeStyle = COL.probe;
+      mctx.lineWidth = 1.5;
+      mctx.setLineDash([3, 3]);
+      mctx.beginPath();
+      mctx.moveTo(pxp, tubeY - 2);
+      mctx.lineTo(pxp, H - 4);
+      mctx.stroke();
+      mctx.setLineDash([]);
+      mctx.fillStyle = COL.probe;
+      mctx.font = "11px ui-sans-serif, system-ui";
+      mctx.fillText(t("探測", "probe"), pxp + 4, tubeY - 4);
+
+      // top labels
+      mctx.font = "11px ui-sans-serif, system-ui";
+      if (mode === "superposition") {
+        // left = incident wave (blue, matching the right-moving component)
+        mctx.fillStyle = COL.right;
+        mctx.fillText(t("入射波 →", "incident →"), PAD + 14, tubeY - 5);
+        // right = impedance termination, coloured green↔red by |R|.
+        // Drawn as right-aligned segments so Z_L / |R| use the math font.
+        const lr = (a: number, b: number) => Math.round(a + (b - a) * mixR);
+        const termColor = `rgb(${lr(22, 220)},${lr(163, 38)},${lr(74, 38)})`;
+        const tag = mixR <= 0.02 ? t("匹配", "matched") : mixR >= 0.98 ? t("全反射", "rigid") : t("部分反射", "partial");
+        const sans = "11px ui-sans-serif, system-ui";
+        const Rv = mixR.toFixed(2);
+        const segs: [string, string][] = isEn
+          ? [["Z", MF(13)], ["L", MF(10)], [`: ${tag} (`, sans], ["|", MFR(13)], ["R", MF(13)], ["|", MFR(13)], [`= ${Rv})`, sans]]
+          : [["終端 ", sans], ["Z", MF(13)], ["L", MF(10)], [`：${tag}（`, sans], ["|", MFR(13)], ["R", MF(13)], ["|", MFR(13)], [`= ${Rv}）`, sans]];
+        mctx.textAlign = "left";
+        mctx.fillStyle = termColor;
+        let tot = 0;
+        for (const [txt, f] of segs) {
+          mctx.font = f;
+          tot += mctx.measureText(txt).width;
+        }
+        let lxr = PAD + innerW - tot;
+        const baseY = tubeY - 5;
+        for (const [txt, f] of segs) {
+          mctx.font = f;
+          // lower the "L" a touch to read as a subscript
+          const dy = f === MF(10) ? 3 : 0;
+          mctx.fillText(txt, lxr, baseY + dy);
+          lxr += mctx.measureText(txt).width;
+        }
+      } else {
+        mctx.fillStyle = COL.label;
+        mctx.font = "12px ui-sans-serif, system-ui";
+        mctx.fillText(t("氣柱（共鳴管）", "Gas column"), PAD, tubeY - 5);
+      }
+
+      // +x coordinate axis, above the tube (the direction the wave travels).
+      {
+        const ax = 16;
+        const x0 = PAD;
+        const x1 = PAD + 120;
+        mctx.strokeStyle = COL.label;
+        mctx.fillStyle = COL.label;
+        mctx.lineWidth = 1.8;
+        mctx.beginPath();
+        mctx.moveTo(x0, ax);
+        mctx.lineTo(x1, ax);
+        mctx.stroke();
+        mctx.beginPath();
+        mctx.moveTo(x1, ax);
+        mctx.lineTo(x1 - 9, ax - 5);
+        mctx.lineTo(x1 - 9, ax + 5);
+        mctx.closePath();
+        mctx.fill();
+        mctx.font = MF(17);
+        mctx.fillText("x", x1 + 6, ax + 6);
+      }
+
+      // ---- Curves ----
+      const drawCurve = (
+        topY: number,
+        h: number,
+        f: (x: number) => number,
+        color: string,
+        axisLabel: string,
+        markNodes: boolean,
+      ) => {
+        const midY = topY + h / 2;
+        const amp = h * 0.4;
+        // axis
+        mctx.strokeStyle = COL.axis;
+        mctx.lineWidth = 1;
+        mctx.beginPath();
+        mctx.moveTo(PAD, midY);
+        mctx.lineTo(PAD + innerW, midY);
+        mctx.stroke();
+
+        // superposition components (only on displacement curve)
+        if (mode === "superposition" && color === COL.disp) {
+          for (const [cf, cc] of [
+            [rightComp, COL.right],
+            [leftComp, COL.left],
+          ] as const) {
+            mctx.strokeStyle = cc;
+            mctx.lineWidth = 1.4;
+            mctx.globalAlpha = 0.8;
+            mctx.beginPath();
+            for (let i = 0; i <= innerW; i += 2) {
+              const x = i / innerW;
+              const y = midY - cf(x) * amp;
+              i === 0 ? mctx.moveTo(PAD + i, y) : mctx.lineTo(PAD + i, y);
+            }
+            mctx.stroke();
+          }
+          mctx.globalAlpha = 1;
+        }
+
+        // main curve
+        mctx.strokeStyle = color;
+        mctx.lineWidth = 2.2;
+        mctx.beginPath();
+        for (let i = 0; i <= innerW; i += 1) {
+          const x = i / innerW;
+          const y = midY - f(x) * amp;
+          i === 0 ? mctx.moveTo(PAD + i, y) : mctx.lineTo(PAD + i, y);
+        }
+        mctx.stroke();
+
+        // node / antinode ticks (displacement curve only)
+        if (markNodes && mode !== "traveling") {
+          mctx.fillStyle = COL.label;
+          mctx.font = "10px ui-sans-serif, system-ui";
+          for (const xn of nodes) {
+            mctx.fillStyle = "#94a3b8";
+            mctx.beginPath();
+            mctx.arc(xPix(xn), midY, 3, 0, TWO_PI);
+            mctx.fill();
+          }
+          for (const xa of anti) {
+            mctx.fillStyle = color;
+            mctx.beginPath();
+            mctx.arc(xPix(xa), midY - amp - 0, 2.5, 0, TWO_PI);
+            mctx.arc(xPix(xa), midY + amp, 2.5, 0, TWO_PI);
+            mctx.fill();
+          }
+        }
+
+        // axis label
+        mctx.save();
+        mctx.translate(12, midY);
+        mctx.rotate(-Math.PI / 2);
+        mctx.fillStyle = color;
+        mctx.font = MF(14);
+        mctx.textAlign = "center";
+        mctx.fillText(axisLabel, 0, 0);
+        mctx.restore();
+        mctx.textAlign = "left";
+      };
+
+      if (showDisp) {
+        drawCurve(curY, curveH, disp, COL.disp, "ξ′", true);
+        curY += curveH;
+      }
+      if (showVel) {
+        drawCurve(curY, curveH, vel, COL.vel, "u′", false);
+        curY += curveH;
+      }
+      if (showPres) {
+        drawCurve(curY, curveH, pres, COL.pres, "p′", false);
+      }
+    }
+
+    // Shared Lissajous renderer: horizontal axis = xKey, vertical = pressure.
+    // trailRGB sets the loop colour (aligned with the standing-wave engine
+    // animation: orange #d97706 for p–ξ, teal #0e7490 for p–u).
+    function drawLissajous(
+      ctx: CanvasRenderingContext2D,
+      canvas: HTMLCanvasElement,
+      xKey: "u" | "xi",
+      xLabel: string,
+      trailRGB: string,
+    ) {
+      const s = canvas.clientWidth || 220;
+      ctx.clearRect(0, 0, s, s);
+      const cx = s / 2,
+        cy = s / 2,
+        R = s * 0.36;
+      ctx.strokeStyle = COL.axis;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - R - 6, cy);
+      ctx.lineTo(cx + R + 6, cy);
+      ctx.moveTo(cx, cy - R - 6);
+      ctx.lineTo(cx, cy + R + 6);
+      ctx.stroke();
+      ctx.font = MF(14);
+      ctx.fillStyle = COL.label;
+      ctx.fillText(xLabel, cx + R - 4, cy + 14);
+      ctx.fillText("p′", cx + 4, cy - R + 2);
+
+      ctx.lineWidth = 1.8;
+      for (let i = 1; i < trail.length; i++) {
+        const a = i / trail.length;
+        ctx.strokeStyle = `rgba(${trailRGB},${a * 0.8})`;
+        ctx.beginPath();
+        ctx.moveTo(cx + trail[i - 1][xKey] * R, cy - trail[i - 1].p * R);
+        ctx.lineTo(cx + trail[i][xKey] * R, cy - trail[i].p * R);
+        ctx.stroke();
+      }
+      if (trail.length) {
+        const c = trail[trail.length - 1];
+        ctx.fillStyle = `rgb(${trailRGB})`;
+        ctx.beginPath();
+        ctx.arc(cx + c[xKey] * R, cy - c.p * R, 3.5, 0, TWO_PI);
+        ctx.fill();
+      }
+    }
+
+    function drawPhase() {
+      // p–u → teal (matches p–V loop in the standing-wave engine animation)
+      drawLissajous(pctx, phase, "u", "u′", "14,116,137");
+    }
+    function drawPhaseXi() {
+      // p–ξ → orange (matches p–ξ / acoustic-intensity loop)
+      drawLissajous(xctx, phasexi, "xi", "ξ′", "217,119,6");
+    }
+
+    // Phasor of any field at the probe by sampling its sinusoid:
+    // q(τ) = Qc·cos τ + Qs·sin τ = M·cos(τ + ψ) with Qc = q(0), Qs = q(π/2).
+    function phasorOf(which: "disp" | "pres" | "vel") {
+      const x0 = probeX();
+      const Qc = genField(x0, which, 0);
+      const Qs = genField(x0, which, Math.PI / 2);
+      return { M: Math.hypot(Qc, Qs), psi: Math.atan2(-Qs, Qc) };
+    }
+
+    function drawPhasor() {
+      const s = phasor.clientWidth || 160;
+      fctx.clearRect(0, 0, s, s);
+      const cx = s / 2,
+        cy = s / 2,
+        R = s * 0.4;
+      // axes (Re horizontal, Im vertical)
+      fctx.strokeStyle = COL.axis;
+      fctx.lineWidth = 1;
+      fctx.beginPath();
+      fctx.moveTo(cx - R - 8, cy);
+      fctx.lineTo(cx + R + 8, cy);
+      fctx.moveTo(cx, cy - R - 8);
+      fctx.lineTo(cx, cy + R + 8);
+      fctx.stroke();
+      // unit circle
+      fctx.strokeStyle = "#eef2f7";
+      fctx.beginPath();
+      fctx.arc(cx, cy, R, 0, TWO_PI);
+      fctx.stroke();
+      fctx.fillStyle = COL.label;
+      fctx.font = MFR(12);
+      fctx.fillText("Re", cx + R + 2, cy + 11);
+      fctx.fillText("Im", cx + 3, cy - R - 2);
+
+      // Only show phasors whose quantity is enabled in the "Show" checkboxes.
+      const shown: { P: { M: number; psi: number }; c: string; tag: string }[] = [];
+      if (showDisp) shown.push({ P: phasorOf("disp"), c: COL.disp, tag: "Ξ" });
+      if (showVel) shown.push({ P: phasorOf("vel"), c: COL.vel, tag: "U" });
+      if (showPres) shown.push({ P: phasorOf("pres"), c: COL.pres, tag: "P" });
+      const mx = Math.max(...shown.map((s2) => s2.P.M), 1e-6);
+      // idx staggers width + a tiny length offset so collinear (in-phase)
+      // arrows don't fully hide each other; labels sit at separated radii.
+      const arrow = (
+        M: number,
+        psi: number,
+        color: string,
+        tag: string,
+        idx: number,
+      ) => {
+        const th = psi + tau; // CCW rotating vector
+        const len = (M / mx) * 0.78 * R - idx * 4; // small nested offset
+        const ex = cx + len * Math.cos(th);
+        const ey = cy - len * Math.sin(th);
+        fctx.strokeStyle = color;
+        fctx.fillStyle = color;
+        fctx.lineWidth = 3.4 - idx * 0.9; // outer arrow thickest
+        fctx.beginPath();
+        fctx.moveTo(cx, cy);
+        fctx.lineTo(ex, ey);
+        fctx.stroke();
+        // head
+        const ah = 6;
+        fctx.beginPath();
+        fctx.moveTo(ex, ey);
+        fctx.lineTo(ex - ah * Math.cos(th - 0.4), ey + ah * Math.sin(th - 0.4));
+        fctx.lineTo(ex - ah * Math.cos(th + 0.4), ey + ah * Math.sin(th + 0.4));
+        fctx.closePath();
+        fctx.fill();
+        // label at a per-arrow radius beyond the tip → never overlaps even
+        // when two arrows point the same way
+        const lr = (M / mx) * 0.78 * R + 12 + idx * 13;
+        fctx.font = MF(15, true);
+        fctx.fillText(tag, cx + lr * Math.cos(th) - 5, cy - lr * Math.sin(th) + 4);
+      };
+      shown.forEach((s2, idx) => arrow(s2.P.M, s2.P.psi, s2.c, s2.tag, idx));
+
+      // ∠(p̂,û): 0° (traveling) → 90° (standing) — only when both are shown
+      if (showPres && showVel) {
+        const pu = phasorOf("pres"),
+          uu = phasorOf("vel");
+        let d = Math.abs(pu.psi - uu.psi);
+        if (d > Math.PI) d = TWO_PI - d;
+        const deg = Math.round((d * 180) / Math.PI);
+        fctx.fillStyle = COL.label;
+        let lx = 4;
+        const ly = s - 5;
+        const seg = (txt: string, italic: boolean) => {
+          fctx.font = italic ? MF(13) : MFR(13);
+          fctx.fillText(txt, lx, ly);
+          lx += fctx.measureText(txt).width;
+        };
+        seg("∠(", false);
+        seg("P", true);
+        seg(", ", false);
+        seg("U", true);
+        seg(`) = ${deg}°`, false);
+      }
+    }
+
+    function drawSpectrum() {
+      const w = spectrum.clientWidth || 600;
+      const h = 88;
+      // over-clear the whole backing store (avoids stale labels if a prior
+      // draw ran at a different/degenerate width)
+      sctx.clearRect(0, 0, spectrum.width, spectrum.height);
+      if (w < 50) return;
+      const padL = 8,
+        padR = 8,
+        baseY = h - 22,
+        topY = 10;
+      // ratios of allowed resonances to the fundamental
+      const odd = bound === "co";
+      const COUNT = 6;
+      const ratios: number[] = [];
+      for (let j = 1; j <= COUNT; j++) ratios.push(odd ? 2 * j - 1 : j);
+      const curRatio = odd ? 2 * n - 1 : n;
+      const maxR = ratios[ratios.length - 1];
+      // baseline with a right-pointing arrow (the frequency axis)
+      sctx.strokeStyle = COL.axis;
+      sctx.lineWidth = 1;
+      sctx.beginPath();
+      sctx.moveTo(padL, baseY);
+      sctx.lineTo(w - padR, baseY);
+      sctx.stroke();
+      sctx.fillStyle = COL.label;
+      sctx.beginPath();
+      sctx.moveTo(w - padR, baseY);
+      sctx.lineTo(w - padR - 6, baseY - 3);
+      sctx.lineTo(w - padR - 6, baseY + 3);
+      sctx.closePath();
+      sctx.fill();
+      // axis label "f" ABOVE the baseline at the right (numeric labels go below)
+      sctx.font = MF(13);
+      sctx.textAlign = "right";
+      sctx.fillText("f", w - padR - 4, baseY - 5);
+      // lines (reserve a little width on the right for the arrow)
+      const span = w - padL - padR - 24;
+      sctx.textAlign = "center";
+      for (const r of ratios) {
+        const x = padL + (r / maxR) * span;
+        const on = r === curRatio;
+        sctx.strokeStyle = on ? COL.probe : "#cbd5e1";
+        sctx.lineWidth = on ? 3 : 2;
+        sctx.beginPath();
+        sctx.moveTo(x, baseY);
+        sctx.lineTo(x, topY);
+        sctx.stroke();
+        sctx.fillStyle = on ? COL.probe : COL.label;
+        sctx.font = MF(13, on);
+        const label = r === 1 ? "f₁" : `${r}f₁`;
+        sctx.fillText(label, x, baseY + 14);
+      }
+      sctx.textAlign = "left";
+    }
+
+    function drawLegend() {
+      const items: [string, string][] = [];
+      if (showDisp) items.push([COL.disp, t("位移波形", "displacement")]);
+      if (showVel) items.push([COL.vel, t("體積流速波形", "volume flow")]);
+      if (showPres) items.push([COL.pres, t("壓力波形", "pressure")]);
+      if (mode === "superposition") {
+        items.push([COL.right, t("右行波", "right-moving")]);
+        items.push([COL.left, t("左行波", "left-moving")]);
+      }
+      items.push([COL.probe, t("探測點", "probe")]);
+      legendEl.innerHTML = items
+        .map(
+          ([c, label]) =>
+            `<span class="inline-flex items-center gap-1"><span style="width:14px;height:3px;background:${c};display:inline-block;border-radius:2px"></span>${label}</span>`,
+        )
+        .join("");
+      phaseNote.textContent =
+        mode === "traveling"
+          ? t("行波：p 與 u 同相 → 對角線。", "Traveling: p and u in phase → diagonal line.")
+          : t("駐波：p 與 u 差 90° → 橢圓。", "Standing: p and u 90° out of phase → ellipse.");
+    }
+
+    // ── Loop ────────────────────────────────────────────────────────────
+    let last = 0;
+    function frame(ts: number) {
+      if (!last) last = ts;
+      const dt = (ts - last) / 1000;
+      last = ts;
+      if (playing) {
+        tau += (TWO_PI / PERIOD) * speed * dt;
+        if (tau > TWO_PI) tau -= TWO_PI;
+        // record probe p,u
+        const xp = probeX();
+        trail.push({ p: pres(xp), u: vel(xp), xi: disp(xp) });
+        if (trail.length > 300) trail.shift();
+      }
+      drawMain();
+      drawPhase();
+      drawPhaseXi();
+      drawPhasor();
+      requestAnimationFrame(frame);
+    }
+
+    // mixR (= AL/AR) IS the terminating reflection coefficient |R|; the
+    // normalized terminating impedance for a real load is ζ = (1+R)/(1−R),
+    // which equals the standing-wave ratio.
+    function mixReadout() {
+      const z = mixR >= 1 ? "∞" : ((1 + mixR) / (1 - mixR)).toFixed(1);
+      const rv = root.querySelector<HTMLElement>(".acw-Rval");
+      const zv = root.querySelector<HTMLElement>(".acw-Zval");
+      if (rv) rv.textContent = mixR.toFixed(2);
+      if (zv) zv.textContent = z;
+    }
+
+    // ── UI wiring ───────────────────────────────────────────────────────
+    function refreshSegs() {
+      root.querySelectorAll<HTMLElement>(".acw-modes .acw-seg").forEach((b) => {
+        const on = b.getAttribute("data-mode") === mode;
+        b.style.background = on ? COL.wall : "#fff";
+        b.style.color = on ? "#fff" : COL.label;
+      });
+      root.querySelectorAll<HTMLElement>(".acw-bounds .acw-seg").forEach((b) => {
+        const on = b.getAttribute("data-bound") === bound;
+        b.style.background = on ? COL.wall : "#fff";
+        b.style.color = on ? "#fff" : COL.label;
+      });
+      root.querySelector<HTMLElement>(".acw-nval")!.textContent = String(n);
+      // Open/closed ends + allowed harmonics are a two-end RESONANT-CAVITY
+      // concept → only meaningful for a pure standing wave. Show the boundary
+      // selector only in standing mode (hidden for traveling / superposition).
+      const cavity = mode === "standing";
+      const bwrap = root.querySelector<HTMLElement>(".acw-bound-wrap")!;
+      bwrap.classList.toggle("hidden", !cavity);
+      bwrap.classList.toggle("flex", cavity);
+      // superposition mix slider: visible only in superposition mode
+      const mixrow = root.querySelector<HTMLElement>(".acw-mixrow")!;
+      mixrow.classList.toggle("hidden", mode !== "superposition");
+      mixrow.classList.toggle("flex", mode === "superposition");
+      mixReadout();
+      drawLegend();
+      drawSpectrum();
+      trail.length = 0;
+    }
+
+    root.querySelectorAll<HTMLElement>(".acw-modes .acw-seg").forEach((b) =>
+      b.addEventListener("click", () => {
+        mode = b.getAttribute("data-mode") as Mode;
+        refreshSegs();
+      }),
+    );
+    root.querySelectorAll<HTMLElement>(".acw-bounds .acw-seg").forEach((b) =>
+      b.addEventListener("click", () => {
+        bound = b.getAttribute("data-bound") as Bound;
+        // clamp n if needed (all boundaries accept n≥1)
+        refreshSegs();
+      }),
+    );
+    root.querySelector<HTMLElement>(".acw-nplus")!.addEventListener("click", () => {
+      n = Math.min(6, n + 1);
+      refreshSegs();
+    });
+    root.querySelector<HTMLElement>(".acw-nminus")!.addEventListener("click", () => {
+      n = Math.max(1, n - 1);
+      refreshSegs();
+    });
+    const playBtn = root.querySelector<HTMLButtonElement>(".acw-play")!;
+    playBtn.addEventListener("click", () => {
+      playing = !playing;
+      playBtn.textContent = playing ? t("暫停", "Pause") : t("播放", "Play");
+    });
+    root.querySelector<HTMLInputElement>(".acw-speed")!.addEventListener("input", (e) => {
+      speed = parseFloat((e.target as HTMLInputElement).value);
+    });
+    root.querySelector<HTMLInputElement>(".acw-mix")!.addEventListener("input", (e) => {
+      mixR = parseFloat((e.target as HTMLInputElement).value);
+      mixReadout();
+      trail.length = 0;
+    });
+    root.querySelector<HTMLInputElement>(".acw-vdisp")!.addEventListener("change", (e) => {
+      showDisp = (e.target as HTMLInputElement).checked;
+      resize();
+      drawLegend();
+    });
+    root.querySelector<HTMLInputElement>(".acw-vpres")!.addEventListener("change", (e) => {
+      showPres = (e.target as HTMLInputElement).checked;
+      resize();
+      drawLegend();
+    });
+    root.querySelector<HTMLInputElement>(".acw-vvel")!.addEventListener("change", (e) => {
+      showVel = (e.target as HTMLInputElement).checked;
+      resize();
+      drawLegend();
+    });
+
+    // Advanced panels are collapsed by default; size their canvases when opened.
+    root
+      .querySelector<HTMLDetailsElement>(".acw-advanced")!
+      .addEventListener("toggle", (e) => {
+        if ((e.target as HTMLDetailsElement).open) {
+          resize();
+          drawSpectrum();
+        }
+      });
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(main);
+    resize();
+    refreshSegs();
+    requestAnimationFrame(frame);
+  }
+
+  document
+    .querySelectorAll<HTMLElement>(".acw-anim")
+    .forEach((el) => initAnimation(el));
+</script>

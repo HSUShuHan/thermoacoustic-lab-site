@@ -1,0 +1,280 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import AirColumnWaveAnimation from "~/components/research/AirColumnWaveAnimation.astro";
+import katex from "katex";
+
+// KaTeX CSS is loaded globally via global.css; render to HTML here.
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+
+// Geometry for the k–ω "waterfall": snapshots of the traveling wave
+// p'(x) = |P|cos(kx − ωt) at t = 0, T/4, … , T stacked downward. A tracked
+// crest marches right (slope = wave speed c); horizontal period = λ (→ k),
+// vertical span = T (→ ω).
+const waterfall = (() => {
+  const x0 = 62,
+    x1 = 596,
+    amp = 15,
+    cycles = 2.8,
+    N = 150,
+    rows = 5,
+    rowGap = 50,
+    topY = 48;
+  const lamPx = (x1 - x0) / cycles;
+  const series: { y: number; pts: string; label: string }[] = [];
+  const crest: { x: number; y: number }[] = [];
+  const labels = ["0", "T/4", "T/2", "3T/4", "T"];
+  for (let j = 0; j < rows; j++) {
+    const yc = topY + j * rowGap;
+    let pts = "";
+    for (let i = 0; i <= N; i++) {
+      const fx = i / N;
+      const ph = cycles * 2 * Math.PI * fx - (j * Math.PI) / 2;
+      const x = x0 + (x1 - x0) * fx;
+      const y = yc - amp * Math.cos(ph);
+      pts += `${x.toFixed(1)},${y.toFixed(1)} `;
+    }
+    series.push({ y: yc, pts: pts.trim(), label: labels[j] });
+    // crest = peak of this row: x at cos=1, y one amplitude ABOVE the midline
+    crest.push({ x: x0 + (x1 - x0) * ((1 + j / 4) / cycles), y: yc - amp });
+  }
+  const lamX1 = x0 + (x1 - x0) * (1 / cycles);
+  return {
+    series,
+    crest,
+    x0,
+    x1,
+    topY,
+    lamX1,
+    lamX2: lamX1 + lamPx,
+    bottomY: topY + (rows - 1) * rowGap,
+  };
+})();
+---
+
+<BaseLayout
+  title="動畫 · 基礎：氣柱中的駐波與行波"
+  description="聲學基礎互動動畫：氣柱共鳴管中的行波、駐波與兩列反向行波的疊加；位移與壓力的節點/腹點、邊界條件與諧波、p–u 相位關係。看懂熱聲引擎的前置教材。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      氣柱中的駐波與行波
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      基礎 · Standing &amp; Traveling Waves in a Gas Column
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      在進入<a href="/research/animations/standing-wave" class="underline hover:text-accent-600">駐波型</a>與行波型熱聲機制之前，先建立最基礎的聲學直覺：聲波其實是空氣質點的<strong>縱向</strong>振盪。這支動畫讓你親眼看到管內質點如何形成壓縮與稀疏，並對照<strong>行波</strong>（疏密區一路移動）與<strong>駐波</strong>（節點/腹點固定原地）的差別，以及駐波其實是<strong>兩列反向行波</strong>的疊加。
+    </p>
+  </section>
+
+  <AirColumnWaveAnimation />
+
+  <section class="mt-8 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">數學描述</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">複數表示法：時域 ↔ 頻域</h3>
+    <p class="mt-2 text-gray-700">
+      聲學擾動量（位移、體積流速、壓力…）都是隨時空變化的<strong>實數</strong>。為了同時掌握「振幅」與「相位」，採<strong>複數表示法</strong>：以 <span set:html={m("\\mathsf{a}'(x,t)")} /> 泛指任一擾動量，寫成<strong>頻域複數振幅</strong> <span set:html={m("\\mathsf{A}(x)")} /> 乘上時間因子 <span set:html={m("e^{i\\omega t}")} />，<strong>取實部</strong>即為物理量（採 Swift／Rott 的 <span set:html={m("e^{+i\\omega t}")} /> 慣例）：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\mathsf{a}'(x,t)=\\operatorname{Re}\\!\\big\\{\\mathsf{A}(x)\\,e^{i\\omega t}\\big\\}, \\qquad \\mathsf{A}(x)=|\\mathsf{A}|\\,e^{i\\varphi}")} />
+    <p class="mt-3 text-gray-700">由<strong>尤拉公式</strong>，時間因子展開為正餘弦：</p>
+    <div class="mt-2 overflow-x-auto" set:html={md("e^{i\\omega t}=\\cos\\omega t + i\\sin\\omega t")} />
+    <p class="mt-3 text-gray-700">
+      它是複數平面上<strong>長度 1、以角速度 <span set:html={m("\\omega")} /> 逆時針旋轉</strong>的單位向量（週期 <span set:html={m("T=2\\pi/\\omega")} />）；乘上 <span set:html={m("\\mathsf{A}")} /> 等於把它<strong>伸縮 <span set:html={m("|\\mathsf{A}|")} /> 倍、再轉 <span set:html={m("\\varphi")} /> 角</strong>。於是<strong>大小寫</strong>各司其職：<strong>小寫帶撇</strong> <span set:html={m("\\mathsf{a}'")} /> = 時域實數量、<strong>大寫</strong> <span set:html={m("\\mathsf{A}")} /> = 頻域複數振幅。動畫「進階分析」的<strong>複數平面</strong>面板畫的正是旋轉中的 <span set:html={m("\\mathsf{A}\\,e^{i\\omega t}")} />，其在 <span set:html={m("\\operatorname{Re}")} /> 軸的<strong>投影</strong>就是 <span set:html={m("\\mathsf{a}'")} />。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">壓力場：行波、駐波、疊加</h3>
+    <p class="mt-2 text-gray-700">
+      以聲壓 <span set:html={m("p'")} />（複數振幅 <span set:html={m("P")} />）表示最直接。<strong>行波</strong>（向 <span set:html={m("+x")} /> 傳）與<strong>駐波</strong>分別為：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{行波：}\\ p' = |P|\\cos(kx-\\omega t) = \\operatorname{Re}\\{P\\,e^{i\\omega t}\\}, \\quad P=|P|\\,e^{-ikx}")} />
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{駐波：}\\ p' = |P|\\cos(kx)\\cos(\\omega t) = \\operatorname{Re}\\{P\\,e^{i\\omega t}\\}, \\quad P=|P|\\cos(kx)")} />
+    <p class="mt-3 text-gray-700">
+      駐波正是<strong>兩列等振幅反向行波</strong>的疊加（積化和差）— 動畫「行波駐波疊加」模式畫的就是這件事：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("|P|\\cos(kx)\\cos(\\omega t) = \\tfrac{|P|}{2}\\cos(kx-\\omega t) + \\tfrac{|P|}{2}\\cos(kx+\\omega t)")} />
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">波參數：<span set:html={m("k,\\ \\omega,\\ f,\\ \\lambda")} /></h3>
+    <p class="mt-2 text-gray-700">
+      <strong>角頻率</strong> <span set:html={m("\\omega")} /> 是<strong>時間</strong>的相位率（每秒轉幾弧度）、<strong>波數</strong> <span set:html={m("k")} /> 是<strong>空間</strong>的相位率（每公尺差幾弧度）；<span set:html={m("f")} /> 為頻率、<span set:html={m("\\lambda")} /> 為波長、<span set:html={m("c")} /> 為聲速：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\omega = 2\\pi f, \\qquad k = \\frac{2\\pi}{\\lambda} = \\frac{\\omega}{c}")} />
+    <p class="mt-3 text-gray-700">
+      把行波 <span set:html={m("p'=|P|\\cos(kx-\\omega t)")} /> 在不同時刻的<strong>空間波形</strong>由上往下堆（<span set:html={m("t=0,\\ T/4,\\ \\dots,\\ T")} />），就能一眼看出兩個週期與傳播：橫向每隔<strong>波長 <span set:html={m("\\lambda")} /></strong> 重複（→ <span set:html={m("k")} />）、縱向每隔<strong>週期 <span set:html={m("T")} /></strong> 重複（→ <span set:html={m("\\omega")} />）、被追蹤的<strong>波峰沿斜線前進</strong>，斜率就是波速 <span set:html={m("c")} />：
+    </p>
+    <figure class="m-0 mt-3 overflow-x-auto rounded-lg border border-brand-100 p-2">
+      <svg viewBox="0 0 660 300" class="w-full" style="min-width:540px" role="img" aria-label="waterfall of wave snapshots in time showing wavelength, period and propagation">
+        <!-- t-axis: vertical, pointing down -->
+        <line x1="44" y1={waterfall.topY - 18} x2="44" y2={waterfall.bottomY + 26} stroke="#cbd5e1" stroke-width="1"></line>
+        <polygon points={`44,${waterfall.bottomY + 30} 40,${waterfall.bottomY + 22} 48,${waterfall.bottomY + 22}`} fill="#94a3b8"></polygon>
+        <text x="30" y={waterfall.bottomY + 30} font-size="13" font-style="italic" fill="#475569">t</text>
+        <!-- x-axis: horizontal, pointing right (bottom) -->
+        <line x1="44" y1={waterfall.bottomY + 26} x2={waterfall.x1 + 16} y2={waterfall.bottomY + 26} stroke="#cbd5e1" stroke-width="1"></line>
+        <polygon points={`${waterfall.x1 + 20},${waterfall.bottomY + 26} ${waterfall.x1 + 12},${waterfall.bottomY + 22} ${waterfall.x1 + 12},${waterfall.bottomY + 30}`} fill="#94a3b8"></polygon>
+        <text x={waterfall.x1 + 24} y={waterfall.bottomY + 30} font-size="13" font-style="italic" fill="#475569">x</text>
+        <!-- λ marker (top) -->
+        <line x1={waterfall.lamX1} y1={waterfall.topY - 28} x2={waterfall.lamX2} y2={waterfall.topY - 28} stroke="#dc2626" stroke-width="1.5"></line>
+        <polygon points={`${waterfall.lamX1},${waterfall.topY - 28} ${waterfall.lamX1 + 6},${waterfall.topY - 31} ${waterfall.lamX1 + 6},${waterfall.topY - 25}`} fill="#dc2626"></polygon>
+        <polygon points={`${waterfall.lamX2},${waterfall.topY - 28} ${waterfall.lamX2 - 6},${waterfall.topY - 31} ${waterfall.lamX2 - 6},${waterfall.topY - 25}`} fill="#dc2626"></polygon>
+        <text x={(waterfall.lamX1 + waterfall.lamX2) / 2} y={waterfall.topY - 33} text-anchor="middle" font-size="14" font-style="italic" fill="#dc2626">λ</text>
+        <!-- T marker (right, vertical span = one period) -->
+        <line x1="612" y1={waterfall.topY} x2="612" y2={waterfall.bottomY} stroke="#0e7490" stroke-width="1.5"></line>
+        <polygon points={`612,${waterfall.topY} 609,${waterfall.topY + 6} 615,${waterfall.topY + 6}`} fill="#0e7490"></polygon>
+        <polygon points={`612,${waterfall.bottomY} 609,${waterfall.bottomY - 6} 615,${waterfall.bottomY - 6}`} fill="#0e7490"></polygon>
+        <text x="620" y={(waterfall.topY + waterfall.bottomY) / 2 + 4} font-size="14" font-style="italic" fill="#0e7490">T</text>
+        <!-- rows: snapshot at each time -->
+        {waterfall.series.map((s) => (
+          <>
+            <text x="36" y={s.y + 4} text-anchor="end" font-size="11" fill="#94a3b8">{s.label}</text>
+            <polyline points={s.pts} fill="none" stroke="#334155" stroke-width="1.8"></polyline>
+          </>
+        ))}
+        <!-- tracked crest: diagonal slope = wave speed c -->
+        <polyline points={waterfall.crest.map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ")} fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"></polyline>
+        {waterfall.crest.map((c) => (
+          <circle cx={c.x} cy={c.y} r="3" fill="#dc2626"></circle>
+        ))}
+        <!-- slope triangle on the crest line (hypotenuse = crest[1]→crest[3]) -->
+        <line x1={waterfall.crest[1].x} y1={waterfall.crest[1].y} x2={waterfall.crest[1].x} y2={waterfall.crest[3].y} stroke="#94a3b8" stroke-width="1"></line>
+        <line x1={waterfall.crest[1].x} y1={waterfall.crest[3].y} x2={waterfall.crest[3].x} y2={waterfall.crest[3].y} stroke="#94a3b8" stroke-width="1"></line>
+        <text x={waterfall.crest[1].x - 7} y={(waterfall.crest[1].y + waterfall.crest[3].y) / 2 + 4} text-anchor="end" font-size="11" font-style="italic" fill="#64748b" stroke="#ffffff" stroke-width="3" paint-order="stroke">Δt</text>
+        <text x={(waterfall.crest[1].x + waterfall.crest[3].x) / 2} y={waterfall.crest[3].y - 6} text-anchor="middle" font-size="11" font-style="italic" fill="#64748b" stroke="#ffffff" stroke-width="3" paint-order="stroke">Δx</text>
+        <!-- slope label: c = Δx/Δt, placed off the line in open space -->
+        <text x={waterfall.crest[3].x + 14} y={waterfall.crest[2].y - 2} font-size="13" font-style="italic" fill="#dc2626" stroke="#ffffff" stroke-width="3" paint-order="stroke">c = Δx/Δt</text>
+      </svg>
+    </figure>
+    <p class="mt-2 text-xs text-gray-500" set:html={`橫向＝空間（週期 ${m("\\lambda")}，對應 ${m("k=2\\pi/\\lambda")}）、縱向＝時間（一格到底為一個週期 ${m("T")}，對應 ${m("\\omega=2\\pi/T")}）；波峰斜線的斜率即波速 ${m("c=f\\lambda=\\omega/k")}。`} />
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">體積流速，與 <span set:html={m("p'")} />–<span set:html={m("u'")} /> 相位差（全篇關鍵）</h3>
+    <p class="mt-2 text-gray-700">
+      <strong>體積流速</strong> <span set:html={m("u'")} />（複數振幅 <span set:html={m("U")} />）由氣塊位移 <span set:html={m("\\xi'")} /> 導出 — 等於截面積 × 質點速度（<span set:html={m("S")} /> 為截面積、<span set:html={m("\\rho")} /> 為密度）。由線動量方程 <span set:html={m("\\rho\\,\\partial u/\\partial t = -\\partial p'/\\partial x")} /> 可把它直接連到上面的壓力場：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("U = \\frac{iS}{\\omega\\rho}\\,\\frac{dP}{dx}")} />
+    <p class="mt-3 text-gray-700">
+      <strong>全篇的關鍵，就是壓力 <span set:html={m("p'")} /> 與體積流速 <span set:html={m("u'")} /> 的相位差 <span set:html={m("\\Delta\\varphi")} /></strong>（即複數平面裡 <span set:html={m("P")} />、<span set:html={m("U")} /> 兩相量的夾角）：
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>行波</strong>：<span set:html={m("P=|P|e^{-ikx}")} /> 代入上式得 <span set:html={m("U=(|P|/Z_0)e^{-ikx}")} />，故 <span set:html={m("P")} />、<span set:html={m("U")} /> <strong>同相</strong>（<span set:html={m("\\Delta\\varphi=0^\\circ")} />）→ <span set:html={m("p'")} />、<span set:html={m("u'")} /> 時域同步。</li>
+      <li><strong>駐波</strong>：<span set:html={m("P=|P|\\cos(kx)")} /> 代入得 <span set:html={m("U\\propto -i\\sin(kx)")} />，故 <span set:html={m("P")} />、<span set:html={m("U")} /> <strong>差 <span set:html={m("90^\\circ")} /></strong>（<span set:html={m("\\Delta\\varphi=90^\\circ")} />）→ 一者最大時另一者為零。</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      這個相位差正是<strong>聲阻抗</strong> <span set:html={m("Z=P/U")} /> 的幅角（因 <span set:html={m("U")} /> 是體積流速，<span set:html={m("P/U")} /> 為<strong>聲阻抗</strong> acoustic impedance；若用質點速度 <span set:html={m("p/u")} /> 則為<strong>比聲阻抗</strong>。特性聲阻抗 <span set:html={m("Z_0=\\rho c/S")} />）：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{行波：}\\ Z=Z_0\\ (\\text{實}) \\Rightarrow \\Delta\\varphi=0^\\circ; \\qquad \\text{駐波：}\\ Z=i\\,Z_0\\cot(kx)\\ (\\text{純虛}) \\Rightarrow \\Delta\\varphi=90^\\circ")} />
+    <p class="mt-3 text-gray-700">
+      右下兩個軌跡圖是同一件事的另一種畫法：<strong><span set:html={m("p'")} />–<span set:html={m("u'")} /> 軌跡</strong>在 <span set:html={m("0^\\circ")} /> 退化成直線、<span set:html={m("90^\\circ")} /> 撐成橢圓；<strong><span set:html={m("p'")} />–<span set:html={m("\\xi'")} /> 軌跡</strong>剛好相反。拉「終端阻抗」滑桿（部分駐波）時，夾角在 <span set:html={m("0^\\circ")} />–<span set:html={m("90^\\circ")} /> 間<strong>連續</strong>變化、三個面板同步 — 記住這個對應，動畫就看得懂。
+    </p>
+  </section>
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">怎麼看這個動畫</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① 管內質點（粒子列）</h3>
+    <p class="mt-2 text-gray-700">
+      最上方是氣柱（共鳴管），管內小點代表空氣質點，沿軸向（左右）往復振盪。粒子<strong>聚攏</strong>處 = 壓縮（高壓），<strong>疏散</strong>處 = 稀疏（低壓）。注意：質點本身只在原地附近來回，<em>移動的是疏密的「圖樣」</em>，不是空氣整體被搬走。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② 位移 <span set:html={m("\\xi'(x)")} /> 與體積流速 <span set:html={m("u'(x)")} /> 波形</h3>
+    <p class="mt-2 text-gray-700">
+      共鳴管下方第一條<strong style="color:#0e7490">青色</strong>曲線是各位置質點的<strong>位移 <span set:html={m("\\xi'")} /></strong>，第二條<strong style="color:#7c3aed">紫色</strong>曲線是<strong>體積流速 <span set:html={m("u'")} /></strong>。駐波模式下會出現固定的<strong>位移節點</strong>（灰點，不動）與<strong>位移腹點</strong>（青點，振幅最大）。
+    </p>
+    <p class="mt-2 text-gray-700">
+      位移與體積流速在<strong>空間上同位置</strong>（節點、腹點一致），但在<strong>時間上差 <span set:html={m("90^\\circ")} /></strong>：質點通過平衡位置（<span set:html={m("\\xi' = 0")} />）時體積流速最大，到達最大位移時體積流速為零 — 就像單擺。可在控制列勾掉「體積流速」把它關掉。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ 壓力波形 <span set:html={m("p'(x)")} /></h3>
+    <p class="mt-2 text-gray-700">
+      下方紅色曲線是<strong>聲壓</strong>。關鍵觀念：壓力與位移在空間上<strong>錯開 <span set:html={m("90^\\circ")} /></strong> — <em>位移節點剛好是壓力腹點，位移腹點剛好是壓力節點</em>。因為聲壓正比於 <span set:html={m("-\\partial\\xi'/\\partial x")} />，位移變化最劇烈處壓力最大。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ 行波駐波疊加：駐波 = 兩列反向行波</h3>
+    <p class="mt-2 text-gray-700">
+      切到「行波駐波疊加」，位移面板會同時畫出<strong style="color:#2563eb">右行波</strong>與<strong style="color:#d97706">左行波</strong>以及兩者之和。你會看到兩列波各自滑動，但和的<strong>節點原地不動</strong> — 這就是駐波的本質。
+    </p>
+    <p class="mt-2 text-gray-700">
+      此模式多了一條<strong>終端阻抗</strong>滑桿。它的物理就是<strong>終端的聲阻抗匹配程度</strong>：入射的右行波打到管末，反射回一列左行波，其振幅比 <span set:html={m("|R| = A_L/A_R")} /> 即<strong>反射係數</strong>，由終端聲阻抗 <span set:html={m("Z_L")} /> 與特性聲阻抗 <span set:html={m("Z_0=\\rho c/S")} /> 決定 <span set:html={m("R = (Z_L-Z_0)/(Z_L+Z_0)")} />：
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><span set:html={m("Z_L = Z_0")} />（<strong>匹配／anechoic</strong>）→ <span set:html={m("R=0")} /> → <strong>純行波</strong>，能量全被吸收、不反射。</li>
+      <li><span set:html={m("Z_L \\to \\infty")} />（剛性閉端）或 <span set:html={m("Z_L=0")} />（開端）→ <span set:html={m("|R|=1")} /> → <strong>純駐波</strong>。</li>
+      <li>中間阻抗 → <span set:html={m("0<|R|<1")} /> → <strong>部分駐波</strong>。</li>
+    </ul>
+    <p class="mt-2 text-gray-700">
+      所以<strong>「疊加」其實就是終端阻抗這一根連續軸</strong>。把滑桿從匹配往全反射拉，節點會從「填平的行進疏密」逐漸鎖成「完全靜止」；右下兩面板同步：Lissajous 從直線<strong>連續撐成橢圓</strong>、相量夾角 <span set:html={m("\\angle(P,U)")} /> 從 <span set:html={m("0^\\circ")} /> 掃到 <span set:html={m("90^\\circ")} />。滑桿旁顯示 <span set:html={m("|R|")} /> 與正規化終端阻抗 <span set:html={m("Z_L/Z_0=(1+|R|)/(1-|R|)")} />（即駐波比 SWR）。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">邊界條件與諧波</h2>
+    <p class="mt-2 text-gray-700">
+      管端的「開」或「閉」其實就是<strong>終端聲學阻抗</strong>的兩種極端：<strong>閉端</strong>＝剛性壁，<span set:html={m("Z_L\\to\\infty")} />（空氣貼牆不能動）→ <strong>位移節點／壓力腹點</strong>，反射係數 <span set:html={m("R=+1")} />；<strong>開端</strong>＝壓力釋放，<span set:html={m("Z_L=0")} /> → <strong>位移腹點／壓力節點</strong>，<span set:html={m("R=-1")} />。兩者都是 <span set:html={m("|R|=1")} /> 的<strong>完全反射</strong>，所以理想開／閉端只會形成<strong>純駐波</strong>（沒有行波成分）— 開、閉的差別只在反射的「相位」（決定管端是節點還是腹點），進而決定允許的諧波：
+    </p>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4">邊界</th>
+          <th class="py-2 pr-4">允許諧波</th>
+          <th class="py-2">範例</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">兩端閉 / 兩端開</td>
+          <td class="py-2 pr-4">全部整數 <span set:html={m("n")} />（基頻＋全諧波）</td>
+          <td class="py-2">兩端封閉之共鳴腔、開管樂器</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">一端閉一端開</td>
+          <td class="py-2 pr-4">僅奇數諧波（1, 3, 5…）</td>
+          <td class="py-2">閉管樂器、Kundt 管之一種配置</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="mt-3 text-sm text-gray-500">
+      正因為「開/閉端＋允許諧波」是<strong>雙端共振腔</strong>的概念，動畫裡的邊界選擇器<strong>只在「駐波」模式才會出現</strong>；行波（無反射）與疊加（單端部分反射，由終端阻抗滑桿描述）模式下會自動收起。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">時域與頻域</h2>
+    <p class="mt-2 text-gray-700">
+      <strong>時域</strong>：盯住管內某固定位置 <span set:html={m("x_0")} />，駐波的位移隨時間是<strong>單一頻率</strong>的簡諧振盪
+      <span set:html={m("\\xi'(x_0,t) = |\\Xi|\\sin(kx_0)\\cos(\\omega_n t)")} />。
+    </p>
+    <p class="mt-3 text-gray-700">
+      <strong>頻域</strong>：管子的邊界條件只允許離散的共振頻率，因此頻譜是<strong>線狀</strong>的（諧波系列）。對長度 <span set:html={m("L")} /> 的管：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{兩端閉／兩端開：}\\quad f_n = n\\,\\frac{c}{2L}, \\quad n = 1,2,3,\\dots")} />
+    <div class="mt-2 overflow-x-auto" set:html={md("\\text{一端閉一端開：}\\quad f_n = (2n-1)\\,\\frac{c}{4L}, \\quad n = 1,2,3,\\dots")} />
+    <p class="mt-3 text-gray-700">
+      動畫下方的<strong>頻譜條</strong>就在畫這件事：紅色標出當前選的諧波 <span set:html={m("f_n")} />，其餘為該邊界允許的其他共振。一端閉一端開只剩奇數諧波，所以頻譜線是 <span set:html={m("f_1, 3f_1, 5f_1, \\dots")} />。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">⑤ <span set:html={m("p'")} />–<span set:html={m("u'")} /> 相位：通往熱聲引擎的鑰匙</h2>
+    <p class="mt-2 text-gray-700">
+      右下角畫的是某一探測點上「壓力 <span set:html={m("p'")} /> vs 體積流速 <span set:html={m("u'")} />」隨時間的關係：
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li>
+        <strong>行波</strong>：<span set:html={m("p'")} /> 與 <span set:html={m("u'")} /> <strong>同相</strong>（差 <span set:html={m("0^\\circ")} />）→ 軌跡是一條<strong>對角線</strong>。聲功 <span set:html={m("\\langle p'u'\\rangle \\neq 0")} />，能量持續往一方向傳輸。
+      </li>
+      <li>
+        <strong>駐波</strong>：<span set:html={m("p'")} /> 與 <span set:html={m("u'")} /> <strong>差 <span set:html={m("90^\\circ")} /></strong> → 軌跡是<strong>橢圓</strong>。一週期淨聲功 <span set:html={m("\\langle p'u'\\rangle = 0")} />，能量在原地來回。
+      </li>
+    </ul>
+    <p class="mt-4 text-gray-700">
+      這正是上面<strong>聲阻抗</strong> <span set:html={m("Z=P/U")} /> 幅角的物理意義。再看時間平均聲功 <span set:html={m("\\langle p'u'\\rangle = \\tfrac12\\,\\mathrm{Re}\\{P\\,U^{*}\\}")} />：只有當 <span set:html={m("Z")} /> 含實部（行波）才不為零；<span set:html={m("Z")} /> 為純虛數（駐波）時為電抗性，淨功為零。Lissajous 退化成線 ↔ 實阻抗、撐成橢圓 ↔ 虛阻抗，正好對應。
+    </p>
+    <p class="mt-3 text-gray-700">
+      這正是<strong>行波型</strong>與<strong>駐波型熱聲引擎</strong>分野的根源：行波型（如 Stirling／TASHE）靠 <span set:html={m("p'")} />–<span set:html={m("u'")} /> 同相做出近似等溫的循環；駐波型則利用 <span set:html={m("90^\\circ")} /> 相位差，搭配氣塊與壁之間「刻意不完美」的熱接觸時間延遲來產生熱聲效應。看懂這支動畫，再回頭看熱聲機制動畫就會清楚許多。
+    </p>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/research/animations" class="underline hover:text-accent-600">← 回動畫總覽</a>
+      <a href="/research/animations/standing-wave" class="underline hover:text-accent-600">駐波型熱聲機制</a>
+      <a href="/research/thermoacoustic-effect" class="underline hover:text-accent-600">熱聲效應總論</a>
+    </p>
+  </section>
+</BaseLayout>
