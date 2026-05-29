@@ -1,6 +1,11 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimation.astro";
+import katex from "katex";
+
+// KaTeX CSS is loaded globally via global.css. Notation matches the air-column
+// primer: a prime marks an oscillating (time-domain) parcel quantity.
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 ---
 
 <BaseLayout
@@ -41,30 +46,27 @@ import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimati
 
     <h3 class="mt-6 text-lg font-medium text-brand-800">③ 壓力—位移 / 壓力—體積 軌跡</h3>
     <p class="mt-2 text-gray-700">
-      左上方同時疊兩條軌跡，分別對應兩種讀法：
+      左上方同時疊兩條軌跡，分別對應兩種讀法（撇號表氣塊的振盪量）：
     </p>
     <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
       <li>
-        <strong style="color:#d97706">橙色 <i>p</i>–<i>ξ</i>（壓力—位移）</strong>：環面積 ×
-        <i>ω</i>/(2π) =
-        <strong>聲音強度 <i>I</i></strong>（⟨<i>p</i>·<i>u</i>⟩，氣塊以速度 <i>u</i> = d<i>ξ</i>/d<i>t</i> 振盪）。對應右下 3D 軌道圖底面的投影。
+        <strong style="color:#d97706">橙色 <span set:html={m("p'")} />–<span set:html={m("\\xi'")} />（壓力—位移）</strong>：環面積 × <span set:html={m("\\omega/(2\\pi)")} /> = <strong>聲音強度 <span set:html={m("I")} /></strong>（<span set:html={m("\\langle p'u'\\rangle")} />，氣塊以速度 <span set:html={m("u' = d\\xi'/dt")} /> 振盪）。對應右下 3D 軌道圖底面的投影。
       </li>
       <li>
-        <strong style="color:#0e7490">青色虛線 <i>p</i>–<i>V</i>（壓力—體積）</strong>：古典熱力學 PV 圖，環面積 ∮<i>p</i> d<i>V</i> =
-        <strong>一週期之功 <i>W</i></strong>。對熟悉熱機循環的讀者更直觀。
+        <strong style="color:#0e7490">青色虛線 <span set:html={m("p'")} />–<span set:html={m("V'")} />（壓力—體積）</strong>：古典熱力學 PV 圖，環面積 <span set:html={m("\\oint p'\\,dV'")} /> = <strong>一週期之功 <span set:html={m("W")} /></strong>。對熟悉熱機循環的讀者更直觀。
       </li>
     </ul>
     <p class="mt-2 text-gray-700">
-      二者皆順時針封閉（engine）= 熱聲輸出聲功；逆時針（refrigerator）= 外界輸入聲功（泵熱）；退化成線（critical / flat）= 無作用。形狀略有差異是因為位移 <i>ξ</i> 與體積 <i>V</i> 對同一氣塊有不同相位關係（駐波情境下二者非完全同相）。
+      二者皆順時針封閉（engine）= 熱聲輸出聲功；逆時針（refrigerator）= 外界輸入聲功（泵熱）；退化成線（critical / flat）= 無作用。形狀略有差異是因為位移 <span set:html={m("\\xi'")} /> 與體積 <span set:html={m("V'")} /> 對同一氣塊有不同相位關係（駐波情境下二者非完全同相）。
     </p>
 
-    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <i>T</i>—<i>x</i>（溫度—位置）軌跡</h3>
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <span set:html={m("T'")} />—<span set:html={m("x")} />（溫度—位置）軌跡</h3>
     <p class="mt-2 text-gray-700">
       左下方深綠橢圓是氣塊溫度隨位置的軌跡，橘色虛線是壁溫梯度。
       <strong>橢圓相對虛線的位置</strong>決定徑向熱傳方向：氣塊比壁熱 → 熱往壁傳；氣塊比壁冷 → 熱往氣塊傳。氣塊隨位移在「拿熱、走、放熱」的循環裡把熱從一端搬到另一端 — 這就是熱聲效應作為熱機 / 製冷機的根源。
     </p>
     <p class="mt-2 text-gray-700 text-sm">
-      註：此圖在概念上對應 3D 軌道圖的「熵 <i>S</i>—位移 <i>ξ</i> 投影 ≈ <i>Q</i>」，但這裡縱軸用的是 <strong>溫度 <i>T</i></strong> 而非熵 <i>S</i>。對單一氣塊，絕熱過程下 d<i>T</i> 與 d<i>S</i> 成正比，所以軌跡形狀近似；但兩者量綱不同（<i>T</i> 有額外熱容因子），所以環面積 <strong>正比於</strong> 熱流 <i>Q</i> 但不嚴格相等。橢圓顏色刻意用 3D 投影綠（<span style="color:#16a34a">●</span>）的較深變體（<span style="color:#15803d">●</span>），表示「相關但不等同」。
+      註：此圖在概念上對應 3D 軌道圖的「熵 <span set:html={m("S'")} />—位移 <span set:html={m("\\xi'")} /> 投影 ≈ <span set:html={m("Q")} />」，但這裡縱軸用的是 <strong>溫度 <span set:html={m("T'")} /></strong> 而非熵 <span set:html={m("S'")} />。對單一氣塊，絕熱過程下 <span set:html={m("dT'")} /> 與 <span set:html={m("dS'")} /> 成正比，所以軌跡形狀近似；但兩者量綱不同（<span set:html={m("T'")} /> 有額外熱容因子），所以環面積 <strong>正比於</strong> 熱流 <span set:html={m("Q")} /> 但不嚴格相等。橢圓顏色刻意用 3D 投影綠（<span style="color:#16a34a">●</span>）的較深變體（<span style="color:#15803d">●</span>），表示「相關但不等同」。
     </p>
 
     <h2 class="mt-10 text-2xl font-semibold text-brand-900">3 種模式對應的壁溫梯度</h2>
