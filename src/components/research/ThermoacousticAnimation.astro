@@ -20,25 +20,25 @@ const L = isEn
       tab_critical: "(c)ritical",
       tab_engine: "(e)ngine",
       title: "Standing-wave thermoacoustic mechanism · 3-mode animation",
-      desc: "A gas parcel oscillates inside the stack; the figure simultaneously displays the parcel pressure–volume (PV) trajectory, the temperature–position (T–x) trajectory, and the wall temperature gradient. Three modes can be switched: uniform, refrigerator, and engine.",
+      desc: "A gas parcel oscillates inside the stack; the figure simultaneously displays the parcel pressure–volume (p′–V′) trajectory, the temperature–position (T′–x) trajectory, and the wall temperature gradient. Three modes can be switched: uniform, refrigerator, and engine.",
       initial_perturbation: "Initial perturbation",
       mech_work_in: "Mechanical work input →",
       stack_header: "Resonator + stack",
       stack_arrow: "↓ stack",
       panel_c: "(c) Gas-parcel close-up (red arrows = radial heat transfer direction)",
-      panel_b: "(b) Gas-parcel p–ξ / p–V trajectory",
+      panel_b: "(b) Gas-parcel p′–ξ′ / p′–V′ trajectory",
       legend_I: "(acoustic intensity)",
       legend_W: "(work per cycle)",
       axis_pressure: "Pressure",
       axis_xi_or_V: "Displacement / Volume (normalized)",
-      panel_d: "(d) Gas-parcel T–x (temperature–position) trajectory",
-      panel_d_note1: "Similar to the 3D S–ξ projection: temperature in place of entropy",
+      panel_d: "(d) Gas-parcel T′–x (temperature–position) trajectory",
+      panel_d_note1: "Similar to the 3D S′–ξ′ projection: temperature in place of entropy",
       panel_d_note2:
-        "(under adiabatic conditions d≡dS; loop area ∝ Q but dimensions differ)",
+        "(under adiabatic conditions dT′ ∝ dS′; loop area ∝ Q but dimensions differ)",
       axis_temperature: "Temperature",
       axis_displacement: "Displacement",
       wall_gradient: "Wall T gradient",
-      panel_e: "(e) Gas-parcel (p, S, ξ) 3D orbit",
+      panel_e: "(e) Gas-parcel (p′, S′, ξ′) 3D orbit",
       panel_e_note: "Projected loop area × ω/(2π) = I (acoustic intensity), Q (heat flux), w (work source)",
       axis_entropy: "Entropy",
       proj_pxi: "projection",
@@ -46,7 +46,7 @@ const L = isEn
       proj_sp: "projection",
       caption_title: "Standing-wave thermoacoustic mechanism (3 modes)",
       caption_body:
-        "A cyan gas parcel oscillates inside the stack. The top-left p–ξ / p–V panel overlays two trajectories: orange p–ξ (acoustic intensity I) and dashed cyan p–V (work per cycle W). The bottom-left T–x panel shows the parcel's temperature–position ellipse; the orange dashed line is the wall temperature gradient. The bottom-right 3D orbit panel synchronizes (p, S, ξ) and its three 2D projections.",
+        "A cyan gas parcel oscillates inside the stack. The top-left p′–ξ′ / p′–V′ panel overlays two trajectories: orange p′–ξ′ (acoustic intensity I) and dashed cyan p′–V′ (work per cycle W). The bottom-left T′–x panel shows the parcel's temperature–position ellipse; the orange dashed line is the wall temperature gradient. The bottom-right 3D orbit panel synchronizes (p′, S′, ξ′) and its three 2D projections.",
       attribution_pre: "Animation concepts based partially on G. W. Swift, ",
       attribution_swift_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
       attribution_swift_pub: " (Springer, 2nd ed., 2017)",
@@ -68,7 +68,7 @@ const L = isEn
       tab_critical: "(c)ritical 臨界",
       tab_engine: "(e)ngine 引擎",
       title: "駐波型熱聲機制 3 模式動畫",
-      desc: "氣塊在 stack 中往復振盪；同步顯示氣塊壓力—體積（PV）軌跡、氣塊溫度—位置（T—x）軌跡，及壁溫梯度。可切換 3 種模式：均溫、製冷、引擎。",
+      desc: "氣塊在 stack 中往復振盪；同步顯示氣塊壓力—體積（p′–V′）軌跡、氣塊溫度—位置（T′–x）軌跡，及壁溫梯度。可切換 3 種模式：均溫、製冷、引擎。",
       initial_perturbation: "初始擾動",
       mech_work_in: "機械功輸入 →",
       stack_header: "共鳴管 + 片堆",
@@ -79,13 +79,13 @@ const L = isEn
       legend_W: "（一週期之功）",
       axis_pressure: "壓力",
       axis_xi_or_V: "位移 / 體積（歸一化）",
-      panel_d: "(d) 氣塊 溫度–位置（T–x）軌跡",
-      panel_d_note1: "形似 3D 熵（S）–位移（ξ）投影：以溫度替代熵",
-      panel_d_note2: "（絕熱時 dT ∝ dS，環面積 ∝ Q 但量綱不同）",
+      panel_d: "(d) 氣塊 溫度–位置（T′–x）軌跡",
+      panel_d_note1: "形似 3D 熵（S′）–位移（ξ′）投影：以溫度替代熵",
+      panel_d_note2: "（絕熱時 dT′ ∝ dS′，環面積 ∝ Q 但量綱不同）",
       axis_temperature: "溫度",
       axis_displacement: "位移",
       wall_gradient: "壁溫梯度",
-      panel_e: "(e) 氣塊 (p, S, ξ) 3D 軌道",
+      panel_e: "(e) 氣塊 (p′, S′, ξ′) 3D 軌道",
       panel_e_note: "投影面積 × ω/(2π) = I（聲音強度）, Q（熱流）, w（功源）",
       axis_entropy: "熵",
       proj_pxi: "投影",
@@ -93,7 +93,7 @@ const L = isEn
       proj_sp: "投影",
       caption_title: "駐波型熱聲機制（3 模式）",
       caption_body:
-        "氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 p–ξ（聲音強度 I 之概念）與青色虛線 p–V（一週期之功 W）。左下「T—x 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（p, S, ξ）三量之同步軌跡及其三個 2D 投影同時呈現。",
+        "氣塊（青色）在 stack 中往復振盪。左上「壓力—位移 / 壓力—體積」面板同時顯示兩條軌跡：橙色 p′–ξ′（聲音強度 I 之概念）與青色虛線 p′–V′（一週期之功 W）。左下「T′–x 軌跡」顯示氣塊溫度隨位置的橢圓變化；橘色虛線是壁溫梯度。右下 3D 軌道圖則把（p′, S′, ξ′）三量之同步軌跡及其三個 2D 投影同時呈現。",
       attribution_pre: "Swift 動畫部分概念基於 G. W. Swift, ",
       attribution_swift_title: "Thermoacoustics: A Unifying Perspective for Some Engines and Refrigerators",
       attribution_swift_pub: "（Springer, 2nd ed., 2017）",
@@ -540,9 +540,9 @@ const L = isEn
         {L.panel_b}
       </text>
       <text x="120" y="-12" font-size="9" text-anchor="middle">
-        <tspan fill="#d97706">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">ξ</tspan> × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>{L.legend_I}</tspan>
+        <tspan fill="#d97706">∮ <tspan font-style="italic">p′</tspan> d<tspan font-style="italic">ξ′</tspan> × <tspan font-style="italic">ω</tspan>/(2π) = <tspan font-style="italic">I</tspan>{L.legend_I}</tspan>
         <tspan fill="#475569"> · </tspan>
-        <tspan fill="#0e7490">∮ <tspan font-style="italic">p</tspan> d<tspan font-style="italic">V</tspan> = <tspan font-style="italic">W</tspan>{L.legend_W}</tspan>
+        <tspan fill="#0e7490">∮ <tspan font-style="italic">p′</tspan> d<tspan font-style="italic">V′</tspan> = <tspan font-style="italic">W</tspan>{L.legend_W}</tspan>
       </text>
       <!-- Axes (with arrowheads) -->
       <line x1="0" y1="170" x2="0" y2="0" stroke="#1e3a5f" stroke-width="2"
@@ -556,9 +556,9 @@ const L = isEn
         fill="#1e3a5f"
         text-anchor="middle"
         font-weight="500"
-        transform="rotate(-90 -18 85)">{L.axis_pressure} <tspan font-style="italic">p</tspan></text>
+        transform="rotate(-90 -18 85)">{L.axis_pressure} <tspan font-style="italic">p′</tspan></text>
       <text x="120" y="190" font-size="11" fill="#1e3a5f" text-anchor="middle"
-        >{isEn ? "Displacement" : "位移"} <tspan font-style="italic">ξ</tspan> / {isEn ? "Volume" : "體積"} <tspan font-style="italic">V</tspan> {isEn ? "(normalized)" : "（歸一化）"}</text>
+        >{isEn ? "Displacement" : "位移"} <tspan font-style="italic">ξ′</tspan> / {isEn ? "Volume" : "體積"} <tspan font-style="italic">V′</tspan> {isEn ? "(normalized)" : "（歸一化）"}</text>
 
       <!-- p–ξ filled cycle (orange) — primary trace = I projection -->
       <path
@@ -620,9 +620,9 @@ const L = isEn
         fill="#1e3a5f"
         text-anchor="middle"
         font-weight="500"
-        transform="rotate(-90 -18 100)">{L.axis_temperature} <tspan font-style="italic">T</tspan></text>
+        transform="rotate(-90 -18 100)">{L.axis_temperature} <tspan font-style="italic">T′</tspan></text>
       <text x="120" y="220" font-size="11" fill="#1e3a5f" text-anchor="middle"
-        >{L.axis_displacement} <tspan font-style="italic">ξ</tspan></text>
+        >{L.axis_displacement} <tspan font-style="italic">ξ′</tspan></text>
 
       <!-- Wall (plate) temperature gradient — orange. -->
       <line
@@ -728,7 +728,7 @@ const L = isEn
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">{L.axis_pressure} <tspan font-style="italic">p</tspan></text>
+        text-anchor="middle">{L.axis_pressure} <tspan font-style="italic">p′</tspan></text>
       <text
         id="ta-biwa-label-s"
         x="0"
@@ -736,7 +736,7 @@ const L = isEn
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">{L.axis_entropy} <tspan font-style="italic">S</tspan></text>
+        text-anchor="middle">{L.axis_entropy} <tspan font-style="italic">S′</tspan></text>
       <text
         id="ta-biwa-label-xi"
         x="0"
@@ -744,16 +744,16 @@ const L = isEn
         font-size="11"
         font-weight="600"
         fill="#1e3a5f"
-        text-anchor="middle">{L.axis_displacement} <tspan font-style="italic">ξ</tspan></text>
+        text-anchor="middle">{L.axis_displacement} <tspan font-style="italic">ξ′</tspan></text>
 
       <!-- Vertical legend on the right side of the cube. -->
       <g transform="translate(255, 60)">
         <line x1="0" y1="0" x2="18" y2="0" stroke="#d97706" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="4" font-size="10" fill="#1e3a5f"><tspan font-style="italic">p</tspan>–<tspan font-style="italic">ξ</tspan> {L.proj_pxi} = <tspan font-weight="600" font-style="italic" fill="#d97706">I</tspan></text>
+        <text x="24" y="4" font-size="10" fill="#1e3a5f"><tspan font-style="italic">p′</tspan>–<tspan font-style="italic">ξ′</tspan> {L.proj_pxi} = <tspan font-weight="600" font-style="italic" fill="#d97706">I</tspan></text>
         <line x1="0" y1="22" x2="18" y2="22" stroke="#16a34a" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="26" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">ξ</tspan> {L.proj_sxi} ≈ <tspan font-weight="600" font-style="italic" fill="#16a34a">Q</tspan></text>
+        <text x="24" y="26" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S′</tspan>–<tspan font-style="italic">ξ′</tspan> {L.proj_sxi} ≈ <tspan font-weight="600" font-style="italic" fill="#16a34a">Q</tspan></text>
         <line x1="0" y1="44" x2="18" y2="44" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3 2"></line>
-        <text x="24" y="48" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S</tspan>–<tspan font-style="italic">p</tspan> {L.proj_sp} = <tspan font-weight="600" font-style="italic" fill="#7c3aed">w</tspan></text>
+        <text x="24" y="48" font-size="10" fill="#1e3a5f"><tspan font-style="italic">S′</tspan>–<tspan font-style="italic">p′</tspan> {L.proj_sp} = <tspan font-weight="600" font-style="italic" fill="#7c3aed">w</tspan></text>
       </g>
     </g>
   </svg>

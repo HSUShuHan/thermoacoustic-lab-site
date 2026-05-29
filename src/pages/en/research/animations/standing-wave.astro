@@ -1,6 +1,11 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimation.astro";
+import katex from "katex";
+
+// KaTeX CSS is loaded globally via global.css. Notation matches the air-column
+// primer: a prime marks an oscillating (time-domain) parcel quantity.
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 ---
 
 <BaseLayout
@@ -58,16 +63,16 @@ import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimati
     </p>
     <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
       <li>
-        <strong style="color:#d97706">Orange <i>p</i>–<i>ξ</i> (pressure–displacement)</strong>:
-        loop area × <i>ω</i>/(2π) = <strong>acoustic intensity <i>I</i></strong>
-        (⟨<i>p</i>·<i>u</i>⟩, where the parcel oscillates with velocity
-        <i>u</i> = d<i>ξ</i>/d<i>t</i>). Corresponds to the bottom-plane
+        <strong style="color:#d97706">Orange <span set:html={m("p'")} />–<span set:html={m("\\xi'")} /> (pressure–displacement)</strong>:
+        loop area × <span set:html={m("\\omega/(2\\pi)")} /> = <strong>acoustic intensity <span set:html={m("I")} /></strong>
+        (<span set:html={m("\\langle p'u'\\rangle")} />, where the parcel oscillates with velocity
+        <span set:html={m("u' = d\\xi'/dt")} />). Corresponds to the bottom-plane
         projection of the 3D orbit.
       </li>
       <li>
-        <strong style="color:#0e7490">Cyan dashed <i>p</i>–<i>V</i> (pressure–volume)</strong>:
+        <strong style="color:#0e7490">Cyan dashed <span set:html={m("p'")} />–<span set:html={m("V'")} /> (pressure–volume)</strong>:
         the classical thermodynamic PV diagram; loop area
-        ∮<i>p</i> d<i>V</i> = <strong>work per cycle <i>W</i></strong>. More
+        <span set:html={m("\\oint p'\\,dV'")} /> = <strong>work per cycle <span set:html={m("W")} /></strong>. More
         intuitive for readers familiar with heat-engine cycles.
       </li>
     </ul>
@@ -75,11 +80,11 @@ import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimati
       Both close clockwise (engine) ⇒ acoustic power output; counter-clockwise
       (refrigerator) ⇒ acoustic power input pumping heat; degenerate to a line
       (critical / flat) ⇒ no net effect. The two shapes differ slightly because
-      <i>ξ</i> and <i>V</i> have different phase relationships for the same
+      <span set:html={m("\\xi'")} /> and <span set:html={m("V'")} /> have different phase relationships for the same
       parcel (in a standing wave, they are not perfectly in phase).
     </p>
 
-    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <i>T</i>–<i>x</i> (temperature–position) trajectory</h3>
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ <span set:html={m("T'")} />–<span set:html={m("x")} /> (temperature–position) trajectory</h3>
     <p class="mt-2 text-gray-700">
       Bottom-left: the dark-green ellipse is the parcel temperature versus
       position; the orange dashed line is the wall temperature gradient. The
@@ -91,13 +96,13 @@ import ThermoacousticAnimation from "~/components/research/ThermoacousticAnimati
       effect as a heat engine / refrigerator.
     </p>
     <p class="mt-2 text-gray-700 text-sm">
-      Note: this plot conceptually corresponds to the "entropy <i>S</i> vs
-      displacement <i>ξ</i> projection ≈ <i>Q</i>" face of the 3D orbit, but
-      the vertical axis here is <strong>temperature <i>T</i></strong>, not
-      entropy <i>S</i>. For a single parcel under adiabatic conditions
-      d<i>T</i> ∝ d<i>S</i>, so the shape is similar; the units differ (<i>T</i>
+      Note: this plot conceptually corresponds to the "entropy <span set:html={m("S'")} /> vs
+      displacement <span set:html={m("\\xi'")} /> projection ≈ <span set:html={m("Q")} />" face of the 3D orbit, but
+      the vertical axis here is <strong>temperature <span set:html={m("T'")} /></strong>, not
+      entropy <span set:html={m("S'")} />. For a single parcel under adiabatic conditions
+      <span set:html={m("dT' \\propto dS'")} />, so the shape is similar; the units differ (<span set:html={m("T'")} />
       carries an extra heat-capacity factor), so the loop area is
-      <strong>proportional to</strong> heat flux <i>Q</i> rather than strictly
+      <strong>proportional to</strong> heat flux <span set:html={m("Q")} /> rather than strictly
       equal to it. The ellipse uses a darker shade
       (<span style="color:#15803d">●</span>) than the 3D-projection green
       (<span style="color:#16a34a">●</span>) to flag this "related but not
