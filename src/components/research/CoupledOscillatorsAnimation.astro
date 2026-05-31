@@ -1,0 +1,390 @@
+---
+// 1-DOF → ∞-DOF transition: a chain of N coupled mass–spring oscillators.
+// Native <canvas> + requestAnimationFrame, no framework island.
+// Two regimes share the same lattice: (a) a NORMAL MODE — every mass swings in
+// phase at one frequency, fixed nodes → a STANDING wave whose shape approaches
+// sin(nπx/L); (b) a DISTURBANCE PROPAGATING — a driven left end pushes its
+// neighbour, which pushes the next (with delay) → a TRAVELING wave at finite
+// speed. As N grows the discrete bead chain smoothly becomes a continuous wave:
+// the N→∞ limit IS the gas column. A small spectrum strip shows the allowed
+// mode frequencies filling in from 1 peak (SDOF) toward a comb (harmonics).
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const isEn = lang === "en";
+
+const L = isEn
+  ? {
+      mode: "Regime",
+      m_mode: "Normal mode (→ standing)",
+      m_prop: "Disturbance (→ traveling)",
+      count: "Masses N",
+      modeNum: "Mode n",
+      speed: "Speed",
+      play: "Play",
+      pause: "Pause",
+      caption:
+        "Link single oscillators into a chain with springs and coupling lets vibration travel through space. In a normal mode the whole chain swings at one frequency with fixed nodes → a standing wave, its shape approaching sin(nπx/L); under a propagating disturbance the driven left end pushes its neighbour, and the next, with delay → a traveling wave at finite speed. The larger N, the more smoothly the discrete bead chain becomes a continuous wave — N→∞ is the gas column.",
+    }
+  : {
+      mode: "模式",
+      m_mode: "正規模態（→ 駐波）",
+      m_prop: "擾動傳播（→ 行波）",
+      count: "質量數 N",
+      modeNum: "模態 n",
+      speed: "速度",
+      play: "播放",
+      pause: "暫停",
+      caption:
+        "把單一振子用彈簧串接成鏈，耦合讓振動能在空間中傳遞。正規模態下整條鏈以單一頻率同步振盪、節點固定 → 駐波，形狀趨近 sin(nπx/L)；擾動傳播下左端的擾動鄰格接鄰格、以有限速度傳開 → 行波。N 越大，離散的質點鏈越平滑地化為連續的波 —— N→∞ 就是氣柱。",
+    };
+---
+
+<figure
+  class="coupled-anim my-6 rounded-lg border border-brand-100 bg-white p-4 sm:p-6"
+  data-lang={lang}
+>
+  <div class="mb-3 flex flex-col gap-3 text-sm">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-400">{L.mode}</span>
+      <div class="coupled-modes inline-flex overflow-hidden rounded border border-brand-200">
+        <button data-mode="normal" class="coupled-seg px-3 py-1">{L.m_mode}</button>
+        <button data-mode="prop" class="coupled-seg px-3 py-1 border-l border-brand-200">{L.m_prop}</button>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+      <div class="flex items-center gap-2">
+        <span class="text-brand-600">{L.count}</span>
+        <input class="coupled-n" type="range" min="2" max="40" step="1" value="5" />
+        <span class="coupled-nval w-6 font-mono text-xs text-brand-700"></span>
+      </div>
+      <div class="coupled-nmoderow flex items-center gap-2">
+        <span class="text-brand-600">{L.modeNum}</span>
+        <input class="coupled-nmode" type="range" min="1" max="6" step="1" value="1" />
+        <span class="coupled-nmodeval w-6 font-mono text-xs text-brand-700"></span>
+      </div>
+      <div class="hidden h-5 w-px bg-brand-200 sm:block"></div>
+      <div class="flex items-center gap-2">
+        <button class="coupled-play rounded bg-brand-800 px-3 py-1 font-medium text-white hover:bg-brand-700">{L.pause}</button>
+        <span class="text-brand-600">{L.speed}</span>
+        <input class="coupled-speed" type="range" min="0.1" max="2" step="0.1" value="1" />
+      </div>
+    </div>
+  </div>
+
+  <canvas class="coupled-main w-full" style="display:block"></canvas>
+
+  <figcaption class="mt-3 text-sm leading-relaxed text-gray-600">{L.caption}</figcaption>
+</figure>
+
+<script>
+  type Mode = "normal" | "prop";
+
+  const COL = {
+    wall: "#1e3a5f",
+    mass: "#334155",
+    wave: "#0e7490", // teal — the chain/wave
+    cont: "#67e8f9", // faint continuum reference
+    drive: "#dc2626", // red — driven source
+    node: "#cbd5e1",
+    axis: "#cbd5e1",
+    label: "#475569",
+    tick: "#94a3b8",
+    accent: "#d97706",
+  };
+  const TWO_PI = Math.PI * 2;
+
+  const MFR = (px: number) =>
+    `${px}px 'KaTeX_Main','STIX Two Math','Cambria Math','Times New Roman',serif`;
+  const MFI = (px: number) =>
+    `italic ${px}px 'KaTeX_Math','STIX Two Math','Cambria Math','Times New Roman',serif`;
+
+  function initAnimation(root: HTMLElement) {
+    const isEn = root.getAttribute("data-lang") === "en";
+    const t = (zh: string, en: string) => (isEn ? en : zh);
+
+    const main = root.querySelector<HTMLCanvasElement>(".coupled-main")!;
+    const ctx = main.getContext("2d")!;
+
+    // State
+    let mode: Mode = "normal";
+    let N = 5;
+    let nMode = 1;
+    let playing = true;
+    let speed = 1;
+    let tt = 0;
+
+    // lattice arrays for the propagating sim (indices 0..N+1; 0 = driven, N+1 = fixed)
+    let y: number[] = [];
+    let v: number[] = [];
+
+    function reinit() {
+      tt = 0;
+      y = new Array(N + 2).fill(0);
+      v = new Array(N + 2).fill(0);
+    }
+
+    // ── Layout ──────────────────────────────────────────────────────────
+    let W = 0,
+      H = 0,
+      dpr = 1;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = main.clientWidth;
+      H = 240;
+      main.width = Math.round(W * dpr);
+      main.height = Math.round(H * dpr);
+      main.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const PAD = 40;
+    const specH = 30; // bottom strip for the mode spectrum
+    function geom() {
+      const xL = PAD;
+      const xR = W - PAD;
+      const yc = (H - specH) * 0.5 + 6;
+      const a = (xR - xL) / (N + 1);
+      const amp = Math.min((H - specH) * 0.34, 64);
+      return { xL, xR, yc, a, amp };
+    }
+    const xOf = (j: number, g: ReturnType<typeof geom>) => g.xL + j * g.a;
+
+    // ── Normal-mode shape (analytic standing wave) ──────────────────────
+    // ω_n = 2ω₀ sin(nπ/2(N+1)); pin mode-1 period to 2.6 s for every N.
+    function omegas() {
+      const s1 = Math.sin(Math.PI / (2 * (N + 1)));
+      const w0 = TWO_PI / 2.6 / (2 * s1);
+      const wn = 2 * w0 * Math.sin((nMode * Math.PI) / (2 * (N + 1)));
+      return { w0, wn };
+    }
+    function normalDisp(j: number) {
+      const { wn } = omegas();
+      return Math.sin((nMode * Math.PI * j) / (N + 1)) * Math.cos(wn * tt);
+    }
+
+    // ── Propagating sim (driven left end, sponge-damped right end) ──────
+    function stepProp(dt: number) {
+      const Tcross = 1.5; // seconds for the front to cross the chain
+      const w0 = (N + 1) / Tcross; // coupling ⇒ constant continuum speed
+      const wd = (2.0 * TWO_PI) / Tcross; // ~2 wavelengths across the chain
+      // explicit sub-steps for stability (max lattice freq = 2ω₀)
+      const S = Math.max(1, Math.ceil((w0 * dt) / 0.3));
+      const h = dt / S;
+      const k2 = w0 * w0;
+      for (let s = 0; s < S; s++) {
+        tt += h;
+        y[0] = Math.sin(wd * tt); // driven source (unit amplitude)
+        y[N + 1] = 0; // fixed far end
+        for (let j = 1; j <= N; j++) {
+          // absorbing sponge layer over the rightmost ~25 %
+          const f = j / (N + 1);
+          const gamma = f > 0.75 ? 6 * (f - 0.75) * w0 : 0;
+          const acc = k2 * (y[j - 1] - 2 * y[j] + y[j + 1]) - gamma * v[j];
+          v[j] += acc * h;
+        }
+        for (let j = 1; j <= N; j++) y[j] += v[j] * h;
+      }
+    }
+    function propDisp(j: number) {
+      return y[j];
+    }
+
+    // ── Draw ────────────────────────────────────────────────────────────
+    function drawWall(x: number, yc: number, amp: number) {
+      const top = yc - amp - 14;
+      const bot = yc + amp + 14;
+      ctx.strokeStyle = COL.wall;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bot);
+      ctx.stroke();
+      ctx.strokeStyle = COL.tick;
+      ctx.lineWidth = 1;
+      const dir = x < W / 2 ? -1 : 1;
+      for (let yy = top + 3; yy < bot; yy += 8) {
+        ctx.beginPath();
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x + dir * 7, yy + 7);
+        ctx.stroke();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const g = geom();
+      const { xL, xR, yc, amp } = g;
+      const disp = mode === "normal" ? normalDisp : propDisp;
+
+      // equilibrium axis
+      ctx.strokeStyle = COL.axis;
+      ctx.setLineDash([3, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(xL, yc);
+      ctx.lineTo(xR, yc);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // walls
+      drawWall(xL, yc, amp);
+      drawWall(xR, yc, amp);
+
+      // faint continuum reference (normal mode only): sin(nπx/L)
+      if (mode === "normal") {
+        const { wn } = omegas();
+        ctx.strokeStyle = COL.cont;
+        ctx.lineWidth = 6;
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath();
+        for (let i = 0; i <= 120; i++) {
+          const f = i / 120;
+          const x = xL + f * (xR - xL);
+          const yy = yc - amp * Math.sin(nMode * Math.PI * f) * Math.cos(wn * tt);
+          i === 0 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // the chain itself: a polyline through walls + masses (this is the wave)
+      const px = (j: number) => xOf(j, g);
+      const py = (j: number) => yc - amp * disp(j);
+      ctx.strokeStyle = COL.wave;
+      ctx.lineWidth = 2;
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(px(0), py(0));
+      for (let j = 1; j <= N + 1; j++) ctx.lineTo(px(j), py(j));
+      ctx.stroke();
+
+      // masses (shrink as N grows → the bead chain becomes a smooth wave)
+      const r = Math.max(2.2, Math.min(6.5, 60 / (N + 2)));
+      for (let j = 1; j <= N; j++) {
+        ctx.fillStyle = COL.mass;
+        ctx.beginPath();
+        ctx.arc(px(j), py(j), r, 0, TWO_PI);
+        ctx.fill();
+      }
+
+      // driven source dot + label (propagating mode)
+      if (mode === "prop") {
+        ctx.fillStyle = COL.drive;
+        ctx.beginPath();
+        ctx.arc(px(0), py(0), Math.max(r, 4), 0, TWO_PI);
+        ctx.fill();
+        ctx.font = MFR(12);
+        ctx.fillStyle = COL.drive;
+        ctx.textAlign = "center";
+        ctx.fillText(t("驅動", "drive"), px(0), yc + amp + 30);
+        ctx.textAlign = "left";
+      }
+
+      drawSpectrum(g);
+    }
+
+    // ── Mode-frequency spectrum: 1 peak (SDOF) → N peaks → comb ──────────
+    function drawSpectrum(g: ReturnType<typeof geom>) {
+      const { xL, xR } = g;
+      const sy = H - 12;
+      ctx.strokeStyle = COL.axis;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(xL, sy);
+      ctx.lineTo(xR, sy);
+      ctx.stroke();
+      ctx.fillStyle = COL.label;
+      ctx.font = MFI(12);
+      ctx.fillText("ω", xL - 18, sy + 4);
+      ctx.font = MFR(9);
+      ctx.fillText("n", xL - 11, sy + 7);
+      // N allowed mode frequencies, normalised position sin(nπ/2(N+1)) ∈ (0,1]
+      for (let n = 1; n <= N; n++) {
+        const frac = Math.sin((n * Math.PI) / (2 * (N + 1)));
+        const x = xL + frac * (xR - xL);
+        const on = mode === "normal" && n === nMode;
+        ctx.strokeStyle = on ? COL.accent : COL.tick;
+        ctx.lineWidth = on ? 2.4 : 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x, sy);
+        ctx.lineTo(x, sy - (on ? 16 : 10));
+        ctx.stroke();
+        if (on) {
+          ctx.fillStyle = COL.accent;
+          ctx.font = MFR(10);
+          ctx.textAlign = "center";
+          ctx.fillText(String(n), x, sy - 19);
+          ctx.textAlign = "left";
+        }
+      }
+    }
+
+    // ── Loop ────────────────────────────────────────────────────────────
+    let last = 0;
+    function frame(ts: number) {
+      if (!last) last = ts;
+      const dt = Math.min(0.05, (ts - last) / 1000) * speed;
+      last = ts;
+      if (playing) {
+        if (mode === "prop") stepProp(dt);
+        else tt += dt;
+      }
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    // ── UI ──────────────────────────────────────────────────────────────
+    const nmodeRow = root.querySelector<HTMLElement>(".coupled-nmoderow")!;
+    const nmodeInput = root.querySelector<HTMLInputElement>(".coupled-nmode")!;
+    function refresh() {
+      root.querySelectorAll<HTMLElement>(".coupled-modes .coupled-seg").forEach((b) => {
+        const on = b.getAttribute("data-mode") === mode;
+        b.style.background = on ? COL.wall : "#fff";
+        b.style.color = on ? "#fff" : COL.label;
+      });
+      nmodeRow.style.display = mode === "normal" ? "flex" : "none";
+      // clamp mode number to available modes, keep slider max in sync
+      nmodeInput.max = String(Math.min(6, N));
+      if (nMode > N) nMode = N;
+      nmodeInput.value = String(nMode);
+      root.querySelector<HTMLElement>(".coupled-nval")!.textContent = String(N);
+      root.querySelector<HTMLElement>(".coupled-nmodeval")!.textContent = String(nMode);
+      reinit();
+    }
+
+    root.querySelectorAll<HTMLElement>(".coupled-modes .coupled-seg").forEach((b) =>
+      b.addEventListener("click", () => {
+        mode = b.getAttribute("data-mode") as Mode;
+        refresh();
+      }),
+    );
+    root.querySelector<HTMLInputElement>(".coupled-n")!.addEventListener("input", (e) => {
+      N = parseInt((e.target as HTMLInputElement).value, 10);
+      refresh();
+    });
+    nmodeInput.addEventListener("input", (e) => {
+      nMode = parseInt((e.target as HTMLInputElement).value, 10);
+      root.querySelector<HTMLElement>(".coupled-nmodeval")!.textContent = String(nMode);
+      reinit();
+    });
+    const playBtn = root.querySelector<HTMLButtonElement>(".coupled-play")!;
+    playBtn.addEventListener("click", () => {
+      playing = !playing;
+      playBtn.textContent = playing ? t("暫停", "Pause") : t("播放", "Play");
+    });
+    root.querySelector<HTMLInputElement>(".coupled-speed")!.addEventListener("input", (e) => {
+      speed = parseFloat((e.target as HTMLInputElement).value);
+    });
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(main);
+    resize();
+    refresh();
+    requestAnimationFrame(frame);
+  }
+
+  document.querySelectorAll<HTMLElement>(".coupled-anim").forEach((el) => initAnimation(el));
+</script>

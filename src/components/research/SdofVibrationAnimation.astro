@@ -1,0 +1,1220 @@
+---
+// Single-degree-of-freedom (SDOF) mechanical vibration primer.
+// Native <canvas> + requestAnimationFrame, no framework island.
+// The simplest oscillation (one mass, one spring): introduces the phasor /
+// complex representation, the 90° lead of velocity over displacement, damping
+// (decaying spiral), and driven resonance with the force–response phase lag φ
+// and mechanical impedance — the prototype of the gas column's p′–u′ phase and
+// acoustic impedance. First rung of the animation ladder before the gas column.
+import katex from "katex";
+const mi = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const isEn = lang === "en";
+
+const L = isEn
+  ? {
+      mode: "Mode",
+      m_free: "Free (undamped)",
+      m_damped: "Damped",
+      m_driven: "Driven",
+      damping: "Damping <i>ζ</i>",
+      drive: "Drive <i>ω</i>/<i>ω</i>ₙ",
+      speed: "Speed",
+      play: "Play",
+      pause: "Pause",
+      show: "Show",
+      v_vel: "Velocity",
+      v_energy: "Energy",
+      phasor_cap: "Complex plane: phasors",
+      poles_cap: "Complex plane: characteristic roots s",
+      r_under: "Under",
+      r_crit: "Critical",
+      r_over: "Over",
+      portrait_cap: "Phase plane: x–v trajectory",
+      reson_cap: "Resonance curve",
+      rootlocus_cap: "Root locus (s-plane)",
+      reson_hint: "Driven mode only",
+      caption:
+        "A mass on a spring — the simplest oscillation. The complex-plane panel shows the rotating phasor whose real-axis projection is the motion; velocity leads displacement by 90°. Add damping for a decaying spiral; drive it and the amplitude peaks at resonance while the force–response phase lag <i>φ</i> runs 0°→90°→180° — the mechanical prototype of the gas column's <i>p</i>′–<i>u</i>′ phase.",
+    }
+  : {
+      mode: "模式",
+      m_free: "自由（無阻尼）",
+      m_damped: "阻尼振盪",
+      m_driven: "強制驅動",
+      damping: "阻尼比 <i>ζ</i>",
+      drive: "驅動 <i>ω</i>/<i>ω</i>ₙ",
+      speed: "速度",
+      play: "播放",
+      pause: "暫停",
+      show: "顯示",
+      v_vel: "速度",
+      v_energy: "能量",
+      phasor_cap: "複數平面：相量",
+      poles_cap: "複數平面：特徵根 s",
+      r_under: "欠阻尼",
+      r_crit: "臨界",
+      r_over: "過阻尼",
+      portrait_cap: "相平面：x–v 軌跡",
+      reson_cap: "共鳴曲線",
+      rootlocus_cap: "根軌跡（s 平面）",
+      reson_hint: "僅強制驅動模式",
+      caption:
+        "質量掛在彈簧上 — 最單純的振盪。複數平面畫旋轉相量，其實軸投影即運動；速度領先位移 90°。加阻尼會看到衰減螺旋；強制驅動時振幅在共振處達峰、力與響應的相位滯後 <i>φ</i> 由 0°→90°→180° — 這正是氣柱 <i>p</i>′–<i>u</i>′ 相位的力學原型。",
+    };
+---
+
+<figure
+  class="sdof-anim my-6 rounded-lg border border-brand-100 bg-white p-4 sm:p-6"
+  data-lang={lang}
+>
+  <!-- Controls (sticky) -->
+  <div class="sticky top-[68px] z-20 -mx-4 -mt-4 mb-1 flex flex-col gap-3 border-b border-brand-100 bg-white/95 px-4 py-3 text-base backdrop-blur sm:-mx-6 sm:-mt-6 sm:px-6">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <span class="text-sm font-semibold uppercase tracking-wider text-brand-400">{L.mode}</span>
+      <div class="sdof-modes inline-flex overflow-hidden rounded border border-brand-200">
+        <button data-mode="free" class="sdof-seg px-3 py-1">{L.m_free}</button>
+        <button data-mode="damped" class="sdof-seg px-3 py-1 border-l border-brand-200">{L.m_damped}</button>
+        <button data-mode="driven" class="sdof-seg px-3 py-1 border-l border-brand-200">{L.m_driven}</button>
+      </div>
+      <!-- Damping slider (damped + driven) -->
+      <div class="sdof-zetarow hidden items-center gap-2">
+        <span class="text-brand-600" set:html={L.damping}></span>
+        <input class="sdof-zeta" type="range" min="0.05" max="2" step="0.01" value="0.15" />
+        <span class="sdof-zetaval w-9 font-mono text-sm text-brand-700"></span>
+      </div>
+      <!-- Damping-regime label + presets (damped only) -->
+      <div class="sdof-regimerow hidden flex-wrap items-center gap-2">
+        <span class="sdof-regimelabel rounded px-2 py-0.5 text-sm font-medium"></span>
+        <div class="inline-flex overflow-hidden rounded border border-brand-200 text-sm">
+          <button data-zeta="0.25" class="sdof-preset px-2 py-1">{L.r_under}</button>
+          <button data-zeta="1" class="sdof-preset px-2 py-1 border-l border-brand-200">{L.r_crit}</button>
+          <button data-zeta="1.6" class="sdof-preset px-2 py-1 border-l border-brand-200">{L.r_over}</button>
+        </div>
+      </div>
+      <!-- Drive-frequency slider (driven only) -->
+      <div class="sdof-drow hidden items-center gap-2">
+        <span class="text-brand-600" set:html={L.drive}></span>
+        <input class="sdof-drive" type="range" min="0.1" max="2.5" step="0.01" value="1" />
+        <span class="sdof-driveval w-9 font-mono text-sm text-brand-700"></span>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <span class="text-sm font-semibold uppercase tracking-wider text-brand-400">VIEW</span>
+      <div class="flex items-center gap-2">
+        <button class="sdof-play rounded bg-brand-800 px-3 py-1 font-medium text-white hover:bg-brand-700">{L.pause}</button>
+        <span class="text-brand-600">{L.speed}</span>
+        <input class="sdof-speed" type="range" min="0.1" max="2" step="0.1" value="1" />
+      </div>
+      <div class="hidden h-5 w-px bg-brand-200 sm:block"></div>
+      <div class="flex items-center gap-3">
+        <span class="text-brand-600">{L.show}</span>
+        <label class="flex items-center gap-1"><input class="sdof-vvel" type="checkbox" checked /> {L.v_vel}</label>
+        <label class="flex items-center gap-1"><input class="sdof-venergy" type="checkbox" checked /> {L.v_energy}</label>
+      </div>
+    </div>
+  </div>
+
+  <canvas class="sdof-main mt-4 w-full" style="display:block"></canvas>
+
+  <div class="sdof-legend mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-brand-600"></div>
+
+  <!-- Resonance curve (driven mode only) -->
+  <div class="sdof-panels mt-5 border-t border-brand-100 pt-4">
+    <figure class="sdof-reson-panel m-0 mx-auto w-full max-w-[560px]">
+      <canvas class="sdof-reson w-full" style="display:block"></canvas>
+      <figcaption class="sdof-analysis-cap mt-1 text-center text-sm text-brand-600">{L.reson_cap}</figcaption>
+    </figure>
+  </div>
+
+  <figcaption class="mt-4 text-base leading-relaxed text-gray-600" set:html={L.caption}></figcaption>
+</figure>
+
+<script>
+  type Mode = "free" | "damped" | "driven";
+
+  const COL = {
+    wall: "#1e3a5f",
+    mass: "#334155",
+    spring: "#64748b",
+    dashpot: "#94a3b8",
+    eq: "#cbd5e1",
+    disp: "#0e7490", // x — teal
+    vel: "#7c3aed", // v — violet
+    force: "#dc2626", // F — red
+    accel: "#d97706", // a — amber
+    axis: "#cbd5e1",
+    label: "#475569",
+    ke: "#0e7490",
+    pe: "#d97706",
+  };
+  const TWO_PI = Math.PI * 2;
+  const PERIOD_N = 3.0; // seconds for one natural period at speed 1
+  const WN = TWO_PI / PERIOD_N; // natural angular frequency ωₙ
+
+  const MF = (px: number, bold = false) =>
+    `${bold ? "bold " : ""}italic ${px}px 'KaTeX_Math','STIX Two Math','Cambria Math','Times New Roman',serif`;
+  const MFR = (px: number) =>
+    `${px}px 'KaTeX_Main','STIX Two Math','Cambria Math','Times New Roman',serif`;
+  if (typeof document !== "undefined" && (document as any).fonts?.load) {
+    (document as any).fonts.load("italic 16px 'KaTeX_Math'");
+  }
+
+  // Draw a run of math segments [text, italic] with proper variable/operator
+  // typography. align: "left" | "center" | "right" about x. Returns total width.
+  function mathRun(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    px: number,
+    segs: [string, boolean][],
+    align: "left" | "center" | "right" = "left",
+  ) {
+    let total = 0;
+    for (const [txt, ital] of segs) {
+      ctx.font = ital ? MF(px) : MFR(px);
+      total += ctx.measureText(txt).width;
+    }
+    const prev = ctx.textAlign;
+    ctx.textAlign = "left";
+    let lx = align === "center" ? x - total / 2 : align === "right" ? x - total : x;
+    for (const [txt, ital] of segs) {
+      ctx.font = ital ? MF(px) : MFR(px);
+      ctx.fillText(txt, lx, y);
+      lx += ctx.measureText(txt).width;
+    }
+    ctx.textAlign = prev;
+    return total;
+  }
+
+  function initAnimation(root: HTMLElement) {
+    const isEn = root.getAttribute("data-lang") === "en";
+    const t = (zh: string, en: string) => (isEn ? en : zh);
+
+    const main = root.querySelector<HTMLCanvasElement>(".sdof-main")!;
+    const reson = root.querySelector<HTMLCanvasElement>(".sdof-reson")!;
+    const mctx = main.getContext("2d")!;
+    const rctx = reson.getContext("2d")!;
+    const legendEl = root.querySelector<HTMLElement>(".sdof-legend")!;
+
+    // State
+    let mode: Mode = "free";
+    let zeta = 0.15;
+    let rDrive = 1.0; // ω/ωₙ
+    let playing = true;
+    let speed = 1;
+    let showVel = true;
+    let showEnergy = true;
+    let tt = 0; // accumulated time (s)
+
+    // history for time trace
+    const trail: { x: number; v: number; f: number }[] = [];
+    // history of the x̂ phasor tip (normalized unit-disk coords) → complex-plane
+    // trajectory: a circle (free/driven) or a decaying spiral (damped).
+    const phasorTrail: { x: number; y: number }[] = [];
+    // damped phase-plane trajectory: (x, v) path from release → spiral / node.
+    const phaseTrail: { x: number; v: number }[] = [];
+
+    // ── Physics ─────────────────────────────────────────────────────────
+    // Normalized amplitude 1; free/damped start from rest displaced by 1.
+    function driven() {
+      const r = rDrive;
+      const denom = Math.sqrt((1 - r * r) ** 2 + (2 * zeta * r) ** 2);
+      const X = 1 / denom; // amplitude relative to static deflection F0/k=1
+      const phi = Math.atan2(2 * zeta * r, 1 - r * r); // lag of x behind F
+      const w = r * WN;
+      return { X, phi, w };
+    }
+    // displacement x(t), velocity v(t), drive force f(t), all normalized
+    function state(time: number) {
+      if (mode === "free") {
+        const x = Math.cos(WN * time);
+        const v = -WN * Math.sin(WN * time);
+        return { x, v, f: 0 };
+      }
+      if (mode === "damped") {
+        // released from rest: x(0)=1, v(0)=0 — three regimes by ζ
+        const env = Math.exp(-zeta * WN * time);
+        if (zeta < 1 - 1e-3) {
+          // underdamped: decaying oscillation
+          const wd = WN * Math.sqrt(1 - zeta * zeta);
+          const x = env * (Math.cos(wd * time) + ((zeta * WN) / wd) * Math.sin(wd * time));
+          const v = -env * ((WN * WN) / wd) * Math.sin(wd * time);
+          return { x, v, f: 0 };
+        }
+        if (zeta > 1 + 1e-3) {
+          // overdamped: two real exponentials, no oscillation
+          const wh = WN * Math.sqrt(zeta * zeta - 1);
+          const x = env * (Math.cosh(wh * time) + ((zeta * WN) / wh) * Math.sinh(wh * time));
+          const v = -env * ((WN * WN) / wh) * Math.sinh(wh * time);
+          return { x, v, f: 0 };
+        }
+        // critically damped: fastest return without overshoot
+        const x = (1 + WN * time) * env;
+        const v = -(WN * WN) * time * env;
+        return { x, v, f: 0 };
+      }
+      // driven (steady state)
+      const { X, phi, w } = driven();
+      const x = X * Math.cos(w * time - phi);
+      const v = -X * w * Math.sin(w * time - phi);
+      const f = Math.cos(w * time);
+      return { x, v, f };
+    }
+
+    // ── Layout / sizing ─────────────────────────────────────────────────
+    let W = 0,
+      H = 0,
+      dpr = 1;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = main.clientWidth;
+      H = 350;
+      main.width = Math.round(W * dpr);
+      main.height = Math.round(H * dpr);
+      main.style.height = H + "px";
+      mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const rs = reson.clientWidth || 260;
+      const rh = Math.round(rs * 0.66); // wider-than-tall analysis box
+      reson.width = Math.round(rs * dpr);
+      reson.height = Math.round(rh * dpr);
+      reson.style.height = rh + "px";
+      rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawAnalysis();
+    }
+
+    // ── Drawing: oscillator + time trace ────────────────────────────────
+    const PADL = 16;
+    function drawSpring(x1: number, x2: number, y: number) {
+      // Smooth sinusoidal coil with straight lead-ins at both ends.
+      const lead = 13;
+      const coils = 8;
+      const amp = 11;
+      const x1c = x1 + lead;
+      const x2c = Math.max(x1c + 8, x2 - lead);
+      const len = x2c - x1c;
+      mctx.strokeStyle = COL.spring;
+      mctx.lineWidth = 2.2;
+      mctx.lineJoin = "round";
+      mctx.lineCap = "round";
+      mctx.beginPath();
+      mctx.moveTo(x1, y);
+      mctx.lineTo(x1c, y);
+      const steps = coils * 24;
+      for (let i = 0; i <= steps; i++) {
+        const f = i / steps;
+        mctx.lineTo(x1c + len * f, y - amp * Math.sin(f * coils * TWO_PI));
+      }
+      mctx.lineTo(x2c, y);
+      mctx.lineTo(x2, y);
+      mctx.stroke();
+      // small attachment nubs at wall and mass
+      mctx.fillStyle = COL.spring;
+      mctx.beginPath();
+      mctx.arc(x1, y, 2.2, 0, TWO_PI);
+      mctx.arc(x2, y, 2.2, 0, TWO_PI);
+      mctx.fill();
+    }
+    function drawDashpot(x1: number, x2: number, y: number, frac: number) {
+      // Dashpot: cylinder anchored to the wall (closed left, open right),
+      // a piston plate inside, its rod running out to the mass at x2.
+      // frac = piston position along the bore (0 near the closed end … 1 open).
+      const cylLen = 30;
+      const cylH = 9; // half-height of the bore
+      const bx = x1; // closed (wall) end
+      const bxr = x1 + cylLen; // open (mass) end
+      // viscous fluid fill
+      mctx.fillStyle = "#eef2f7";
+      mctx.fillRect(bx, y - cylH, cylLen, cylH * 2);
+      // three-sided housing: top, closed left, bottom (right stays open)
+      mctx.strokeStyle = COL.dashpot;
+      mctx.lineWidth = 2;
+      mctx.lineJoin = "round";
+      mctx.lineCap = "butt";
+      mctx.beginPath();
+      mctx.moveTo(bxr, y - cylH);
+      mctx.lineTo(bx, y - cylH);
+      mctx.lineTo(bx, y + cylH);
+      mctx.lineTo(bxr, y + cylH);
+      mctx.stroke();
+      // piston plate
+      const px = bx + 6 + frac * (cylLen - 12);
+      mctx.fillStyle = COL.dashpot;
+      mctx.fillRect(px - 2.5, y - (cylH - 1.5), 5, (cylH - 1.5) * 2);
+      // piston rod out to the mass
+      mctx.lineCap = "round";
+      mctx.beginPath();
+      mctx.moveTo(px, y);
+      mctx.lineTo(x2, y);
+      mctx.stroke();
+      // small attachment nub at the mass
+      mctx.fillStyle = COL.dashpot;
+      mctx.beginPath();
+      mctx.arc(x2, y, 2.2, 0, TWO_PI);
+      mctx.fill();
+    }
+
+    function drawMain() {
+      mctx.clearRect(0, 0, W, H);
+
+      // ── layout ──  row1: oscillator (full width) ; row2: a single aligned band
+      //   [ complex plane | time trace | phase plane ] sharing one zero-line.
+      const topPad = 6;
+      const row1H = 150;
+      const rowGap = 14;
+      const row2Top = topPad + row1H + rowGap;
+      const row2H = H - row2Top - 6;
+      const gap2 = 14;
+      const sq = Math.min(row2H, (W - 2 * PADL - 2 * gap2) * 0.3); // side-panel square
+      const midY2 = row2Top + row2H / 2; // the shared horizontal zero-line
+
+      const s = state(tt);
+      // Driven steady amplitude X can be ≫1 near resonance; show the motion at a
+      // bounded scale (Xref) so the mass/trace/portrait stay framed — the true
+      // growth lives on the resonance curve.
+      const dr = mode === "driven" ? driven() : null;
+      const Xref = dr ? Math.max(1, dr.X) : 1;
+      const wEff = dr ? dr.w : WN;
+
+      // ===== row 1: mass–spring(–dashpot) oscillator, full width =====
+      const oscY = topPad + row1H * 0.4;
+      const wallX = PADL + 8;
+      const eqX = W * 0.5;
+      const rigRight = W - PADL;
+      const massW = 46,
+        massH = 42;
+      const ampPx = Math.min(eqX - wallX - 20, rigRight - eqX - massW / 2 - 6, 150);
+      const xn = s.x / Xref;
+      const massX = eqX + xn * ampPx;
+      const gy = oscY + massH / 2 + 6;
+      const wallTop = oscY - 34;
+
+      // support: wall + full-width ground (L corner)
+      mctx.strokeStyle = COL.wall;
+      mctx.lineCap = "round";
+      mctx.lineWidth = 3;
+      mctx.beginPath();
+      mctx.moveTo(wallX, wallTop);
+      mctx.lineTo(wallX, gy);
+      mctx.lineTo(rigRight, gy);
+      mctx.stroke();
+      mctx.lineWidth = 1;
+      mctx.strokeStyle = COL.dashpot;
+      for (let yy = wallTop + 4; yy < gy; yy += 8) {
+        mctx.beginPath();
+        mctx.moveTo(wallX, yy);
+        mctx.lineTo(wallX - 7, yy + 7);
+        mctx.stroke();
+      }
+      for (let xx = wallX + 8; xx <= rigRight; xx += 8) {
+        mctx.beginPath();
+        mctx.moveTo(xx, gy);
+        mctx.lineTo(xx - 7, gy + 7);
+        mctx.stroke();
+      }
+
+      // equilibrium line
+      mctx.strokeStyle = COL.eq;
+      mctx.setLineDash([3, 3]);
+      mctx.lineWidth = 1;
+      mctx.beginPath();
+      mctx.moveTo(eqX, wallTop - 4);
+      mctx.lineTo(eqX, gy + 18);
+      mctx.stroke();
+      mctx.setLineDash([]);
+
+      // spring (upper) + dashpot (lower, damped/driven)
+      const massLeft = massX - massW / 2;
+      drawSpring(wallX, massLeft, oscY - 11);
+      if (mode !== "free") {
+        const frac = (xn + 1.4) / 2.8;
+        drawDashpot(wallX, massLeft, oscY + 11, Math.max(0.05, Math.min(0.95, frac)));
+      }
+
+      // mass + frictionless rollers
+      const massTop = oscY - massH / 2;
+      const massBottom = oscY + massH / 2;
+      mctx.fillStyle = COL.mass;
+      roundRect(mctx, massLeft, massTop, massW, massH, 6);
+      mctx.fill();
+      mctx.fillStyle = "#fff";
+      mctx.strokeStyle = COL.dashpot;
+      mctx.lineWidth = 1.4;
+      for (const rx of [massLeft + 13, massX + massW / 2 - 13]) {
+        mctx.beginPath();
+        mctx.arc(rx, massBottom + 3, 3, 0, TWO_PI);
+        mctx.fill();
+        mctx.stroke();
+      }
+      mctx.fillStyle = "#fff";
+      mctx.font = MF(17);
+      mctx.textAlign = "center";
+      mctx.fillText("m", massX, oscY + 6);
+      mctx.textAlign = "left";
+
+      // displacement label x
+      const xLabY = gy + 12;
+      mctx.strokeStyle = COL.disp;
+      mctx.lineWidth = 1.5;
+      mctx.beginPath();
+      mctx.moveTo(eqX, xLabY);
+      mctx.lineTo(massX, xLabY);
+      mctx.stroke();
+      mctx.fillStyle = COL.disp;
+      mctx.font = MF(15);
+      mctx.fillText("x", (eqX + massX) / 2 - 4, xLabY + 14);
+
+      // driving force arrow
+      if (mode === "driven") {
+        const aLen = s.f * ampPx * 0.5;
+        const ay = oscY - 30;
+        mctx.strokeStyle = COL.force;
+        mctx.fillStyle = COL.force;
+        mctx.lineWidth = 2.4;
+        mctx.beginPath();
+        mctx.moveTo(massX, ay);
+        mctx.lineTo(massX + aLen, ay);
+        mctx.stroke();
+        if (Math.abs(aLen) > 6) {
+          const dir = Math.sign(aLen);
+          mctx.beginPath();
+          mctx.moveTo(massX + aLen, ay);
+          mctx.lineTo(massX + aLen - dir * 7, ay - 4);
+          mctx.lineTo(massX + aLen - dir * 7, ay + 4);
+          mctx.closePath();
+          mctx.fill();
+        }
+        mathRun(
+          mctx,
+          massX + aLen + (aLen >= 0 ? 5 : -5),
+          ay - 6,
+          15,
+          [["F", true], ["(", false], ["t", true], [")", false]],
+          aLen >= 0 ? "left" : "right",
+        );
+      }
+
+      // energy: full-width KE|PE bar below the rig (free/damped). Length = total
+      // energy / initial (shrinks as damping dissipates); teal↔amber split = KE↔PE.
+      if (showEnergy && mode !== "driven") {
+        const ke = 0.5 * s.v * s.v;
+        const pe = 0.5 * WN * WN * s.x * s.x;
+        const tot = 0.5 * WN * WN;
+        const ebX = PADL,
+          ebW = rigRight - PADL,
+          ebY = gy + 30,
+          ebH = 9;
+        // KE anchored left, PE anchored right, each ∝ its own energy. They meet
+        // in the middle when conserved (free); a gap opens as damping dissipates.
+        const keW = Math.max(0, Math.min(1, ke / tot)) * ebW;
+        const peW = Math.max(0, Math.min(1, pe / tot)) * ebW;
+        mctx.fillStyle = "#eef2f7";
+        mctx.fillRect(ebX, ebY, ebW, ebH);
+        mctx.fillStyle = COL.ke;
+        mctx.fillRect(ebX, ebY, keW, ebH);
+        mctx.fillStyle = COL.pe;
+        mctx.fillRect(ebX + ebW - peW, ebY, peW, ebH);
+        mctx.font = "12px ui-sans-serif, system-ui";
+        mctx.fillStyle = COL.ke;
+        mctx.fillText(t("動能", "KE"), ebX, ebY + ebH + 13);
+        mctx.fillStyle = COL.pe;
+        mctx.textAlign = "right";
+        mctx.fillText(t("位能", "PE"), ebX + ebW, ebY + ebH + 13);
+        mctx.textAlign = "left";
+      }
+
+      // ===== row 2 (one aligned band, all three centred on midY2) =====
+      // left: complex plane
+      drawPhasorAt(PADL, midY2 - sq / 2, sq);
+      // right: phase portrait
+      drawPhasePortrait(W - PADL - sq, midY2 - sq / 2, sq, Xref, Xref * wEff);
+
+      // middle: time trace x(t), v(t), [F(t)]
+      const tx0 = PADL + sq + gap2;
+      const tx1 = W - PADL - sq - gap2;
+      const span = tx1 - tx0;
+      const amp2 = sq * 0.4; // same vertical scale as the side squares
+      const tLabY = midY2 - sq / 2 + 12;
+      mctx.strokeStyle = COL.axis;
+      mctx.lineWidth = 1;
+      mctx.beginPath();
+      mctx.moveTo(tx0, midY2);
+      mctx.lineTo(tx1, midY2);
+      mctx.stroke();
+      mctx.fillStyle = COL.label;
+      mctx.font = MFR(13);
+      mctx.fillText(t("時間 →", "time →"), tx1 - 62, midY2 + 15);
+
+      const N = trail.length;
+      const drawTrace = (key: "x" | "v", c: string) => {
+        if (N < 2) return;
+        const sc = key === "v" ? 1 / (Xref * wEff) : 1 / Xref;
+        mctx.strokeStyle = c;
+        mctx.lineWidth = 2;
+        mctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const px = tx0 + (span * i) / (trail.length - 1);
+          const py = midY2 - trail[i][key] * sc * amp2;
+          i === 0 ? mctx.moveTo(px, py) : mctx.lineTo(px, py);
+        }
+        mctx.stroke();
+      };
+      drawTrace("x", COL.disp);
+      if (showVel) drawTrace("v", COL.vel);
+      if (mode === "driven" && N >= 2) {
+        mctx.strokeStyle = COL.force;
+        mctx.lineWidth = 2;
+        mctx.setLineDash([6, 4]);
+        mctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const px = tx0 + (span * i) / (trail.length - 1);
+          const py = midY2 - trail[i].f * amp2 * 0.92;
+          i === 0 ? mctx.moveTo(px, py) : mctx.lineTo(px, py);
+        }
+        mctx.stroke();
+        mctx.setLineDash([]);
+      }
+      const fnLabel = (v: string): [string, boolean][] => [
+        [v, true],
+        ["(", false],
+        ["t", true],
+        [")", false],
+      ];
+      mctx.fillStyle = COL.disp;
+      mathRun(mctx, tx0 + 2, tLabY, 14, fnLabel("x"));
+      if (showVel) {
+        mctx.fillStyle = COL.vel;
+        mathRun(mctx, tx0 + 44, tLabY, 14, fnLabel("v"));
+      }
+      if (mode === "driven") {
+        mctx.fillStyle = COL.force;
+        mathRun(mctx, tx0 + 86, tLabY, 14, fnLabel("F"));
+      }
+    }
+
+    // ── Drawing: complex plane — rotating phasor x̂ in every mode (free: circle,
+    //    damped: decaying spiral, driven: F̂/x̂/v̂ with the lag φ). The s-plane
+    //    root locus lives in its own panel below.
+    function drawPhasorAt(left: number, top: number, size: number) {
+      const cx = left + size / 2,
+        cy = top + size / 2,
+        R = size * 0.4;
+
+      mctx.strokeStyle = COL.axis;
+      mctx.lineWidth = 1;
+      mctx.beginPath();
+      mctx.moveTo(cx - R - 8, cy);
+      mctx.lineTo(cx + R + 8, cy);
+      mctx.moveTo(cx, cy - R - 8);
+      mctx.lineTo(cx, cy + R + 8);
+      mctx.stroke();
+      mctx.strokeStyle = "#eef2f7";
+      mctx.beginPath();
+      mctx.arc(cx, cy, R * 0.8, 0, TWO_PI); // orbit of the unit-amplitude phasor
+      mctx.stroke();
+      mctx.fillStyle = COL.label;
+      mctx.font = MFR(13);
+      mctx.fillText("Re", cx + R + 2, cy + 12);
+      mctx.fillText("Im", cx + 5, cy - R - 3);
+
+      // ── trajectory of the x̂ tip (a circle for free / driven) ──
+      let xhatLen = 0,
+        xhatAng = 0;
+      if (mode === "driven") {
+        const { X, phi, w } = driven();
+        const mx = Math.max(1, X, (X * w) / WN);
+        xhatLen = (X / mx) * 0.8 * R;
+        xhatAng = w * tt - phi;
+      } else {
+        // free: unit circle; damped: decaying envelope → inward spiral
+        const env = mode === "damped" ? Math.exp(-zeta * WN * tt) : 1;
+        const wd = mode === "damped" ? WN * Math.sqrt(Math.max(1e-4, 1 - zeta * zeta)) : WN;
+        xhatLen = env * 0.8 * R;
+        xhatAng = wd * tt;
+      }
+      if (playing) {
+        phasorTrail.push({ x: cx + xhatLen * Math.cos(xhatAng), y: cy - xhatLen * Math.sin(xhatAng) });
+        if (phasorTrail.length > (mode === "damped" ? 900 : 220)) phasorTrail.shift();
+      }
+      if (phasorTrail.length > 1) {
+        const n = phasorTrail.length;
+        mctx.lineWidth = 1.5;
+        mctx.lineJoin = "round";
+        for (let i = 1; i < n; i++) {
+          mctx.strokeStyle = COL.disp;
+          mctx.globalAlpha = 0.1 + 0.45 * (i / n); // older = fainter
+          mctx.beginPath();
+          mctx.moveTo(phasorTrail[i - 1].x, phasorTrail[i - 1].y);
+          mctx.lineTo(phasorTrail[i].x, phasorTrail[i].y);
+          mctx.stroke();
+        }
+        mctx.globalAlpha = 1;
+      }
+
+      const arrow = (mag: number, ang: number, c: string, tag: string, idx: number) => {
+        const len = mag * 0.8 * R - idx * 3;
+        const ex = cx + len * Math.cos(ang);
+        const ey = cy - len * Math.sin(ang);
+        mctx.strokeStyle = c;
+        mctx.fillStyle = c;
+        mctx.lineWidth = 3 - idx * 0.7;
+        mctx.beginPath();
+        mctx.moveTo(cx, cy);
+        mctx.lineTo(ex, ey);
+        mctx.stroke();
+        const ah = 6;
+        mctx.beginPath();
+        mctx.moveTo(ex, ey);
+        mctx.lineTo(ex - ah * Math.cos(ang - 0.4), ey + ah * Math.sin(ang - 0.4));
+        mctx.lineTo(ex - ah * Math.cos(ang + 0.4), ey + ah * Math.sin(ang + 0.4));
+        mctx.closePath();
+        mctx.fill();
+        const lr = mag * 0.8 * R + 13 + idx * 12;
+        mctx.font = MF(15, true);
+        mctx.fillText(tag, cx + lr * Math.cos(ang) - 6, cy - lr * Math.sin(ang) + 5);
+      };
+
+      if (mode === "driven") {
+        const { X, phi, w } = driven();
+        const wph = w * tt;
+        const mx = Math.max(1, X, (X * w) / WN);
+        // F̂ (drive, angle wph), x̂ (lag φ), v̂ (90° ahead of x̂)
+        arrow(1 / mx, wph, COL.force, "F̂", 0);
+        arrow(X / mx, wph - phi, COL.disp, "x̂", 1);
+        if (showVel) arrow((X * w) / WN / mx, wph - phi + Math.PI / 2, COL.vel, "v̂", 2);
+        // phase-lag annotation (bottom-left of this panel)
+        mctx.fillStyle = COL.label;
+        mathRun(mctx, left + 5, top + size - 6, 14, [
+          ["φ", true],
+          [` = ${Math.round((phi * 180) / Math.PI)}°  (`, false],
+          ["F̂", true],
+          [" → ", false],
+          ["x̂", true],
+          [")", false],
+        ]);
+      } else {
+        // free: x̂ rotates CCW (e^{+iωt}); v̂ leads by 90°. Damped: same, but the
+        // magnitude decays → an inward spiral. Equal length keeps the displacement
+        // the lead role (this primer shows phase, not the ω-fold size).
+        const env = mode === "damped" ? Math.exp(-zeta * WN * tt) : 1;
+        const wd = mode === "damped" ? WN * Math.sqrt(Math.max(1e-4, 1 - zeta * zeta)) : WN;
+        const ang = wd * tt;
+        arrow(env, ang, COL.disp, "x̂", 0);
+        if (showVel) arrow(env, ang + Math.PI / 2, COL.vel, "v̂", 1);
+        mctx.fillStyle = COL.label;
+        mathRun(mctx, left + 5, top + size - 6, 14, [
+          ["v̂", true],
+          [t(" 領先 ", " leads "), false],
+          ["x̂", true],
+          [t(" 90°", " by 90°"), false],
+        ]);
+      }
+    }
+
+    // ── Drawing: s-plane root locus (damped) on the analysis canvas ─────
+    // Poles s = −ζωₙ ± ωₙ√(ζ²−1): a complex-conjugate pair on |s|=ωₙ (under,
+    // rotation = oscillation) → merge at −ωₙ (ζ=1) → split on the real axis
+    // (over, no rotation = no oscillation). They track the ζ slider live.
+    function drawRootLocus() {
+      const w = reson.clientWidth || 260;
+      const h = reson.clientHeight || 260;
+      rctx.clearRect(0, 0, reson.width, reson.height);
+      if (w < 40) return;
+      const R = Math.min(w * 0.4, h / 2 - 24); // leave top/bottom margin for labels
+      const ox = w * 0.5 + 0.3 * R; // origin shifted right (room for the far pole)
+      const oy = h * 0.5;
+      const sc = 0.44 * R; // px per ωₙ
+      const leftEdge = w * 0.05;
+      const clampX = (x: number) => Math.max(leftEdge, x);
+
+      // overdamped locus: the negative real axis (faint band)
+      rctx.strokeStyle = "#f1f5f9";
+      rctx.lineWidth = 6;
+      rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(ox, oy);
+      rctx.lineTo(leftEdge + 4, oy);
+      rctx.stroke();
+      // axes
+      rctx.strokeStyle = COL.axis;
+      rctx.lineWidth = 1;
+      rctx.beginPath();
+      rctx.moveTo(leftEdge, oy);
+      rctx.lineTo(w * 0.93, oy);
+      rctx.moveTo(ox, oy - R - 10);
+      rctx.lineTo(ox, oy + R + 10);
+      rctx.stroke();
+      rctx.fillStyle = COL.label;
+      // Re(s) / Im(s) — operator roman, variable s italic
+      mathRun(rctx, w * 0.8, oy - 7, 13, [["Re(", false], ["s", true], [")", false]], "right");
+      mathRun(rctx, ox + 7, oy - R - 6, 13, [["Im(", false], ["s", true], [")", false]], "left");
+      // underdamped locus: |s| = ωₙ circle
+      rctx.strokeStyle = "#dbe4ef";
+      rctx.lineWidth = 1.5;
+      rctx.beginPath();
+      rctx.arc(ox, oy, sc, 0, TWO_PI);
+      rctx.stroke();
+      rctx.fillStyle = "#94a3b8";
+      mathRun(rctx, ox - 6, oy - sc - 5, 13, [["ω", true], ["ₙ", false]], "left");
+
+      // current pole locations (in units of ωₙ)
+      let p1, p2;
+      let regime: "under" | "crit" | "over";
+      if (zeta < 1 - 1e-3) {
+        const wd = Math.sqrt(1 - zeta * zeta);
+        p1 = { re: -zeta, im: wd };
+        p2 = { re: -zeta, im: -wd };
+        regime = "under";
+      } else if (zeta > 1 + 1e-3) {
+        const wh = Math.sqrt(zeta * zeta - 1);
+        p1 = { re: -zeta + wh, im: 0 };
+        p2 = { re: -zeta - wh, im: 0 };
+        regime = "over";
+      } else {
+        p1 = { re: -1, im: 0 };
+        p2 = { re: -1, im: 0 };
+        regime = "crit";
+      }
+
+      // decay-rate guide: vertical line at Re = −ζωₙ (shared real part, underdamped)
+      if (regime === "under") {
+        const gx = ox + p1.re * sc;
+        rctx.strokeStyle = COL.disp;
+        rctx.lineWidth = 1;
+        rctx.setLineDash([3, 3]);
+        rctx.beginPath();
+        rctx.moveTo(gx, oy - p1.im * sc);
+        rctx.lineTo(gx, oy - p2.im * sc);
+        rctx.stroke();
+        rctx.setLineDash([]);
+        rctx.fillStyle = COL.disp;
+        // −ζωₙ : minus roman, ζ and ω italic, n subscript roman
+        mathRun(rctx, gx - 2, oy + p2.im * sc - 6, 12, [["−", false], ["ζ", true], ["ω", true], ["ₙ", false]], "center");
+      }
+
+      // repeated-root ring at ζ=1
+      if (regime === "crit") {
+        rctx.strokeStyle = COL.accel;
+        rctx.lineWidth = 1.6;
+        rctx.beginPath();
+        rctx.arc(ox + p1.re * sc, oy, 11, 0, TWO_PI);
+        rctx.stroke();
+      }
+
+      // poles as ✕ markers (control-systems convention)
+      const drawX = (re: number, im: number) => {
+        const x = clampX(ox + re * sc);
+        const y = oy - im * sc;
+        rctx.strokeStyle = COL.force;
+        rctx.lineWidth = 3;
+        rctx.lineCap = "round";
+        const s2 = 7;
+        rctx.beginPath();
+        rctx.moveTo(x - s2, y - s2);
+        rctx.lineTo(x + s2, y + s2);
+        rctx.moveTo(x - s2, y + s2);
+        rctx.lineTo(x + s2, y - s2);
+        rctx.stroke();
+      };
+      drawX(p1.re, p1.im);
+      if (regime !== "crit") drawX(p2.re, p2.im);
+
+      // regime read-out (bottom-left)
+      rctx.fillStyle = COL.label;
+      rctx.font = MFR(13);
+      const note =
+        regime === "under"
+          ? t("複根 → 旋轉 = 振盪", "complex pair → rotation = oscillation")
+          : regime === "crit"
+            ? t("重根 (ζ=1)", "repeated root (ζ=1)")
+            : t("兩實根 → 無振盪", "two real roots → no oscillation");
+      rctx.fillText(note, 8, h - 10);
+    }
+
+    // analysis panel below: resonance curve (driven) or s-plane root locus (damped)
+    function drawAnalysis() {
+      if (mode === "driven") drawReson();
+      else if (mode === "damped") drawRootLocus();
+    }
+
+    // ── Drawing: resonance curve (driven) ───────────────────────────────
+    function drawReson() {
+      const w = reson.clientWidth || 260;
+      const h = reson.clientHeight || 260;
+      rctx.clearRect(0, 0, reson.width, reson.height);
+      if (w < 40) return;
+      const padL = 34,
+        padR = 40,
+        padT = 14,
+        padB = 28;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+      const rMax = 2.5;
+      // amplitude X(r) and phase φ(r)
+      const Xof = (r: number) => 1 / Math.sqrt((1 - r * r) ** 2 + (2 * zeta * r) ** 2);
+      // y-scale for amplitude: cap at peak
+      const Xpeak = Xof(Math.sqrt(Math.max(0, 1 - 2 * zeta * zeta))) || 1;
+      const yMax = Math.max(1.2, Math.min(8, Xpeak * 1.15));
+      const X2px = (X: number) => padT + plotH * (1 - Math.min(X, yMax) / yMax);
+      const r2px = (r: number) => padL + (plotW * r) / rMax;
+
+      // axes
+      rctx.strokeStyle = COL.axis;
+      rctx.lineWidth = 1;
+      rctx.beginPath();
+      rctx.moveTo(padL, padT);
+      rctx.lineTo(padL, padT + plotH);
+      rctx.lineTo(padL + plotW, padT + plotH);
+      rctx.stroke();
+      rctx.fillStyle = COL.label;
+      // ω/ωₙ — Greek variables italic, slash and subscript roman
+      mathRun(rctx, padL + plotW - 4, padT + plotH + 20, 13, [["ω", true], ["/", false], ["ω", true], ["ₙ", false]], "right");
+      rctx.save();
+      rctx.translate(11, padT + plotH / 2);
+      rctx.rotate(-Math.PI / 2);
+      rctx.textAlign = "left";
+      rctx.fillStyle = COL.disp;
+      // |X| — upright bars, italic X
+      const wbar = (rctx.font = MFR(15)) && rctx.measureText("|").width;
+      const wX = (rctx.font = MF(15)) && rctx.measureText("X").width;
+      let lx = -(wbar * 2 + wX) / 2;
+      rctx.font = MFR(15);
+      rctx.fillText("|", lx, 0);
+      lx += wbar;
+      rctx.font = MF(15);
+      rctx.fillText("X", lx, 0);
+      lx += wX;
+      rctx.font = MFR(15);
+      rctx.fillText("|", lx, 0);
+      rctx.restore();
+      rctx.textAlign = "left";
+      // r=1 gridline
+      rctx.strokeStyle = "#eef2f7";
+      rctx.beginPath();
+      rctx.moveTo(r2px(1), padT);
+      rctx.lineTo(r2px(1), padT + plotH);
+      rctx.stroke();
+      rctx.fillStyle = COL.label;
+      rctx.font = MFR(11);
+      rctx.fillText("1", r2px(1) - 2, padT + plotH + 13);
+
+      // amplitude curve
+      rctx.strokeStyle = COL.disp;
+      rctx.lineWidth = 2;
+      rctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const r = (rMax * i) / 200;
+        const px = r2px(r);
+        const py = X2px(Xof(r));
+        i === 0 ? rctx.moveTo(px, py) : rctx.lineTo(px, py);
+      }
+      rctx.stroke();
+      // phase curve φ(r) (0..180°) mapped to plot height, dashed amber
+      const ph2px = (deg: number) => padT + plotH * (1 - deg / 180);
+      rctx.strokeStyle = COL.accel;
+      rctx.lineWidth = 1.4;
+      rctx.setLineDash([4, 3]);
+      rctx.beginPath();
+      for (let i = 0; i <= 200; i++) {
+        const r = (rMax * i) / 200;
+        const phi = (Math.atan2(2 * zeta * r, 1 - r * r) * 180) / Math.PI;
+        const px = r2px(r);
+        const py = ph2px(phi);
+        i === 0 ? rctx.moveTo(px, py) : rctx.lineTo(px, py);
+      }
+      rctx.stroke();
+      rctx.setLineDash([]);
+      // right axis for the phase φ (0°–180°)
+      rctx.strokeStyle = COL.accel;
+      rctx.globalAlpha = 0.55;
+      rctx.lineWidth = 1;
+      rctx.beginPath();
+      rctx.moveTo(padL + plotW, padT);
+      rctx.lineTo(padL + plotW, padT + plotH);
+      rctx.stroke();
+      rctx.fillStyle = COL.accel;
+      rctx.font = MFR(11);
+      [0, 90, 180].forEach((deg) => {
+        const y = ph2px(deg);
+        rctx.globalAlpha = 0.55;
+        rctx.beginPath();
+        rctx.moveTo(padL + plotW, y);
+        rctx.lineTo(padL + plotW + 4, y);
+        rctx.stroke();
+        rctx.globalAlpha = 1;
+        rctx.fillText(deg + "°", padL + plotW + 6, y + 4);
+      });
+      rctx.globalAlpha = 1;
+      rctx.save();
+      rctx.translate(w - 3, padT + plotH / 2);
+      rctx.rotate(-Math.PI / 2);
+      rctx.textAlign = "center";
+      rctx.fillStyle = COL.accel;
+      rctx.font = MF(14);
+      rctx.fillText("φ", 0, 0);
+      rctx.restore();
+      rctx.textAlign = "left";
+
+      // current point marker (only meaningful in driven mode)
+      if (mode === "driven") {
+        const r = rDrive;
+        const px = r2px(r);
+        rctx.fillStyle = COL.force;
+        rctx.beginPath();
+        rctx.arc(px, X2px(Xof(r)), 4, 0, TWO_PI);
+        rctx.fill();
+        rctx.strokeStyle = COL.force;
+        rctx.lineWidth = 1;
+        rctx.setLineDash([2, 2]);
+        rctx.beginPath();
+        rctx.moveTo(px, padT);
+        rctx.lineTo(px, padT + plotH);
+        rctx.stroke();
+        rctx.setLineDash([]);
+      }
+    }
+
+    // ── Drawing: phase portrait (x–v), right of the time trace ──────────
+    // The v=0 axis is aligned with the time-trace midline so the parametric
+    // (x,v) plot reads directly against x(t),v(t). Free → closed orbit;
+    // underdamped → inward spiral; critical/overdamped → a node (no loop);
+    // driven → the steady ellipse. Coords use the same Xref / (Xref·ω) scaling
+    // as the traces (xref, vref), so it stays bounded even near resonance.
+    function drawPhasePortrait(left: number, top: number, size: number, xref: number, vref: number) {
+      const cx = left + size / 2;
+      const cy = top + size / 2;
+      const sx = size * 0.4; // px per unit x/xref (≤ 1)
+      const sv = size * 0.32; // px per unit v/vref
+      const px = (x: number) => cx + (x / xref) * sx;
+      const py = (v: number) => Math.max(top + 4, Math.min(top + size - 4, cy - (v / vref) * sv));
+
+      // axes
+      mctx.strokeStyle = COL.axis;
+      mctx.lineWidth = 1;
+      mctx.beginPath();
+      mctx.moveTo(cx - sx - 8, cy);
+      mctx.lineTo(cx + sx + 8, cy);
+      mctx.moveTo(cx, cy - sv - 10);
+      mctx.lineTo(cx, cy + sv + 10);
+      mctx.stroke();
+      mctx.fillStyle = COL.label;
+      mctx.font = MF(14);
+      mctx.fillText("x", cx + sx + 4, cy + 14);
+      mctx.fillText("v", cx + 6, cy - sv - 4);
+
+      // start marker at release (x=1, v=0) — only the free/damped "let go" cases
+      if (mode !== "driven") {
+        mctx.strokeStyle = "#94a3b8";
+        mctx.lineWidth = 1;
+        mctx.beginPath();
+        mctx.arc(px(xref), py(0), 3, 0, TWO_PI);
+        mctx.stroke();
+      }
+
+      // trajectory (x, v), fading older
+      const n = phaseTrail.length;
+      if (n > 1) {
+        mctx.lineJoin = "round";
+        mctx.lineWidth = 2;
+        for (let i = 1; i < n; i++) {
+          mctx.strokeStyle = COL.disp;
+          mctx.globalAlpha = 0.12 + 0.5 * (i / n);
+          mctx.beginPath();
+          mctx.moveTo(px(phaseTrail[i - 1].x), py(phaseTrail[i - 1].v));
+          mctx.lineTo(px(phaseTrail[i].x), py(phaseTrail[i].v));
+          mctx.stroke();
+        }
+        mctx.globalAlpha = 1;
+        const last = phaseTrail[n - 1];
+        mctx.fillStyle = COL.force;
+        mctx.beginPath();
+        mctx.arc(px(last.x), py(last.v), 3.5, 0, TWO_PI);
+        mctx.fill();
+      }
+    }
+
+    function drawLegend() {
+      const items: [string, string][] = [[COL.disp, t("位移 <i>x</i>", "displacement <i>x</i>")]];
+      if (showVel) items.push([COL.vel, t("速度 <i>v</i>", "velocity <i>v</i>")]);
+      if (mode === "driven") items.push([COL.force, t("驅動力 <i>F</i>", "drive <i>F</i>")]);
+      if (showEnergy && mode !== "driven") {
+        items.push([COL.ke, t("動能", "KE")]);
+        items.push([COL.pe, t("位能", "PE")]);
+      }
+      legendEl.innerHTML = items
+        .map(
+          ([c, lab]) =>
+            `<span class="inline-flex items-center gap-1"><span style="width:14px;height:3px;background:${c};display:inline-block;border-radius:2px"></span>${lab}</span>`,
+        )
+        .join("");
+    }
+
+    // ── Loop ────────────────────────────────────────────────────────────
+    let last = 0;
+    function frame(ts: number) {
+      if (!last) last = ts;
+      const dt = (ts - last) / 1000;
+      last = ts;
+      if (playing) {
+        tt += dt * speed;
+        // damped free: reset after the envelope has decayed
+        if (mode === "damped") {
+          // settle time from the SLOWEST decay rate (overdamped decays slower
+          // than e^{-ζωₙt}); reset once the motion has essentially died.
+          const rate =
+            zeta < 1 - 1e-3
+              ? zeta * WN
+              : zeta > 1 + 1e-3
+                ? WN * (zeta - Math.sqrt(zeta * zeta - 1))
+                : WN;
+          if (tt > 6 / rate) {
+            tt = 0;
+            phasorTrail.length = 0;
+            phaseTrail.length = 0;
+          }
+        }
+        const s = state(tt);
+        trail.push({ x: s.x, v: s.v, f: s.f });
+        if (trail.length > 260) trail.shift();
+        phaseTrail.push({ x: s.x, v: s.v });
+        if (phaseTrail.length > 1500) phaseTrail.shift();
+      }
+      drawMain();
+      requestAnimationFrame(frame);
+    }
+
+    // ── UI ──────────────────────────────────────────────────────────────
+    const regimeRow = root.querySelector<HTMLElement>(".sdof-regimerow")!;
+    const regimeLabel = root.querySelector<HTMLElement>(".sdof-regimelabel")!;
+    const zetaInput = root.querySelector<HTMLInputElement>(".sdof-zeta")!;
+    const zetaValEl = root.querySelector<HTMLElement>(".sdof-zetaval")!;
+
+    function updateRegime() {
+      const r = zeta < 1 - 1e-3 ? "under" : zeta > 1 + 1e-3 ? "over" : "crit";
+      const styles = {
+        under: { txt: t("欠阻尼 <i>ζ</i>&lt;1", "Underdamped <i>ζ</i>&lt;1"), bg: "#cffafe", fg: "#0e7490" },
+        crit: { txt: t("臨界阻尼 <i>ζ</i>=1", "Critically damped <i>ζ</i>=1"), bg: "#fef3c7", fg: "#b45309" },
+        over: { txt: t("過阻尼 <i>ζ</i>&gt;1", "Overdamped <i>ζ</i>&gt;1"), bg: "#e2e8f0", fg: "#334155" },
+      }[r];
+      regimeLabel.innerHTML = styles.txt;
+      regimeLabel.style.background = styles.bg;
+      regimeLabel.style.color = styles.fg;
+      root.querySelectorAll<HTMLElement>(".sdof-preset").forEach((b) => {
+        const on = Math.abs(parseFloat(b.getAttribute("data-zeta")!) - zeta) < 0.001;
+        b.style.background = on ? COL.wall : "#fff";
+        b.style.color = on ? "#fff" : COL.label;
+      });
+    }
+
+    function refresh() {
+      root.querySelectorAll<HTMLElement>(".sdof-modes .sdof-seg").forEach((b) => {
+        const on = b.getAttribute("data-mode") === mode;
+        b.style.background = on ? COL.wall : "#fff";
+        b.style.color = on ? "#fff" : COL.label;
+      });
+      root.querySelector<HTMLElement>(".sdof-zetarow")!.classList.toggle("hidden", mode === "free");
+      root.querySelector<HTMLElement>(".sdof-zetarow")!.classList.toggle("flex", mode !== "free");
+      root.querySelector<HTMLElement>(".sdof-drow")!.classList.toggle("hidden", mode !== "driven");
+      root.querySelector<HTMLElement>(".sdof-drow")!.classList.toggle("flex", mode === "driven");
+      // damping-regime label + presets show only in damped mode
+      regimeRow.classList.toggle("hidden", mode !== "damped");
+      regimeRow.classList.toggle("flex", mode === "damped");
+      root.querySelector<HTMLElement>(".sdof-zetaval")!.textContent = zeta.toFixed(2);
+      root.querySelector<HTMLElement>(".sdof-driveval")!.textContent = rDrive.toFixed(2);
+      updateRegime();
+      trail.length = 0;
+      phasorTrail.length = 0;
+      phaseTrail.length = 0;
+      tt = 0;
+      drawLegend();
+      // analysis panel below: resonance curve (driven) / root locus (damped) / none
+      const hasAnalysis = mode !== "free";
+      root.querySelector<HTMLElement>(".sdof-reson-panel")!.classList.toggle("hidden", !hasAnalysis);
+      root.querySelector<HTMLElement>(".sdof-analysis-cap")!.textContent =
+        mode === "damped"
+          ? t("根軌跡（s 平面）", "Root locus (s-plane)")
+          : t("共鳴曲線", "Resonance curve");
+      if (hasAnalysis) resize(); // re-measure the now-visible analysis canvas
+    }
+
+    root.querySelectorAll<HTMLElement>(".sdof-modes .sdof-seg").forEach((b) =>
+      b.addEventListener("click", () => {
+        mode = b.getAttribute("data-mode") as Mode;
+        refresh();
+      }),
+    );
+    zetaInput.addEventListener("input", (e) => {
+      zeta = parseFloat((e.target as HTMLInputElement).value);
+      zetaValEl.textContent = zeta.toFixed(2);
+      phasorTrail.length = 0;
+      if (mode === "damped") {
+        // restart the release so the new regime's response is shown from x=1
+        trail.length = 0;
+        phaseTrail.length = 0;
+        tt = 0;
+      }
+      updateRegime();
+      drawAnalysis();
+    });
+    root.querySelectorAll<HTMLButtonElement>(".sdof-preset").forEach((b) =>
+      b.addEventListener("click", () => {
+        zeta = parseFloat(b.getAttribute("data-zeta")!);
+        zetaInput.value = String(zeta);
+        zetaValEl.textContent = zeta.toFixed(2);
+        trail.length = 0;
+        phasorTrail.length = 0;
+        phaseTrail.length = 0;
+        tt = 0;
+        updateRegime();
+        drawAnalysis();
+      }),
+    );
+    root.querySelector<HTMLInputElement>(".sdof-drive")!.addEventListener("input", (e) => {
+      rDrive = parseFloat((e.target as HTMLInputElement).value);
+      root.querySelector<HTMLElement>(".sdof-driveval")!.textContent = rDrive.toFixed(2);
+      trail.length = 0;
+      phasorTrail.length = 0;
+      phaseTrail.length = 0;
+      drawAnalysis();
+    });
+    const playBtn = root.querySelector<HTMLButtonElement>(".sdof-play")!;
+    playBtn.addEventListener("click", () => {
+      playing = !playing;
+      playBtn.textContent = playing ? t("暫停", "Pause") : t("播放", "Play");
+    });
+    root.querySelector<HTMLInputElement>(".sdof-speed")!.addEventListener("input", (e) => {
+      speed = parseFloat((e.target as HTMLInputElement).value);
+    });
+    root.querySelector<HTMLInputElement>(".sdof-vvel")!.addEventListener("change", (e) => {
+      showVel = (e.target as HTMLInputElement).checked;
+      drawLegend();
+    });
+    root.querySelector<HTMLInputElement>(".sdof-venergy")!.addEventListener("change", (e) => {
+      showEnergy = (e.target as HTMLInputElement).checked;
+      drawLegend();
+    });
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(main);
+    resize();
+    refresh();
+    requestAnimationFrame(frame);
+  }
+
+  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  document.querySelectorAll<HTMLElement>(".sdof-anim").forEach((el) => initAnimation(el));
+</script>

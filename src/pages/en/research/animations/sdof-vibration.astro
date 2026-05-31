@@ -1,0 +1,254 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import SdofVibrationAnimation from "~/components/research/SdofVibrationAnimation.astro";
+import CoupledOscillatorsAnimation from "~/components/research/CoupledOscillatorsAnimation.astro";
+import katex from "katex";
+
+// KaTeX CSS is loaded globally via global.css; render to HTML here.
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+---
+
+<BaseLayout
+  lang="en"
+  title="Animations · Primer: Single-DOF Mechanical Vibration"
+  description="The simplest oscillation — a mass on a spring. Phasors (complex representation), the 90° lead of velocity over displacement, damped decaying spirals, and driven resonance with the force–response phase lag and mechanical impedance. The first rung toward gas-column waves and the thermoacoustic mechanism."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      Single-DOF Mechanical Vibration
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      Primer ① · 單自由度機械振動
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      Before tackling
+      <a href="/en/research/animations/air-column" class="underline hover:text-accent-600">gas-column waves</a>,
+      start with the simplest oscillation — a single mass hanging on a spring.
+      The <strong>phasor (complex representation)</strong>, the
+      <strong>velocity that leads displacement by <span set:html={m("90^\\circ")} /></strong>,
+      damped decay, and <strong>driven resonance with its phase lag</strong> built
+      here are the mechanical prototype of the gas column's
+      <span set:html={m("p'")} />–<span set:html={m("u'")} /> phase and acoustic impedance.
+    </p>
+  </section>
+
+  <SdofVibrationAnimation lang="en" />
+
+  <section class="mt-8 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold text-brand-900">Mathematical description</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Free undamped vibration: simple harmonic motion</h3>
+    <p class="mt-2 text-gray-700">
+      A mass <span set:html={m("m")} /> on a spring of stiffness <span set:html={m("k")} />,
+      displaced by <span set:html={m("x")} /> from equilibrium, feels a restoring
+      force <span set:html={m("-kx")} />. Newton's second law gives the simplest
+      oscillator equation:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + kx = 0, \\qquad \\omega_n = \\sqrt{k/m}, \\qquad T_n = \\frac{2\\pi}{\\omega_n}")} />
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("\\omega_n")} /> is the <strong>natural frequency</strong>. To
+      capture amplitude and phase at once, use the <strong>complex
+      representation</strong>: a <strong>complex amplitude</strong>
+      <span set:html={m("X = |X|e^{i\\phi}")} /> times the time factor
+      <span set:html={m("e^{i\\omega_n t}")} />, whose <strong>real part</strong> is
+      the physical displacement:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("x(t) = \\operatorname{Re}\\!\\big\\{X\\,e^{i\\omega_n t}\\big\\} = |X|\\cos(\\omega_n t + \\phi)")} />
+    <p class="mt-3 text-gray-700">
+      So <strong>case carries meaning</strong>: <strong>lowercase</strong>
+      <span set:html={m("x")} /> = the time-domain real displacement,
+      <strong>uppercase</strong> <span set:html={m("X")} /> = the frequency-domain
+      complex amplitude. The animation's <strong>complex plane</strong> panel draws
+      exactly the rotating phasor <span set:html={m("\\hat{x} = X\\,e^{i\\omega_n t}")} />
+      (length <span set:html={m("|X|")} />, turning counter-clockwise at
+      <span set:html={m("\\omega_n")} />); its <strong>projection</strong> onto the
+      <span set:html={m("\\operatorname{Re}")} /> axis is <span set:html={m("x(t)")} />.
+      Differentiating gives velocity and acceleration, three phasors each
+      <strong><span set:html={m("90^\\circ")} /> apart</strong>:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\hat{v} = \\dot{x} = i\\omega_n\\,\\hat{x}\\ (\\text{leads by }90^\\circ), \\qquad \\hat{a} = \\ddot{x} = -\\omega_n^2\\,\\hat{x}\\ (\\text{anti-phase }180^\\circ)")} />
+    <p class="mt-3 text-gray-700">
+      Multiplying by <span set:html={m("i")} /> is a <strong><span set:html={m("90^\\circ")} />
+      counter-clockwise turn</strong> in the complex plane, so velocity
+      <span set:html={m("\\hat{v}")} /> <strong>leads</strong> displacement
+      <span set:html={m("\\hat{x}")} /> by <span set:html={m("90^\\circ")} /> — the mass
+      moves fastest through equilibrium (<span set:html={m("x=0")} />) and is
+      momentarily still at maximum displacement. Energy sloshes between
+      <strong>kinetic</strong> <span set:html={m("\\tfrac12 m\\dot{x}^2")} /> and
+      <strong>potential</strong> <span set:html={m("\\tfrac12 k x^2")} />, the total
+      conserved at <span set:html={m("E = \\tfrac12 k|X|^2")} />.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Damped free vibration: a decaying spiral</h3>
+    <p class="mt-2 text-gray-700">
+      Add a damping force proportional to velocity, <span set:html={m("-c\\dot{x}")} />
+      (a viscous dashpot), and the equation gains a term:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + c\\dot{x} + kx = 0, \\qquad \\zeta = \\frac{c}{2\\sqrt{km}}, \\qquad \\omega_d = \\omega_n\\sqrt{1-\\zeta^2}")} />
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("\\zeta")} /> is the <strong>damping ratio</strong>. When
+      <strong>underdamped</strong> (<span set:html={m("\\zeta<1")} />) the system still
+      oscillates, at the slightly lower frequency <span set:html={m("\\omega_d")} />,
+      but its amplitude decays under an exponential envelope:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("x(t) = |X|\\,e^{-\\zeta\\omega_n t}\\cos(\\omega_d t + \\phi)")} />
+    <p class="mt-3 text-gray-700">
+      Now the phasor <span set:html={m("\\hat{x}")} /> shortens over time and its tip
+      traces an <strong>inward spiral</strong> in the complex plane — the geometric
+      signature of damping bleeding energy away (the same spiral reappears in the
+      thermoacoustic flat-mode damping).
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">Driven vibration and resonance (the key)</h3>
+    <p class="mt-2 text-gray-700">
+      Apply a harmonic drive <span set:html={m("F(t)=F_0\\cos\\omega t")} /> (note: the
+      drive frequency <span set:html={m("\\omega")} /> is set externally and need not
+      equal <span set:html={m("\\omega_n")} />):
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + c\\dot{x} + kx = F_0\\cos\\omega t")} />
+    <p class="mt-3 text-gray-700">
+      Once the transient dies, the system oscillates at the <strong>drive
+      frequency</strong>, <span set:html={m("x(t)=|X|\\cos(\\omega t-\\varphi)")} />. With
+      the <strong>frequency ratio</strong> <span set:html={m("r=\\omega/\\omega_n")} />,
+      the amplitude and the <strong>phase lag</strong> <span set:html={m("\\varphi")} />
+      (how far displacement trails the force) are:
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("|X| = \\frac{F_0/k}{\\sqrt{(1-r^2)^2 + (2\\zeta r)^2}}, \\qquad \\varphi = \\arctan\\frac{2\\zeta r}{1-r^2}")} />
+    <p class="mt-3 text-gray-700">
+      These two curves are the animation's <strong>resonance curve</strong> (shown
+      only in driven mode). Sweep the <span set:html={m("r")} /> slider from low to high:
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>Low frequency</strong> <span set:html={m("r\\ll1")} />: <span set:html={m("|X|\\approx F_0/k")} /> (quasi-static), <span set:html={m("\\varphi\\approx0^\\circ")} /> — displacement tracks the force.</li>
+      <li><strong>Resonance</strong> <span set:html={m("r\\approx1")} />: the amplitude spikes (peak <span set:html={m("\\approx 1/2\\zeta")} />), <span set:html={m("\\varphi=90^\\circ")} /> — displacement lags the force by a quarter cycle.</li>
+      <li><strong>High frequency</strong> <span set:html={m("r\\gg1")} />: inertia dominates, <span set:html={m("|X|\\to0")} />, <span set:html={m("\\varphi\\to180^\\circ")} /> — displacement is anti-phase with the force.</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      The peak's <strong>sharpness</strong> is set by damping, quantified by the
+      <strong>quality factor</strong> <span set:html={m("Q\\approx 1/2\\zeta")} />: smaller
+      <span set:html={m("\\zeta")} />, taller and narrower peak. The force–response phase
+      relation is cleanest through the <strong>mechanical impedance</strong>
+      <span set:html={m("Z_m = \\hat{F}/\\hat{v}")} /> (force over velocity):
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("Z_m = c + i\\!\\left(\\omega m - \\frac{k}{\\omega}\\right)")} />
+    <p class="mt-3 text-gray-700">
+      <strong>At resonance</strong> the inertial reactance <span set:html={m("\\omega m")} />
+      and elastic reactance <span set:html={m("k/\\omega")} /> cancel, leaving
+      <span set:html={m("Z_m=c")} /> <strong>purely real (resistive)</strong> — force in
+      phase with velocity, so the system <strong>absorbs maximum power</strong>.
+      <strong>Off resonance</strong> <span set:html={m("Z_m")} /> is reactive
+      (imaginary part) and the force mostly shuttles the inertia or compresses the
+      spring, absorbing little net power. This "real part ↔ power absorbed,
+      imaginary part ↔ no net power" is exactly the prototype of the gas column's
+      <strong>acoustic impedance</strong> <span set:html={m("Z=P/U")} /> and the
+      <span set:html={m("p'")} />–<span set:html={m("u'")} /> phase story.
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">How to read this animation</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① Mass–spring(–dashpot) system</h3>
+    <p class="mt-2 text-gray-700">
+      The block <span set:html={m("m")} /> slides horizontally along the ground
+      (rollers mark it frictionless), tied to a fixed wall by a spring. In
+      <strong>damped</strong> and <strong>driven</strong> modes a <strong>dashpot</strong>
+      appears below the spring: its piston moves with the mass, representing the
+      viscous damping force <span set:html={m("-c\\dot{x}")} />. The dashed line is
+      equilibrium; <span set:html={m("x")} /> below marks the current displacement.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② Complex plane: phasors</h3>
+    <p class="mt-2 text-gray-700">
+      The rotating <strong style="color:#0e7490">teal</strong> phasor
+      <span set:html={m("\\hat{x}")} /> is <span set:html={m("X e^{i\\omega t}")} />, its
+      real-axis projection equal to the block's displacement above. The
+      <strong style="color:#7c3aed">violet</strong> <span set:html={m("\\hat{v}")} />
+      always <strong>leads by <span set:html={m("90^\\circ")} /></strong>. When
+      <strong>damped</strong>, the tip traces an <strong>inward spiral</strong>; when
+      <strong>driven</strong>, a <strong style="color:#dc2626">red</strong> drive phasor
+      <span set:html={m("\\hat{F}")} /> appears, and the angle by which
+      <span set:html={m("\\hat{x}")} /> trails it is the phase lag <span set:html={m("\\varphi")} />.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ Time traces and energy</h3>
+    <p class="mt-2 text-gray-700">
+      The middle band plots <span set:html={m("x(t)")} /> (teal) and
+      <span set:html={m("v(t)")} /> (violet) over time — the peaks of
+      <span set:html={m("v")} /> fall where <span set:html={m("x")} /> crosses zero (the
+      <span set:html={m("90^\\circ")} /> lead); driven mode adds a
+      <strong style="color:#dc2626">red dashed</strong> <span set:html={m("F(t)")} /> to
+      show displacement lagging the drive. The <strong>KE / PE</strong> bars on the
+      right (free modes) show energy trading between the two in real time.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ Resonance curve (driven only)</h3>
+    <p class="mt-2 text-gray-700">
+      Switch to <strong>driven</strong> and the <strong>resonance curve</strong>
+      appears at lower right: a teal amplitude <span set:html={m("|X|(r)")} />, an amber
+      dashed phase <span set:html={m("\\varphi(r)")} />, with a red dot at the current
+      drive frequency. Drag the <strong>damping <span set:html={m("\\zeta")} /></strong>
+      slider to watch the peak grow taller and narrower (higher <span set:html={m("Q")} />),
+      and the <strong>drive <span set:html={m("\\omega/\\omega_n")} /></strong> slider to
+      move the dot along the curve, against the changing amplitude and phasor angle
+      on the left.
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">From one oscillator to a wave: the ladder of degrees of freedom</h2>
+    <p class="mt-2 text-gray-700">
+      The single-DOF system above has just <strong>one</strong> resonance peak (a
+      single Lorentzian), and it <strong>cannot propagate</strong> — an isolated
+      oscillator only rocks in place. The missing rung from "oscillation" to "wave"
+      is <strong>coupling</strong>: chain many masses with springs so each
+      <strong>pushes</strong> its neighbour (and with a <strong>delay</strong>), and
+      vibration travels through space one site at a time. Coupling
+      <strong>gives birth to space</strong>, so a finite <strong>wave speed
+      <span set:html={m("c")} /></strong> and a spatial phase rate, the <strong>wavenumber
+      <span set:html={m("k")} /></strong>, emerge.
+    </p>
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("N")} /> coupled masses have <span set:html={m("N")} />
+      <strong>normal modes</strong>, each an SDOF-like resonance but with a
+      <strong>spatial mode shape</strong> approaching <span set:html={m("\\sin(n\\pi x/L)")} />
+      (standing-wave shapes). Lining up these <span set:html={m("N")} /> frequencies gives a
+      <strong>resonance comb</strong>: <span set:html={m("1")} /> peak (SDOF) →
+      <span set:html={m("N")} /> peaks → as <span set:html={m("N\\to\\infty")} /> with vanishing
+      spacing, a <strong>harmonic series</strong> <span set:html={m("f_n")} /> and the chain
+      becomes a continuous medium governed by the <strong>wave equation</strong>. That
+      limit is the
+      <a href="/en/research/animations/air-column" class="underline hover:text-accent-600">gas column</a>.
+    </p>
+    <p class="mt-3 text-gray-700">
+      The mini-animation below lets you walk that ladder yourself: drag the
+      <strong><span set:html={m("N")} /></strong> slider from <strong>few</strong> to
+      <strong>many</strong> and watch the discrete bead chain
+      <strong>smooth into a continuous wave</strong>; toggle the two regimes to see
+      where <strong>standing</strong> and <strong>traveling</strong> waves come from.
+    </p>
+
+    <CoupledOscillatorsAnimation lang="en" />
+
+    <ul class="mt-4 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>Normal mode (→ standing)</strong>: the whole chain oscillates at a <strong>single frequency</strong> with fixed nodes; drag "mode <span set:html={m("n")} />" for different standing shapes (the faint teal reference is the continuum limit <span set:html={m("\\sin(n\\pi x/L)")} />, which the masses are <strong>sampling</strong>).</li>
+      <li><strong>Disturbance (→ traveling)</strong>: the <strong style="color:#dc2626">red</strong> left end is driven and pushes its neighbour, and the next, <strong>with delay</strong> — the front advances at <strong>finite speed</strong>, a traveling wave.</li>
+      <li><strong>Spectrum strip</strong> (bottom): the <span set:html={m("N")} /> allowed mode frequencies <span set:html={m("\\omega_n")} />; the larger <span set:html={m("N")} />, the more they fill into a <strong>comb</strong> — from the SDOF single peak toward the gas column's harmonic series.</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      So the phasor, the <span set:html={m("90^\\circ")} /> phase, the damped spiral, and
+      resonance and impedance built on this page — plus this
+      "<span set:html={m("1")} />-DOF → <span set:html={m("\\infty")} />-DOF" bridge — are the
+      first rung toward standing/traveling gas-column waves and the thermoacoustic
+      mechanism.
+    </p>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/en/research/animations" class="underline hover:text-accent-600">← Back to animations</a>
+      <a href="/en/research/animations/air-column" class="underline hover:text-accent-600">Standing &amp; Traveling Waves</a>
+      <a href="/en/research/thermoacoustic-effect" class="underline hover:text-accent-600">The Thermoacoustic Effect</a>
+    </p>
+  </section>
+</BaseLayout>

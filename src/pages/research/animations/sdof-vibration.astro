@@ -1,0 +1,141 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import SdofVibrationAnimation from "~/components/research/SdofVibrationAnimation.astro";
+import CoupledOscillatorsAnimation from "~/components/research/CoupledOscillatorsAnimation.astro";
+import katex from "katex";
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+---
+
+<BaseLayout
+  title="動畫 · 基礎：單自由度機械振動"
+  description="最單純的振盪：質量–彈簧系統。相量（複數表示）、速度領先位移 90°、阻尼衰減、強制驅動共振與相位滯後。理解氣柱波動與熱聲機制的第一階。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      Research / Animations
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      單自由度機械振動
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">
+      基礎① · Single-DOF Mechanical Vibration
+    </p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      在進入<a href="/research/animations/air-column" class="underline hover:text-accent-600">氣柱波動</a>之前，先看最單純的振盪 —— 一顆質量掛在彈簧上。這裡建立的<strong>相量（複數表示）</strong>、<strong>速度領先位移 <span set:html={m("90^\\circ")} /></strong>、阻尼衰減、以及<strong>強制驅動的共振與相位滯後</strong>，就是之後氣柱 <span set:html={m("p'")} />–<span set:html={m("u'")} /> 相位與聲阻抗的力學原型。
+    </p>
+  </section>
+
+  <SdofVibrationAnimation />
+
+  <section class="mt-8 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold text-brand-900">數學描述</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">自由無阻尼振動：簡諧運動</h3>
+    <p class="mt-2 text-gray-700">
+      一顆質量 <span set:html={m("m")} /> 掛在勁度 <span set:html={m("k")} /> 的彈簧上，偏離平衡位置 <span set:html={m("x")} /> 時受回復力 <span set:html={m("-kx")} />。牛頓第二定律給出最單純的振盪方程：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + kx = 0, \\qquad \\omega_n = \\sqrt{k/m}, \\qquad T_n = \\frac{2\\pi}{\\omega_n}")} />
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("\\omega_n")} /> 是<strong>固有角頻率</strong>（natural frequency）。為了同時掌握「振幅」與「相位」，採<strong>複數表示法</strong>：以<strong>複數振幅</strong> <span set:html={m("X = |X|e^{i\\phi}")} /> 乘上時間因子 <span set:html={m("e^{i\\omega_n t}")} />，<strong>取實部</strong>即為物理位移：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("x(t) = \\operatorname{Re}\\!\\big\\{X\\,e^{i\\omega_n t}\\big\\} = |X|\\cos(\\omega_n t + \\phi)")} />
+    <p class="mt-3 text-gray-700">
+      於是<strong>大小寫各司其職</strong>：<strong>小寫</strong> <span set:html={m("x")} /> = 時域實數位移、<strong>大寫</strong> <span set:html={m("X")} /> = 頻域複數振幅。動畫的<strong>複數平面</strong>面板畫的正是旋轉中的相量 <span set:html={m("\\hat{x} = X\\,e^{i\\omega_n t}")} />（長度 <span set:html={m("|X|")} />、以角速度 <span set:html={m("\\omega_n")} /> 逆時針轉），其在 <span set:html={m("\\operatorname{Re}")} /> 軸的<strong>投影</strong>就是 <span set:html={m("x(t)")} />。對位移微分得速度與加速度，三個相量<strong>各差 <span set:html={m("90^\\circ")} /></strong>：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("\\hat{v} = \\dot{x} = i\\omega_n\\,\\hat{x}\\ (\\text{領先 }90^\\circ), \\qquad \\hat{a} = \\ddot{x} = -\\omega_n^2\\,\\hat{x}\\ (\\text{反相 }180^\\circ)")} />
+    <p class="mt-3 text-gray-700">
+      乘上 <span set:html={m("i")} /> 就是在複數平面<strong>逆時針轉 <span set:html={m("90^\\circ")} /></strong>。所以速度 <span set:html={m("\\hat{v}")} /> 比位移 <span set:html={m("\\hat{x}")} /> <strong>領先 <span set:html={m("90^\\circ")} /></strong> — 質點通過平衡位置（<span set:html={m("x=0")} />）時速度最大，到達最大位移時速度為零。能量則在<strong>動能</strong> <span set:html={m("\\tfrac12 m\\dot{x}^2")} /> 與<strong>位能</strong> <span set:html={m("\\tfrac12 k x^2")} /> 之間來回交換，總和守恆 <span set:html={m("E = \\tfrac12 k|X|^2")} />。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">阻尼自由振動：衰減螺旋</h3>
+    <p class="mt-2 text-gray-700">
+      加上正比於速度的阻尼力 <span set:html={m("-c\\dot{x}")} />（如黏滯阻尼器／dashpot），方程多一項：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + c\\dot{x} + kx = 0, \\qquad \\zeta = \\frac{c}{2\\sqrt{km}}, \\qquad \\omega_d = \\omega_n\\sqrt{1-\\zeta^2}")} />
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("\\zeta")} /> 為<strong>阻尼比</strong>（damping ratio）。在<strong>欠阻尼</strong>（<span set:html={m("\\zeta<1")} />）下，系統仍以略低的頻率 <span set:html={m("\\omega_d")} /> 振盪，但振幅按指數包絡衰減：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("x(t) = |X|\\,e^{-\\zeta\\omega_n t}\\cos(\\omega_d t + \\phi)")} />
+    <p class="mt-3 text-gray-700">
+      此時相量 <span set:html={m("\\hat{x}")} /> 的長度隨時間縮短，尖端在複數平面畫出一條<strong>向內收斂的螺旋</strong> — 這正是阻尼把能量持續耗散掉的幾何寫照（之後在熱聲的「flat-mode 阻尼」也會見到同樣的螺旋）。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">強制驅動與共振（全篇關鍵）</h3>
+    <p class="mt-2 text-gray-700">
+      外加簡諧驅動力 <span set:html={m("F(t)=F_0\\cos\\omega t")} />（注意：驅動頻率 <span set:html={m("\\omega")} /> 由外界決定，未必等於 <span set:html={m("\\omega_n")} />）：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("m\\ddot{x} + c\\dot{x} + kx = F_0\\cos\\omega t")} />
+    <p class="mt-3 text-gray-700">
+      過渡項衰減後，系統以<strong>驅動頻率</strong>做穩態振盪 <span set:html={m("x(t)=|X|\\cos(\\omega t-\\varphi)")} />。令<strong>頻率比</strong> <span set:html={m("r=\\omega/\\omega_n")} />，振幅與<strong>相位滯後</strong> <span set:html={m("\\varphi")} />（位移落後驅動力的角度）為：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("|X| = \\frac{F_0/k}{\\sqrt{(1-r^2)^2 + (2\\zeta r)^2}}, \\qquad \\varphi = \\arctan\\frac{2\\zeta r}{1-r^2}")} />
+    <p class="mt-3 text-gray-700">
+      這兩條曲線就是動畫右下的<strong>共鳴曲線</strong>（僅在強制驅動模式出現）。把 <span set:html={m("r")} /> 滑桿從低頻掃到高頻：
+    </p>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>低頻</strong> <span set:html={m("r\\ll1")} />：<span set:html={m("|X|\\approx F_0/k")} />（準靜態），<span set:html={m("\\varphi\\approx0^\\circ")} /> — 位移跟著力同步。</li>
+      <li><strong>共振</strong> <span set:html={m("r\\approx1")} />：振幅衝到尖峰（峰高 <span set:html={m("\\approx 1/2\\zeta")} />），<span set:html={m("\\varphi=90^\\circ")} /> — 位移落後力四分之一週期。</li>
+      <li><strong>高頻</strong> <span set:html={m("r\\gg1")} />：質量慣性主導，<span set:html={m("|X|\\to0")} />，<span set:html={m("\\varphi\\to180^\\circ")} /> — 位移與力反相。</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      峰的<strong>尖銳程度</strong>由阻尼決定，量化為<strong>品質因子</strong> <span set:html={m("Q\\approx 1/2\\zeta")} />：<span set:html={m("\\zeta")} /> 越小、峰越高越窄。把驅動與響應的相位差用<strong>機械阻抗</strong> <span set:html={m("Z_m = \\hat{F}/\\hat{v}")} />（力／速度）描述最清楚：
+    </p>
+    <div class="mt-2 overflow-x-auto" set:html={md("Z_m = c + i\\!\\left(\\omega m - \\frac{k}{\\omega}\\right)")} />
+    <p class="mt-3 text-gray-700">
+      <strong>共振時</strong>慣性抗 <span set:html={m("\\omega m")} /> 與彈性抗 <span set:html={m("k/\\omega")} /> 恰好抵消，<span set:html={m("Z_m=c")} /> 為<strong>純實數（電阻性）</strong> — 力與速度同相，系統<strong>吸收最大功率</strong>；<strong>偏離共振</strong>時 <span set:html={m("Z_m")} /> 帶虛部（電抗性），力主要拿去推慣性或壓彈簧、淨吸收功率小。這個「<span set:html={m("Z_m")} /> 實部 ↔ 吸功、虛部 ↔ 不吸功」的對應，正是之後氣柱<strong>聲阻抗</strong> <span set:html={m("Z=P/U")} /> 與 <span set:html={m("p'")} />–<span set:html={m("u'")} /> 相位故事的力學原型。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">怎麼看這個動畫</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① 質量–彈簧（–阻尼器）系統</h3>
+    <p class="mt-2 text-gray-700">
+      左側方塊 <span set:html={m("m")} /> 沿地面水平滑動（滾輪表示無摩擦），由彈簧連到固定牆。<strong>阻尼自由</strong>與<strong>強制驅動</strong>模式下，彈簧下方多一個<strong>阻尼器</strong>（dashpot）：缸內活塞隨質量移動，代表黏滯阻尼力 <span set:html={m("-c\\dot{x}")} />。虛線是平衡位置，下方 <span set:html={m("x")} /> 標出當前位移。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② 複數平面：相量</h3>
+    <p class="mt-2 text-gray-700">
+      旋轉的<strong style="color:#0e7490">青色</strong>相量 <span set:html={m("\\hat{x}")} /> 即 <span set:html={m("X e^{i\\omega t}")} />，其在實軸的投影就是上方質量的位移。<strong style="color:#7c3aed">紫色</strong> <span set:html={m("\\hat{v}")} /> 永遠<strong>領先 <span set:html={m("90^\\circ")} /></strong>。<strong>阻尼自由</strong>時相量尖端畫出<strong>向內螺旋</strong>；<strong>強制驅動</strong>時多一根<strong style="color:#dc2626">紅色</strong>驅動力相量 <span set:html={m("\\hat{F}")} />，<span set:html={m("\\hat{x}")} /> 落後它的角度就是相位滯後 <span set:html={m("\\varphi")} />。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ 時間軌跡與能量</h3>
+    <p class="mt-2 text-gray-700">
+      中段同步畫出 <span set:html={m("x(t)")} />（青）與 <span set:html={m("v(t)")} />（紫）隨時間的波形，可見 <span set:html={m("v")} /> 的峰落在 <span set:html={m("x")} /> 過零處（領先 <span set:html={m("90^\\circ")} />）；強制驅動模式再加一條<strong style="color:#dc2626">紅色虛線</strong> <span set:html={m("F(t)")} />，對照位移落後驅動力。右側<strong>動能 / 位能</strong>長條（自由模式）即時顯示能量在兩者間的交換。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">④ 共鳴曲線（僅強制驅動）</h3>
+    <p class="mt-2 text-gray-700">
+      切到<strong>強制驅動</strong>，右下出現<strong>共鳴曲線</strong>：青線為振幅 <span set:html={m("|X|(r)")} />、琥珀虛線為相位 <span set:html={m("\\varphi(r)")} />，紅點標出目前驅動頻率。拉<strong>阻尼比 <span set:html={m("\\zeta")} /></strong> 滑桿看峰如何變高變窄（<span set:html={m("Q")} /> 變大）、拉<strong>驅動 <span set:html={m("\\omega/\\omega_n")} /></strong> 滑桿讓紅點沿曲線移動，對照左側質量振幅與相量夾角的變化。
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">從一個振子到一道波：自由度的階梯</h2>
+    <p class="mt-2 text-gray-700">
+      上面的單自由度系統只有<strong>一個</strong>共振峰（單一 Lorentzian），而且<strong>不會傳播</strong> —— 孤立的振子只能原地來回。要從「振盪」走到「波」，缺的那一階是<strong>耦合</strong>：把許多質量用彈簧串接成鏈，鄰格<strong>推</strong>鄰格（而且有<strong>延遲</strong>），振動才能在空間中一格接一格地傳開。耦合<strong>催生了空間</strong>，於是出現有限<strong>波速 <span set:html={m("c")} /></strong> 與空間相位率<strong>波數 <span set:html={m("k")} /></strong>。
+    </p>
+    <p class="mt-3 text-gray-700">
+      <span set:html={m("N")} /> 個耦合質量有 <span set:html={m("N")} /> 個<strong>正規模態</strong>，每個都是一個 SDOF 式的共振，但帶有<strong>空間模態形狀</strong>，趨近 <span set:html={m("\\sin(n\\pi x/L)")} />（就是駐波形狀）。把這 <span set:html={m("N")} /> 個共振頻率排起來，就是一把<strong>共振梳</strong>：<span set:html={m("1")} /> 峰（SDOF）→ <span set:html={m("N")} /> 峰 → 當 <span set:html={m("N\\to\\infty")} />、間距趨近於零，連成<strong>諧波系列</strong> <span set:html={m("f_n")} />，鏈也化為連續介質的<strong>波動方程</strong>。那個極限就是<a href="/research/animations/air-column" class="underline hover:text-accent-600">氣柱</a>。
+    </p>
+    <p class="mt-3 text-gray-700">
+      下面這個小動畫讓你親手把這條階梯走一遍：拉 <strong><span set:html={m("N")} /></strong> 滑桿從<strong>少</strong>到<strong>多</strong>，看離散的質點鏈如何<strong>平滑化成一道連續的波</strong>；切換兩種模式對照<strong>駐波</strong>與<strong>行波</strong>的由來。
+    </p>
+
+    <CoupledOscillatorsAnimation />
+
+    <ul class="mt-4 list-disc space-y-1 pl-6 text-gray-700">
+      <li><strong>正規模態（→ 駐波）</strong>：整條鏈以<strong>單一頻率</strong>同步振盪、節點固定原地；拉「模態 <span set:html={m("n")} />」看不同的駐波形狀（淡青參考線是連續極限 <span set:html={m("\\sin(n\\pi x/L)")} />，質點正在<strong>取樣</strong>它）。</li>
+      <li><strong>擾動傳播（→ 行波）</strong>：左端<strong style="color:#dc2626">紅點</strong>被驅動，鄰格接鄰格、<strong>有延遲</strong>地傳開 —— 波前以<strong>有限速度</strong>前進，這就是行波。</li>
+      <li><strong>底部頻譜條</strong>：標出該鏈允許的 <span set:html={m("N")} /> 個模態頻率 <span set:html={m("\\omega_n")} />；<span set:html={m("N")} /> 越大、刻度越填滿成<strong>梳</strong> —— 從 SDOF 的單峰，通往氣柱的諧波系列。</li>
+    </ul>
+    <p class="mt-3 text-gray-700">
+      所以本頁建立的相量、<span set:html={m("90^\\circ")} /> 相位、阻尼螺旋、共振與阻抗，加上這條「<span set:html={m("1")} /> 自由度 → <span set:html={m("\\infty")} /> 自由度」的橋，正是看懂氣柱駐波／行波與熱聲機制的第一階。
+    </p>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/research/animations" class="underline hover:text-accent-600">← 回動畫總覽</a>
+      <a href="/research/animations/air-column" class="underline hover:text-accent-600">氣柱中的駐波與行波</a>
+      <a href="/research/thermoacoustic-effect" class="underline hover:text-accent-600">熱聲效應總論</a>
+    </p>
+  </section>
+</BaseLayout>
