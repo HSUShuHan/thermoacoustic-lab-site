@@ -3,9 +3,10 @@
 // Native <canvas> + requestAnimationFrame, no framework island.
 // Two regimes share the same lattice: (a) a NORMAL MODE — every mass swings in
 // phase at one frequency, fixed nodes → a STANDING wave whose shape approaches
-// sin(nπx/L); (b) a DISTURBANCE PROPAGATING — a driven left end pushes its
-// neighbour, which pushes the next (with delay) → a TRAVELING wave at finite
-// speed. As N grows the discrete bead chain smoothly becomes a continuous wave:
+// sin(nπx/L); (b) a DISTURBANCE PROPAGATING — the left end emits a wave packet
+// that pushes its neighbour, which pushes the next (with delay); it travels
+// right at finite speed and is absorbed at the far end (no reflection) → a
+// TRAVELING wave. As N grows the discrete bead chain smoothly becomes a wave:
 // the N→∞ limit IS the gas column. A small spectrum strip shows the allowed
 // mode frequencies filling in from 1 peak (SDOF) toward a comb (harmonics).
 interface Props {
@@ -25,7 +26,7 @@ const L = isEn
       play: "Play",
       pause: "Pause",
       caption:
-        "Link single oscillators into a chain with springs and coupling lets vibration travel through space. In a normal mode the whole chain swings at one frequency with fixed nodes → a standing wave, its shape approaching sin(nπx/L); under a propagating disturbance the driven left end pushes its neighbour, and the next, with delay → a traveling wave at finite speed. The larger N, the more smoothly the discrete bead chain becomes a continuous wave — N→∞ is the gas column.",
+        "Link single oscillators into a chain with springs and coupling lets vibration travel through space. In a normal mode the whole chain swings at one frequency with fixed nodes → a standing wave, its shape approaching sin(nπx/L); under a propagating disturbance the left end emits a wave packet that pushes its neighbour, and the next, with delay — the packet travels right at finite speed and is swallowed by an absorbing layer at the far end, leaving no reflection → a traveling wave. The larger N, the more smoothly the discrete bead chain becomes a continuous wave — N→∞ is the gas column.",
     }
   : {
       mode: "模式",
@@ -37,7 +38,7 @@ const L = isEn
       play: "播放",
       pause: "暫停",
       caption:
-        "把單一振子用彈簧串接成鏈，耦合讓振動能在空間中傳遞。正規模態下整條鏈以單一頻率同步振盪、節點固定 → 駐波，形狀趨近 sin(nπx/L)；擾動傳播下左端的擾動鄰格接鄰格、以有限速度傳開 → 行波。N 越大，離散的質點鏈越平滑地化為連續的波 —— N→∞ 就是氣柱。",
+        "把單一振子用彈簧串接成鏈，耦合讓振動能在空間中傳遞。正規模態下整條鏈以單一頻率同步振盪、節點固定 → 駐波，形狀趨近 sin(nπx/L)；擾動傳播下左端送出一個波包（wave packet），鄰格接鄰格、以有限速度往右傳，最後被右端的吸收層吃掉、不反射 → 行波。N 越大，離散的質點鏈越平滑地化為連續的波 —— N→∞ 就是氣柱。",
     };
 ---
 
@@ -115,14 +116,20 @@ const L = isEn
     let speed = 1;
     let tt = 0;
 
-    // lattice arrays for the propagating sim (indices 0..N+1; 0 = driven, N+1 = fixed)
+    // Lattice arrays for the propagating sim. Indices: 0 = driven source,
+    // 1..N = the VISIBLE beads (drawn, undamped), N+1..N+TAIL = a HIDDEN
+    // absorbing tail (off-screen, graded damping that swallows the outgoing
+    // packet so it cannot reflect), N+TAIL+1 = fixed ghost. Keeping the tail
+    // off-screen lets every visible bead move freely — no dead damped zone.
+    const TAIL = 18; // hidden absorbing nodes past the right edge
+    const TAILGMAX = 2.5; // peak tail damping (×ω₀)
     let y: number[] = [];
     let v: number[] = [];
 
     function reinit() {
       tt = 0;
-      y = new Array(N + 2).fill(0);
-      v = new Array(N + 2).fill(0);
+      y = new Array(N + TAIL + 2).fill(0);
+      v = new Array(N + TAIL + 2).fill(0);
     }
 
     // ── Layout ──────────────────────────────────────────────────────────
@@ -164,27 +171,46 @@ const L = isEn
       return Math.sin((nMode * Math.PI * j) / (N + 1)) * Math.cos(wn * tt);
     }
 
-    // ── Propagating sim (driven left end, sponge-damped right end) ──────
+    // ── Propagating sim: a wave PACKET launched into an absorbing chain ──
+    // The left end emits a Gaussian-windowed tone burst (a few-cycle wave
+    // packet) once every TPULSE seconds. The packet travels right at finite
+    // speed across the visible beads (all undamped, so they all move), then
+    // slips off the right edge into the HIDDEN absorbing tail and is swallowed
+    // without reflecting — you watch one clean packet cross and vanish, then
+    // the next. (Replaces the old continuous drive, whose reflections off the
+    // thin sponge built into a messy standing-wave jumble and resonated at
+    // certain N.)
+    const TPULSE = 4.5; // launch period: travel + absorb + a quiet gap
     function stepProp(dt: number) {
       const Tcross = 1.5; // seconds for the front to cross the chain
       const w0 = (N + 1) / Tcross; // coupling ⇒ constant continuum speed
-      const wd = (2.0 * TWO_PI) / Tcross; // ~2 wavelengths across the chain
+      const wd = w0; // carrier below the lattice cutoff (2ω₀) for every N
+      const t0 = 0.9; // packet centre within each launch cycle
+      const sig = 0.45; // packet width (≈ a few carrier cycles)
+      const tot = N + TAIL + 1; // index of the fixed ghost closing the tail
       // explicit sub-steps for stability (max lattice freq = 2ω₀)
       const S = Math.max(1, Math.ceil((w0 * dt) / 0.3));
       const h = dt / S;
       const k2 = w0 * w0;
       for (let s = 0; s < S; s++) {
         tt += h;
-        y[0] = Math.sin(wd * tt); // driven source (unit amplitude)
-        y[N + 1] = 0; // fixed far end
-        for (let j = 1; j <= N; j++) {
-          // absorbing sponge layer over the rightmost ~25 %
-          const f = j / (N + 1);
-          const gamma = f > 0.75 ? 6 * (f - 0.75) * w0 : 0;
+        const tau = tt % TPULSE; // local time within the launch cycle
+        const env = Math.exp(-(((tau - t0) / sig) ** 2)); // Gaussian envelope
+        y[0] = env * Math.sin(wd * (tau - t0)); // wave-packet source (left end)
+        y[tot] = 0; // fixed node closing the hidden absorbing tail
+        for (let j = 1; j < tot; j++) {
+          // visible beads (1..N) are UNDAMPED; damping lives only in the hidden
+          // tail (N+1..N+TAIL), ramped quadratically so the packet leaves the
+          // visible chain and is absorbed off-screen with no reflection.
+          let gamma = 0;
+          if (j > N) {
+            const i = (j - N) / TAIL; // 0 → 1 across the tail
+            gamma = TAILGMAX * w0 * i * i;
+          }
           const acc = k2 * (y[j - 1] - 2 * y[j] + y[j + 1]) - gamma * v[j];
           v[j] += acc * h;
         }
-        for (let j = 1; j <= N; j++) y[j] += v[j] * h;
+        for (let j = 1; j < tot; j++) y[j] += v[j] * h;
       }
     }
     function propDisp(j: number) {
@@ -213,6 +239,28 @@ const L = isEn
       }
     }
 
+    // Open / absorbing right boundary (propagating mode): a faint dashed line
+    // and label instead of a rigid hatched wall — the wave leaves, no reflection.
+    function drawAbsorbingEnd(x: number, yc: number, amp: number) {
+      const top = yc - amp - 14;
+      const bot = yc + amp + 14;
+      ctx.save();
+      ctx.strokeStyle = COL.tick;
+      ctx.globalAlpha = 0.55;
+      ctx.setLineDash([3, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bot);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = COL.label;
+      ctx.font = MFR(11);
+      ctx.textAlign = "center";
+      ctx.fillText(t("吸收端", "absorbing"), x, yc + amp + 30);
+      ctx.textAlign = "left";
+    }
+
     function draw() {
       ctx.clearRect(0, 0, W, H);
       const g = geom();
@@ -229,9 +277,12 @@ const L = isEn
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // walls
+      // walls — left always; right wall only in the standing-mode (both ends
+      // fixed). In propagating mode the right side is OPEN/absorbing: the
+      // packet leaves the visible chain into the hidden tail, no reflection.
       drawWall(xL, yc, amp);
-      drawWall(xR, yc, amp);
+      if (mode === "normal") drawWall(xR, yc, amp);
+      else drawAbsorbingEnd(xR, yc, amp);
 
       // faint continuum reference (normal mode only): sin(nπx/L)
       if (mode === "normal") {
@@ -256,10 +307,26 @@ const L = isEn
       ctx.strokeStyle = COL.wave;
       ctx.lineWidth = 2;
       ctx.lineJoin = "round";
+      // standing mode draws through to the fixed far wall (N+1); propagating
+      // mode stops at the last visible bead (N) — the wave continues off-screen.
+      const lastNode = mode === "normal" ? N + 1 : N;
       ctx.beginPath();
       ctx.moveTo(px(0), py(0));
-      for (let j = 1; j <= N + 1; j++) ctx.lineTo(px(j), py(j));
+      for (let j = 1; j <= lastNode; j++) ctx.lineTo(px(j), py(j));
       ctx.stroke();
+
+      // propagating mode: a faint dashed continuation from the last visible
+      // bead toward the absorbing edge — the packet slipping out of view.
+      if (mode === "prop") {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(px(N), py(N));
+        ctx.lineTo(px(N + 1), py(N + 1)); // px(N+1) === xR
+        ctx.stroke();
+        ctx.restore();
+      }
 
       // masses (shrink as N grows → the bead chain becomes a smooth wave)
       const r = Math.max(2.2, Math.min(6.5, 60 / (N + 2)));
