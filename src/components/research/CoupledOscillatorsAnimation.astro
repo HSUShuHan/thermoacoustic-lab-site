@@ -115,6 +115,7 @@ const L = isEn
     let playing = true;
     let speed = 1;
     let tt = 0;
+    let reflectEnd = false; // easter egg: click the right end to make it reflect
 
     // Lattice arrays for the propagating sim. Indices: 0 = driven source,
     // 1..N = the VISIBLE beads (drawn, undamped), N+1..N+TAIL = a HIDDEN
@@ -180,14 +181,18 @@ const L = isEn
     // the next. (Replaces the old continuous drive, whose reflections off the
     // thin sponge built into a messy standing-wave jumble and resonated at
     // certain N.)
-    const TPULSE = 4.5; // launch period: travel + absorb + a quiet gap
+    const GREFL = 0.6; // light global damping in reflect mode → a few clean bounces then fade
     function stepProp(dt: number) {
       const Tcross = 1.5; // seconds for the front to cross the chain
       const w0 = (N + 1) / Tcross; // coupling ⇒ constant continuum speed
       const wd = w0; // carrier below the lattice cutoff (2ω₀) for every N
       const t0 = 0.9; // packet centre within each launch cycle
       const sig = 0.45; // packet width (≈ a few carrier cycles)
-      const tot = N + TAIL + 1; // index of the fixed ghost closing the tail
+      // Easter egg: clicking the right end flips it from the absorbing tail to a
+      // hard FIXED wall, so the packet reflects (inverted) and bounces back; a
+      // light global damping lets it bounce a few times, then fade.
+      const TPULSE = reflectEnd ? 6 : 4.5; // longer gap when bouncing
+      const tot = reflectEnd ? N + 1 : N + TAIL + 1; // reflecting wall vs hidden tail
       // explicit sub-steps for stability (max lattice freq = 2ω₀)
       const S = Math.max(1, Math.ceil((w0 * dt) / 0.3));
       const h = dt / S;
@@ -197,13 +202,14 @@ const L = isEn
         const tau = tt % TPULSE; // local time within the launch cycle
         const env = Math.exp(-(((tau - t0) / sig) ** 2)); // Gaussian envelope
         y[0] = env * Math.sin(wd * (tau - t0)); // wave-packet source (left end)
-        y[tot] = 0; // fixed node closing the hidden absorbing tail
+        y[tot] = 0; // fixed node: closes the hidden tail, or the reflecting wall
         for (let j = 1; j < tot; j++) {
-          // visible beads (1..N) are UNDAMPED; damping lives only in the hidden
-          // tail (N+1..N+TAIL), ramped quadratically so the packet leaves the
-          // visible chain and is absorbed off-screen with no reflection.
+          // Absorbing mode: visible beads (1..N) UNDAMPED; damping only in the
+          // hidden tail (N+1..N+TAIL), so the packet leaves with no reflection.
+          // Reflect mode: a light uniform damping so the bounces fade out.
           let gamma = 0;
-          if (j > N) {
+          if (reflectEnd) gamma = GREFL;
+          else if (j > N) {
             const i = (j - N) / TAIL; // 0 → 1 across the tail
             gamma = TAILGMAX * w0 * i * i;
           }
@@ -277,12 +283,22 @@ const L = isEn
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // walls — left always; right wall only in the standing-mode (both ends
-      // fixed). In propagating mode the right side is OPEN/absorbing: the
-      // packet leaves the visible chain into the hidden tail, no reflection.
+      // walls — left always. Right is a fixed wall in standing mode, and in
+      // propagating mode it is OPEN/absorbing by default (packet leaves into the
+      // hidden tail) — unless the reflect easter egg is on, when it's a wall.
       drawWall(xL, yc, amp);
-      if (mode === "normal") drawWall(xR, yc, amp);
-      else drawAbsorbingEnd(xR, yc, amp);
+      if (mode === "normal" || (mode === "prop" && reflectEnd)) {
+        drawWall(xR, yc, amp);
+        if (mode === "prop") {
+          ctx.fillStyle = COL.drive;
+          ctx.font = MFR(11);
+          ctx.textAlign = "center";
+          ctx.fillText(t("固定端→反射", "fixed → reflects"), xR, yc + amp + 30);
+          ctx.textAlign = "left";
+        }
+      } else {
+        drawAbsorbingEnd(xR, yc, amp);
+      }
 
       // faint continuum reference (normal mode only): sin(nπx/L)
       if (mode === "normal") {
@@ -309,15 +325,15 @@ const L = isEn
       ctx.lineJoin = "round";
       // standing mode draws through to the fixed far wall (N+1); propagating
       // mode stops at the last visible bead (N) — the wave continues off-screen.
-      const lastNode = mode === "normal" ? N + 1 : N;
+      const lastNode = mode === "normal" || reflectEnd ? N + 1 : N;
       ctx.beginPath();
       ctx.moveTo(px(0), py(0));
       for (let j = 1; j <= lastNode; j++) ctx.lineTo(px(j), py(j));
       ctx.stroke();
 
-      // propagating mode: a faint dashed continuation from the last visible
+      // absorbing prop mode: a faint dashed continuation from the last visible
       // bead toward the absorbing edge — the packet slipping out of view.
-      if (mode === "prop") {
+      if (mode === "prop" && !reflectEnd) {
         ctx.save();
         ctx.globalAlpha = 0.3;
         ctx.setLineDash([4, 4]);
@@ -444,6 +460,21 @@ const L = isEn
     });
     root.querySelector<HTMLInputElement>(".coupled-speed")!.addEventListener("input", (e) => {
       speed = parseFloat((e.target as HTMLInputElement).value);
+    });
+
+    // Easter egg: click the right end (propagating mode) to toggle the boundary
+    // between absorbing and a reflecting fixed wall; restart for a clean run.
+    const nearRightEnd = (clientX: number) => {
+      const rect = main.getBoundingClientRect();
+      return clientX - rect.left > geom().xR - 26;
+    };
+    main.addEventListener("click", (e) => {
+      if (mode !== "prop" || !nearRightEnd(e.clientX)) return;
+      reflectEnd = !reflectEnd;
+      reinit();
+    });
+    main.addEventListener("mousemove", (e) => {
+      main.style.cursor = mode === "prop" && nearRightEnd(e.clientX) ? "pointer" : "default";
     });
 
     const ro = new ResizeObserver(() => resize());
