@@ -6,6 +6,8 @@ import katex from "katex";
 // KaTeX CSS is loaded globally via global.css. Notation matches the air-column
 // primer: a prime marks an oscillating (time-domain) parcel quantity.
 const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
 ---
 
 <BaseLayout
@@ -24,8 +26,8 @@ const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
     </p>
     <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
     <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
-      熱聲效應是「氣塊在溫度梯度中往復振盪」與「氣塊與壁之間相互熱交換」二者耦合結果，依片堆處所施加之軸向溫度梯度有不同模式。以下動畫參考
-      G. W. Swift 與 T. Biwa 熱聲學教科書圖示觀念，可切換均溫、製冷、引擎三種模式，分別觀察阻尼螺旋、逆時針封閉環、順時針封閉環等相空間軌跡。
+      熱聲效應是「氣塊在溫度梯度中往復振盪」與「氣塊與壁之間相互熱交換」二者耦合結果，依片堆（stack）處所施加之軸向溫度梯度有不同模式。以下動畫主要依日本學派（富永·矢崎一系；琵琶哲志《熱音響デバイス》）以
+      <strong>功通量（work flux）<span set:html={m("\\bar I")} /></strong> 與 <strong>熱通量（heat flux）<span set:html={m("\\bar Q")} /></strong> 描述能量轉換的觀點，可切換均溫、製冷、引擎三種模式，分別觀察阻尼螺旋、逆時針封閉環、順時針封閉環等相空間軌跡。
     </p>
   </section>
 
@@ -50,7 +52,7 @@ const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
     </p>
     <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
       <li>
-        <strong style="color:#d97706">橙色 <span set:html={m("p'")} />–<span set:html={m("\\xi'")} />（壓力—位移）</strong>：環面積 × <span set:html={m("\\omega/(2\\pi)")} /> = <strong>聲音強度 <span set:html={m("I")} /></strong>（<span set:html={m("\\langle p'u'\\rangle")} />，氣塊以速度 <span set:html={m("u' = d\\xi'/dt")} /> 振盪）。對應右下 3D 軌道圖底面的投影。
+        <strong style="color:#d97706">橙色 <span set:html={m("p'")} />–<span set:html={m("\\xi'")} />（壓力—位移）</strong>：環面積 × <span set:html={m("\\omega/(2\\pi)")} /> = <strong>功通量密度 <span set:html={m("I")} /></strong>（<span set:html={m("=\\langle p'u'\\rangle")} />，即聲音強度；氣塊以速度 <span set:html={m("u' = d\\xi'/dt")} /> 振盪）。對應右下 3D 軌道圖底面的投影。
       </li>
       <li>
         <strong style="color:#0e7490">青色虛線 <span set:html={m("p'")} />–<span set:html={m("V'")} />（壓力—體積）</strong>：古典熱力學 PV 圖，環面積 <span set:html={m("\\oint p'\\,dV'")} /> = <strong>一週期之功 <span set:html={m("W")} /></strong>。對熟悉熱機循環的讀者更直觀。
@@ -66,7 +68,7 @@ const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
       <strong>橢圓相對虛線的位置</strong>決定徑向熱傳方向：氣塊比壁熱 → 熱往壁傳；氣塊比壁冷 → 熱往氣塊傳。氣塊隨位移在「拿熱、走、放熱」的循環裡把熱從一端搬到另一端 — 這就是熱聲效應作為熱機 / 製冷機的根源。
     </p>
     <p class="mt-2 text-gray-700 text-sm">
-      註：此圖在概念上對應 3D 軌道圖的「熵 <span set:html={m("S'")} />—位移 <span set:html={m("\\xi'")} /> 投影 ≈ <span set:html={m("Q")} />」，但這裡縱軸用的是 <strong>溫度 <span set:html={m("T'")} /></strong> 而非熵 <span set:html={m("S'")} />。對單一氣塊，絕熱過程下 <span set:html={m("dT'")} /> 與 <span set:html={m("dS'")} /> 成正比，所以軌跡形狀近似；但兩者量綱不同（<span set:html={m("T'")} /> 有額外熱容因子），所以環面積 <strong>正比於</strong> 熱流 <span set:html={m("Q")} /> 但不嚴格相等。橢圓顏色刻意用 3D 投影綠（<span style="color:#16a34a">●</span>）的較深變體（<span style="color:#15803d">●</span>），表示「相關但不等同」。
+      註：此圖在概念上對應 3D 軌道圖的「熵 <span set:html={m("S'")} />—位移 <span set:html={m("\\xi'")} /> 投影 ≈ <span set:html={m("Q")} />」，但這裡縱軸用的是 <strong>溫度 <span set:html={m("T'")} /></strong> 而非熵 <span set:html={m("S'")} />。對單一氣塊，絕熱過程下 <span set:html={m("dT'")} /> 與 <span set:html={m("dS'")} /> 成正比，所以軌跡形狀近似；但兩者量綱不同（<span set:html={m("T'")} /> 有額外熱容因子），所以環面積 <strong>正比於</strong> 熱通量密度 <span set:html={m("Q")} /> 但不嚴格相等。橢圓顏色刻意用 3D 投影綠（<span style="color:#16a34a">●</span>）的較深變體（<span style="color:#15803d">●</span>），表示「相關但不等同」。
     </p>
 
     <h2 class="mt-10 text-2xl font-semibold text-brand-900">3 種模式對應的壁溫梯度</h2>
@@ -96,6 +98,51 @@ const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
         </tr>
       </tbody>
     </table>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">
+      理論：功通量 <span set:html={m("\\bar I")} /> 與熱通量 <span set:html={m("\\bar Q")} />（日本學派）
+    </h2>
+    <p class="mt-4 text-gray-700">
+      日本學派（富永·矢崎；琵琶）以兩個時間平均能量通量描述熱聲能量轉換——<strong>功通量（work
+      flux）<span set:html={m("\\bar I")} /></strong>（單位時間流過截面的聲功）與 <strong>熱通量（heat flux）<span
+        set:html={m("\\bar Q")}
+      /></strong>（氣塊所搬運的熱）；量上加一橫表「時間平均」。二者是「流體力學 →（<span set:html={m("\\bar I,\\ \\bar Q")} />）→ 熱力學」的橋樑，並滿足
+    </p>
+    <div set:html={md("\\frac{d(\\bar I+\\bar Q)}{dx}=0\\ \\text{（第一定律）},\\qquad \\frac{d\\bar S}{dx}\\ge 0\\ \\text{（第二定律）}")}></div>
+    <p class="mt-2 text-sm text-gray-600">
+      其中 <span set:html={m("x")} /> 為沿管軸向座標、<span set:html={m("\\bar S")} /> 為時間平均熵通量。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">行波成分 vs 駐波成分</h3>
+    <p class="mt-2 text-gray-700">
+      取<strong>變位 <span set:html={m("\\xi'")} /> 為相位基準</strong>（<span set:html={m("\\xi'")} />：氣塊離開平衡位置的位移）。以複素振幅寫 <span
+        set:html={m("p'=\\mathrm{Re}[p_1 e^{i\\omega t}]=|p_1|\\cos(\\omega t+\\theta)")}
+      />；其中 <span set:html={m("|p_1|")} /> 為<strong>壓力複素振幅大小</strong>、<span set:html={m("\\omega")} /> 為角頻率、<span set:html={m("\\theta")} /> 為<strong>壓力領先變位的相角</strong>。展開得
+    </p>
+    <div set:html={md("p' = \\underbrace{|p_1|\\cos\\theta\\,\\cos\\omega t}_{\\text{駐波成分（與 }\\xi'\\text{ 同相）}} + \\underbrace{|p_1|\\sin\\theta\\,\\cos(\\omega t+\\tfrac{\\pi}{2})}_{\\text{行波成分（領先 }\\xi'\\text{ 90°）}}")}></div>
+    <p class="mt-2 text-gray-700">
+      無散逸共鳴管中的<strong>駐波</strong>，流速與壓力相差 <span set:html={m("\\pm\\pi/2")} />，故壓力與變位同相（<span
+        set:html={m("\\theta=0")}
+      /> 或 <span set:html={m("\\pi")} />）→ 純駐波成分；<strong>行波</strong>則壓力與變位相差 <span set:html={m("\\pm\\pi/2")} /> → 純行波成分。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">功通量密度 <span set:html={m("I")} /> 與熱通量密度 <span set:html={m("Q")} /></h3>
+    <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
+      <li>
+        <strong>功通量密度 <span set:html={m("I")} /></strong>（單位截面積的功通量）<span set:html={m("=\\frac{\\omega}{2\\pi}\\oint p'\\,d\\xi'=\\tfrac12|p_1||u_1|\\cos\\phi")} />；其中 <span
+          set:html={m("u_1")}
+        /> 為<strong>複素流速振幅</strong>（<span set:html={m("u_1=i\\omega\\xi_1")} />，流速領先變位 90°）、<span set:html={m("\\phi=\\pi/2-\\theta")} /> 為<strong>流速與壓力的相位差</strong>、<span set:html={m("f=\\omega/2\\pi")} /> 為頻率。<span set:html={m("I")} /> 等於 <span set:html={m("p'\\!-\\!\\xi'")} /> 環的符號面積 <span set:html={m("\\times f")} />，<strong>只有行波成分有貢獻</strong>（駐波成分畫成線段、面積為零）。
+      </li>
+      <li>
+        <strong>熱通量密度 <span set:html={m("Q")} /></strong> <span set:html={m("=\\frac{\\omega}{2\\pi}\\rho_m T_m\\oint \\langle S'\\rangle_r\\,d\\xi'")} />；其中 <span
+          set:html={m("\\rho_m,\\ T_m")}
+        /> 為<strong>平均密度、平均溫度</strong>（下標 <span set:html={m("m")} /> ＝ mean）、<span set:html={m("\\langle S'\\rangle_r")} /> 為氣塊的<strong>斷面平均熵振動</strong>。<span set:html={m("Q")} /> 分成三項 <span set:html={m("Q=Q_{prog}+Q_{stand}+Q_D")} />：<span set:html={m("Q_{prog}=-\\chi'_a\\beta T_m I")} />（行波成分、可逆）、<span set:html={m("Q_{stand}\\propto\\chi''_a")} />（駐波成分、不可逆）、<span set:html={m("Q_D")} />（變位—溫梯項，Dream-pipe 主角）。其中 <span set:html={m("\\beta")} /> 為<strong>熱膨脹率</strong>，<span set:html={m("\\chi_a=\\chi'_a+i\\chi''_a")} /> 為<strong>熱應答函數</strong>（Rott 函數）：實部 <span set:html={m("\\chi'_a")} /> 對應可逆熱交換、虛部 <span set:html={m("\\chi''_a")} /> 對應不可逆熱交換。
+      </li>
+    </ul>
+
+    <div class="mt-6 rounded-md border-l-4 border-accent-500 bg-brand-50 py-3 pl-4 pr-3 text-gray-800">
+      <strong>駐波型的核心：</strong>功源（work source）<span set:html={m("w=W_p+W_{prog}+W_{stand}")} />（單位長度產生的聲功）：<span set:html={m("W_p")} /> 為壓力項（恆散逸）、<span set:html={m("W_{prog}")} /> 為行波成分（可逆 <span set:html={m("\\chi'_a")} />）、<span set:html={m("W_{stand}")} /> 為駐波成分（不可逆 <span set:html={m("\\chi''_a")} />）。<strong>共鳴管（駐波）型引擎靠 <span set:html={m("W_{stand}")} /></strong>——來自壓力的<strong>駐波成分</strong>；行波（環管）型才靠 <span set:html={m("W_{prog}")} />。「共鳴管型 = 駐波型音波引擎」之名即源於此，這也是駐波型效率本質上低於行波型的原因。
+    </div>
 
     <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
       <a href="/research/animations" class="underline hover:text-accent-600">← 回動畫總覽</a>
