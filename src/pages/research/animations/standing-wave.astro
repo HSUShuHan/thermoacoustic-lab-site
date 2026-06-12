@@ -126,6 +126,14 @@ const md = (tex: string) =>
       /> 或 <span set:html={m("\\pi")} />）→ 純駐波成分；<strong>行波</strong>則壓力與變位相差 <span set:html={m("\\pm\\pi/2")} /> → 純行波成分。
     </p>
 
+    <div class="mt-4 rounded-md border-l-4 border-accent-500 bg-brand-50 py-3 pl-4 pr-3 text-gray-800">
+      <strong>關鍵：純駐波不做功。</strong><span set:html={m("\\theta=0")} /> 時壓力與變位完全同相，<span
+        set:html={m("p'\\!-\\!\\xi'")}
+      /> 環塌成線、功流 <span set:html={m("I=0")} />。要有功流，壓力必須相對變位有<strong>相位延遲</strong>——駐波型引擎裡，這個延遲來自氣塊與壁<strong>不完全熱接觸（<span
+        set:html={m("\\chi''_a")}
+      />）的熱時間延遲</strong>，等效混入少量行波成分，環才張開。動畫中把 <span set:html={m("\\theta")} /> 拉到 0 即可看到迴圈閉合、聲場節點收緊。
+    </div>
+
     <h3 class="mt-6 text-lg font-medium text-brand-800">功流密度 <span set:html={m("I")} /> 與熱流密度 <span set:html={m("Q")} /></h3>
 
     <p class="mt-3 text-gray-700"><strong>功流密度 <span set:html={m("I")} /></strong>（單位截面積的功流）：</p>
