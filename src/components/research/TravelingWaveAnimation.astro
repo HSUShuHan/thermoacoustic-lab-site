@@ -616,6 +616,22 @@ const L = isEn
           { t: "冷卻（往冷端）", c: "#58b3e5" },
           { t: "壓縮（冷端）", c: "#2563eb" },
         ];
+    // Smooth parcel colour: blend continuously around the cycle between the
+    // four step colours (anchored at ωt = 0, π/2, π, 3π/2 — the step centres).
+    const STEP_RGB = [
+      [215, 33, 33],
+      [226, 124, 47],
+      [88, 179, 229],
+      [37, 99, 235],
+    ];
+    function stepColor(wt: number) {
+      const pos = ((((wt % TWO_PI) + TWO_PI) % TWO_PI) / (Math.PI / 2)) % 4;
+      const i = Math.floor(pos);
+      const f = pos - i;
+      const a = STEP_RGB[i];
+      const b = STEP_RGB[(i + 1) % 4];
+      return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+    }
 
     // ── PV loop geometry (panel-local: 195 × 160) ───────────────────────
     const PV_CX = 97,
@@ -978,7 +994,7 @@ const L = isEn
         const act = (ratio - 1) * Math.cos(phi) * amp;
         if (act > 0.18) {
           const q = Math.floor((((wt + Math.PI / 4) % TWO_PI) / (Math.PI / 2)) % 4);
-          regenParcel.setAttribute("fill", STEPS[q].c);
+          regenParcel.setAttribute("fill", stepColor(wt));
         } else {
           regenParcel.setAttribute("fill", "#0891b2");
         }
@@ -1041,7 +1057,7 @@ const L = isEn
             const q = Math.floor((((wt + Math.PI / 4) % TWO_PI) / (Math.PI / 2)) % 4);
             stepText.textContent = STEPS[q].t;
             stepText.setAttribute("fill", STEPS[q].c);
-            parcel.setAttribute("fill", STEPS[q].c); // same colour as the regen parcel
+            parcel.setAttribute("fill", stepColor(wt)); // same blend as the regen parcel
           } else {
             stepText.textContent = isEn ? "(cycle degenerate)" : "（循環退化）";
             stepText.setAttribute("fill", "#94a3b8");
