@@ -1,0 +1,158 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TravelingWaveAnimation from "~/components/research/TravelingWaveAnimation.astro";
+import katex from "katex";
+
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+---
+
+<BaseLayout
+  lang="en"
+  title="Animation · Traveling-Wave"
+  description="Interactive animation of the traveling-wave Stirling thermoacoustic engine (TASHE): loop topology, isothermal Stirling cycle in the regenerator, p–u in phase, energy flow (work flow / heat flow); toggle between a mechanical α-Stirling engine and the acoustic loop."
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Research / Animations</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      Thermoacoustic Mechanism Animation
+    </h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">Traveling-Wave Type · 行波型</p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      The <a href="/en/research/animations/standing-wave" class="underline hover:text-accent-600"
+        >standing-wave type</a
+      > relies on the <strong>irreversible</strong> <span set:html={m("W_{stand}")} /> and its
+      efficiency is limited. The traveling-wave type places the gas parcel in a
+      <strong>circulating loop</strong> and uses a <strong>regenerator</strong> to keep the parcel in
+      <strong>isothermal</strong> contact with the walls, realizing a <strong
+        >reversible Stirling cycle</strong
+      > driven by <span set:html={m("W_{prog}")} /> — with efficiency <strong
+        >approaching Carnot</strong
+      >. Below we cover only what differs from the standing-wave type (parcel oscillation, <span
+        set:html={m("p'\\!-\\!\\xi'")}
+      /> = work flow density, the traveling/standing decomposition, etc. are explained on the
+      standing-wave page).
+    </p>
+  </section>
+
+  <TravelingWaveAnimation lang="en" />
+
+  <section class="mt-12 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold text-brand-900">Three keys of the traveling-wave type</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① Loop + regenerator: why reversible</h3>
+    <p class="mt-2 text-gray-700">
+      A pure traveling wave needs a <strong>loop</strong> to sustain itself (a straight tube only
+      supports standing waves). The <strong>regenerator</strong> on the loop is a dense mesh whose
+      <strong>pore radius is far smaller than the thermal diffusion length</strong> (<span
+        set:html={m("r \\ll \\delta_\\alpha")}
+      />, <span set:html={m("r")} />: channel radius, <span set:html={m("\\delta_\\alpha")} />:
+      thermal diffusion length, subscript <span set:html={m("\\alpha")} /> = thermal diffusivity).
+      Fine enough pores → the parcel stays <strong>isothermal</strong> with the wall → the heat
+      exchange is <strong>reversible</strong>. Contrast the standing-wave stack (plate spacing <span
+        set:html={m("\\sim \\delta_\\alpha")}
+      />, imperfect contact → irreversible).
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">
+      ② <span set:html={m("p")} />–<span set:html={m("u")} /> in phase → Stirling cycle
+    </h3>
+    <p class="mt-2 text-gray-700">
+      In a traveling wave the pressure <span set:html={m("p'")} /> and velocity <span
+        set:html={m("u'")}
+      /> are <strong>in phase</strong> (a standing wave has them <span set:html={m("90^\\circ")} />
+      apart). The parcel therefore <strong
+        >moves toward the hot end while compressed and toward the cold end while expanded</strong
+      >, completing an isothermal-compression → isothermal-expansion Stirling cycle in the
+      regenerator — the <span set:html={m("p")} />–<span set:html={m("V")} /> trace is a
+      <strong>fat loop</strong> (area = work, reversible). The standing-wave type draws a thin one.
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">
+      ③ Energy flow: heat flow <span set:html={m("\\bar Q")} /> becomes work flow <span
+        set:html={m("\\bar I")}
+      />
+    </h3>
+    <p class="mt-2 text-gray-700">
+      Seen as <strong>energy flows</strong>: heat flow <span set:html={m("\\bar Q")} /> enters at
+      the hot exchanger and is converted along the regenerator into <strong
+        >work flow <span set:html={m("\\bar I")} /></strong
+      > — the acoustic power <span set:html={m("\\bar I")} /> is <strong>amplified along the way</strong
+      >. The two satisfy
+    </p>
+    <div set:html={md("\\frac{d(\\bar I+\\bar Q)}{dx}=0,\\qquad W_{prog}=\\beta\\,\\frac{dT_m}{dx}\\,\\chi'_a\\,I")}></div>
+    <p class="mt-2 text-sm text-gray-600">
+      <span set:html={m("W_{prog}")} />: work source of the traveling-wave component (acoustic power
+      produced per unit length), proportional to <span set:html={m("\\chi'_a")} /> (the real part of
+      the thermal-response function — <strong>reversible</strong> heat exchange) → it <strong
+        >amplifies <span set:html={m("I")} /></strong
+      > rather than dissipating. <span set:html={m("\\beta")} />: thermal expansion coefficient,
+      <span set:html={m("T_m")} />: mean temperature, <span set:html={m("dT_m/dx")} />: regenerator
+      temperature gradient. (See the <a
+        href="/en/research/animations/standing-wave"
+        class="underline hover:text-accent-600">standing-wave page</a
+      > for the definitions of <span set:html={m("\\bar I,\\bar Q,\\chi'_a")} />.)
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">Standing vs traveling</h2>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4"></th>
+          <th class="py-2 pr-4">Standing-wave type</th>
+          <th class="py-2">Traveling-wave type</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Geometry</td>
+          <td class="py-2 pr-4">straight resonator</td>
+          <td class="py-2">loop</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Core component</td>
+          <td class="py-2 pr-4">stack (spacing <span set:html={m("\\sim\\delta_\\alpha")} />)</td>
+          <td class="py-2">regenerator (pores <span set:html={m("\\ll\\delta_\\alpha")} />)</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium"
+            ><span set:html={m("p")} />–<span set:html={m("u")} /> phase</td
+          >
+          <td class="py-2 pr-4"><span set:html={m("90^\\circ")} /></td>
+          <td class="py-2">in phase</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Parcel cycle</td>
+          <td class="py-2 pr-4">thin loop</td>
+          <td class="py-2">fat Stirling loop</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">Energy conversion</td>
+          <td class="py-2 pr-4"
+            ><span set:html={m("W_{stand}\\propto\\chi''_a")} /> (irreversible)</td
+          >
+          <td class="py-2"><span set:html={m("W_{prog}\\propto\\chi'_a")} /> (reversible)</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">Efficiency</td>
+          <td class="py-2 pr-4">lower</td>
+          <td class="py-2">near Carnot</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/en/research/animations" class="underline hover:text-accent-600"
+        >← Back to animations</a
+      >
+      <a href="/en/research/animations/standing-wave" class="underline hover:text-accent-600"
+        >Standing-wave type</a
+      >
+      <a href="/en/research/thermoacoustic-effect" class="underline hover:text-accent-600"
+        >The thermoacoustic effect</a
+      >
+    </p>
+  </section>
+</BaseLayout>
