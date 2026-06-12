@@ -155,9 +155,9 @@ const L = isEn
     <label class="ta-slider">
       <span class="ta-slider-name"
         >{isEn ? "Wall" : "壁溫梯度"} <span class="ta-sym">∇T</span>
-        <small>{isEn ? "uniform ↔ engine" : "均溫 ↔ 引擎"}</small></span
+        <small>{isEn ? "uniform → fridge → engine" : "均溫 → 製冷 → 引擎"}</small></span
       >
-      <input type="range" data-knob="gradT" min="-1.2" max="0" step="0.05" value="-1.2" />
+      <input type="range" data-knob="gradT" min="0" max="1.2" step="0.05" value="1.2" />
     </label>
     <label class="ta-slider">
       <span class="ta-slider-name"
@@ -1764,7 +1764,7 @@ const L = isEn
     const x0Slider = root.querySelector<HTMLInputElement>('[data-knob="x0"]');
     function syncSliders() {
       if (thetaSlider) thetaSlider.value = String(theta);
-      if (gradTSlider) gradTSlider.value = String(gradT);
+      if (gradTSlider) gradTSlider.value = String(-gradT); // slider shows magnitude
       if (ampSlider) ampSlider.value = String(amp);
       if (x0Slider) x0Slider.value = String(stackX0);
     }
@@ -1786,7 +1786,7 @@ const L = isEn
       renderTraces();
     });
     gradTSlider?.addEventListener("input", () => {
-      gradT = parseFloat(gradTSlider.value);
+      gradT = -parseFloat(gradTSlider.value); // slider is the magnitude（右=陡）
       clearPresetHighlight();
       renderTraces();
     });
