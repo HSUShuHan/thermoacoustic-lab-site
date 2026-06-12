@@ -148,9 +148,9 @@ const L = isEn
       <span class="ta-slider-name"
         >{isEn ? "Phase" : "相位角"} <span class="ta-sym">θ</span>
         <span id="ta-theta-val" class="font-mono text-xs font-semibold text-brand-800"></span>
-        <small>{isEn ? "traveling-wave admixture (small, ±8°)" : "行波成分混入量（小量，±8°）"}</small></span
+        <small>{isEn ? "traveling-wave admixture (0–8°, sign set by ∇T)" : "行波成分混入量（0–8°，方向由 ∇T 決定）"}</small></span
       >
-      <input type="range" data-knob="theta" min="-0.14" max="0.14" step="0.005" value="-0.14" />
+      <input type="range" data-knob="theta" min="0" max="0.14" step="0.005" value="0.14" />
     </label>
     <label class="ta-slider">
       <span class="ta-slider-name"
@@ -455,7 +455,7 @@ const L = isEn
          field is shown OUTSIDE the tube. JS fills the curves + tracks x₀. -->
     <g id="ta-profile" transform="translate(40, 188)">
       <text x="340" y="-6" font-size="11" fill="#1e3a5f" text-anchor="middle" font-weight="600"
-        >{isEn ? "Standing-wave field along the tube" : "管內駐波聲場 |p₁|, |u₁|"}</text>
+        >{isEn ? "Standing-wave field along the tube " : "管內駐波聲場 "}<tspan font-style="italic">|p₁|, |u₁|</tspan></text>
       <line x1="0" y1="58" x2="680" y2="58" stroke="#cbd5e1" stroke-width="1"></line>
       <path id="ta-env-u" d="" fill="none" stroke="#2563eb" stroke-width="2"></path>
       <path id="ta-env-p" d="" fill="none" stroke="#dc2626" stroke-width="2"></path>
@@ -463,9 +463,9 @@ const L = isEn
       <circle id="ta-x0-dot-u" r="3.5" fill="#2563eb" stroke="white" stroke-width="1"></circle>
       <circle id="ta-x0-dot-p" r="3.5" fill="#dc2626" stroke="white" stroke-width="1"></circle>
       <text x="0" y="72" font-size="9" fill="#2563eb" text-anchor="start"
-        >{isEn ? "open · velocity antinode |u₁|" : "開口端 · 速度腹 |u₁|"}</text>
+        >{isEn ? "open · velocity antinode " : "開口端 · 速度腹 "}<tspan font-style="italic">|u₁|</tspan></text>
       <text x="680" y="72" font-size="9" fill="#dc2626" text-anchor="end"
-        >{isEn ? "closed · pressure antinode |p₁|" : "閉口端 · 壓力腹 |p₁|"}</text>
+        >{isEn ? "closed · pressure antinode " : "閉口端 · 壓力腹 "}<tspan font-style="italic">|p₁|</tspan></text>
     </g>
 
     <!-- ═══════════ Panel 2: parcel close-up + heat arrows ═══════════ -->
@@ -1004,9 +1004,9 @@ const L = isEn
 
   const phases: Record<Mode, number> = {
     flat: 0.14,
-    refrigerator: 0.07,
-    critical: 0.0,
-    engine: -0.14,
+    refrigerator: 0.14,
+    critical: 0.14,
+    engine: 0.14,
   };
 
   const PERIOD = 5.0; // seconds for one ωt = 2π
@@ -1259,6 +1259,17 @@ const L = isEn
     // self-excites from heat alone (→ no piston). flat preset = undriven spiral.
     const crankAssembly = root.querySelector<SVGGElement>("#ta-crank-assembly");
     const GRADT_CRIT = -0.6; // wall gradient at which the engine self-excites
+
+    // Effective p–ξ phase: the θ slider sets the admixture MAGNITUDE; its
+    // SIGN (and scale) follows ∇T relative to the critical gradient — exactly
+    // Swift's preset relation (engine −1.2→−θ, critical −0.6→0, refrigerator
+    // −0.3→+θ/2, flat 0→+θ). Crossing the critical gradient therefore shrinks
+    // the p–V loop to a line and reopens it the OTHER way: the engine ↔
+    // refrigerator circulation reversal.
+    function effT() {
+      return (theta * (gradT - GRADT_CRIT)) / 0.6;
+    }
+
     function updatePiston() {
       const show = mode !== "flat" && gradT > GRADT_CRIT;
       if (crankAssembly) crankAssembly.style.display = show ? "inline" : "none";
@@ -1486,19 +1497,19 @@ const L = isEn
     //   ∇T (gradT) → wall-temperature line slope (independent of θ),
     //   amp        → amplitude (folded inside state()).
     function renderTraces() {
-      const pvD = buildPVPath(theta, mode);
-      const pvDV = buildPVPathOnV(theta, mode);
+      const pvD = buildPVPath(effT(), mode);
+      const pvDV = buildPVPathOnV(effT(), mode);
       pvLoop.setAttribute("d", pvD);
       pvLoopV.setAttribute("d", pvDV);
       // Fill the p–ξ area (= I); suppress when θ≈0 (degenerate line) or in the
       // flat-mode open spiral.
       pvFill.setAttribute(
         "d",
-        Math.abs(theta) < 0.004 || mode === "flat" ? "" : pvD,
+        Math.abs(effT()) < 0.004 || mode === "flat" ? "" : pvD,
       );
 
       // T-x trace
-      txLoop.setAttribute("d", buildTXPath(theta, mode));
+      txLoop.setAttribute("d", buildTXPath(effT(), mode));
 
       // Wall T line — slope is now the independent ∇T control. Convention:
       // gradT < 0 ⇒ right hot / left cold (engine); negative SVG y = hotter.
@@ -1508,7 +1519,7 @@ const L = isEn
       wallLine.setAttribute("y2", yR.toFixed(1));
 
       // Biwa 3D ellipse + 3 projection ellipses
-      const b = buildBiwaPaths(theta, mode);
+      const b = buildBiwaPaths(effT(), mode);
       biwaEllipse.setAttribute("d", b.main);
       biwaProjPxi.setAttribute("d", b.pxi);
       biwaProjSxi.setAttribute("d", b.sxi);
@@ -1518,16 +1529,16 @@ const L = isEn
       updateGradient();
       // field-profile envelopes respond to θ: traveling admixture lifts the
       // node minima (ε = 0 pure standing at θ=0, grows with |θ|)
-      envEps = Math.min(1, Math.abs(theta) / 0.14) * 0.4;
+      envEps = Math.min(1, Math.abs(effT()) / 0.14) * 0.4;
       buildEnvelopes();
       // numeric readout beside the θ slider; flag the θ=0 limit explicitly —
       // a PURE standing wave does no work (the p′–ξ′ loop closes, I = 0)
       const tv = root.querySelector<HTMLElement>("#ta-theta-val");
       if (tv) {
-        const deg = (theta * 180) / Math.PI;
+        const deg = (effT() * 180) / Math.PI;
         tv.textContent =
           "= " + (deg >= 0 ? "+" : "") + deg.toFixed(1) + "°" +
-          (Math.abs(theta) < 0.004
+          (Math.abs(effT()) < 0.004
             ? isEn
               ? " (pure standing — no work)"
               : "（純駐波：I = 0 不做功）"
@@ -1567,7 +1578,7 @@ const L = isEn
         wt = (t / PERIOD) * TWO_PI;
         decay = 1;
       }
-      const phase = theta;
+      const phase = effT();
       const s = state(wt, phase, decay);
 
       const cwt = Math.cos(wt);
