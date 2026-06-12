@@ -1272,10 +1272,21 @@ const L = isEn
     const x0DotU = root.querySelector<SVGCircleElement>("#ta-x0-dot-u");
     const x0DotP = root.querySelector<SVGCircleElement>("#ta-x0-dot-p");
     const x0Guide = root.querySelector<SVGLineElement>("#ta-x0-guide");
-    const envYU = (x: number) => 58 - 46 * Math.cos((Math.PI * x) / (2 * RESO_LEN));
-    const envYP = (x: number) => 58 - 46 * Math.sin((Math.PI * x) / (2 * RESO_LEN));
-    {
-      // Build the two static envelope curves once (mode is a fixed quarter-wave).
+    // Field envelopes |u₁(x)|, |p₁(x)| with a traveling-wave admixture set by
+    // the θ slider: a pure standing wave (θ→±0.14 presets ≈ small admixture;
+    // θ=0 critical) has hard nodes; mixing in a traveling component lifts the
+    // node minima off zero (the standing-wave-ratio picture):
+    //   |u₁| ∝ √(cos²k x + ε² sin²k x),  |p₁| ∝ √(sin²k x + ε² cos²k x)
+    let envEps = 0; // traveling-wave admixture ε, set from θ in renderTraces()
+    const envYU = (x: number) => {
+      const k = (Math.PI * x) / (2 * RESO_LEN);
+      return 58 - 46 * Math.hypot(Math.cos(k), envEps * Math.sin(k));
+    };
+    const envYP = (x: number) => {
+      const k = (Math.PI * x) / (2 * RESO_LEN);
+      return 58 - 46 * Math.hypot(Math.sin(k), envEps * Math.cos(k));
+    };
+    function buildEnvelopes() {
       const u: string[] = [];
       const p: string[] = [];
       for (let i = 0; i <= 68; i++) {
@@ -1286,6 +1297,7 @@ const L = isEn
       envU?.setAttribute("d", u.join(" "));
       envP?.setAttribute("d", p.join(" "));
     }
+    buildEnvelopes();
     function updateStackPos() {
       const dx = (stackX0 - STACK_X0).toFixed(1);
       stackPlates?.setAttribute("transform", `translate(${dx} 0)`);
@@ -1503,6 +1515,10 @@ const L = isEn
 
       updatePiston();
       updateGradient();
+      // field-profile envelopes respond to θ: traveling admixture lifts the
+      // node minima (ε = 0 pure standing at θ=0, grows with |θ|)
+      envEps = Math.min(1, Math.abs(theta) / 0.14) * 0.4;
+      buildEnvelopes();
       updateStackPos();
       syncActiveButton();
     }
