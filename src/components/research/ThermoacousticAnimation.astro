@@ -119,6 +119,9 @@ const L = isEn
   data-stack-critical={L.stack_title_critical}
   data-stack-engine={L.stack_title_engine}
 >
+  <div
+    class="ta-controls sticky top-[68px] z-20 -mx-4 -mt-5 mb-2 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur"
+  >
   <div class="ta-tabs" role="tablist" aria-label={L.mode_select}>
     <button type="button" data-mode="flat" role="tab">{L.tab_flat}</button>
     <button type="button" data-mode="refrigerator" role="tab">
@@ -138,6 +141,31 @@ const L = isEn
     >
       {L.tab_engine}
     </button>
+  </div>
+
+  <div class="ta-sliders">
+    <label class="ta-slider">
+      <span class="ta-slider-name"
+        >{isEn ? "Phase" : "相位角"} <span class="ta-sym">θ</span>
+        <small>{isEn ? "standing ↔ traveling" : "駐波 ↔ 行波"}</small></span
+      >
+      <input type="range" data-knob="theta" min="-0.14" max="0.14" step="0.005" value="-0.14" />
+    </label>
+    <label class="ta-slider">
+      <span class="ta-slider-name"
+        >{isEn ? "Wall" : "壁溫梯度"} <span class="ta-sym">∇T</span>
+        <small>{isEn ? "uniform ↔ engine" : "均溫 ↔ 引擎"}</small></span
+      >
+      <input type="range" data-knob="gradT" min="-1.2" max="0" step="0.05" value="-1.2" />
+    </label>
+    <label class="ta-slider">
+      <span class="ta-slider-name"
+        >{isEn ? "Amplitude" : "振幅"}
+        <small>{isEn ? "drive strength" : "驅動強度"}</small></span
+      >
+      <input type="range" data-knob="amp" min="0.3" max="1.2" step="0.05" value="1" />
+    </label>
+  </div>
   </div>
 
   <svg
@@ -193,6 +221,12 @@ const L = isEn
       <linearGradient id="ta-grad-refrig" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%" stop-color="#dbeafe"></stop>
         <stop offset="100%" stop-color="#fee2e2"></stop>
+      </linearGradient>
+      <!-- Continuous wall-T gradient — JS interpolates the stops from white
+           (∇T=0) to blue/red (steep ∇T) per the ∇T slider. -->
+      <linearGradient id="ta-grad-dynamic" x1="0" y1="0" x2="1" y2="0">
+        <stop id="ta-grad-dyn-l" offset="0%" stop-color="#ffffff"></stop>
+        <stop id="ta-grad-dyn-r" offset="100%" stop-color="#ffffff"></stop>
       </linearGradient>
     </defs>
 
@@ -788,6 +822,19 @@ const L = isEn
     background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
   }
 
+  /* Controls live in a sticky top bar (Tailwind utilities on .ta-controls);
+     inside it the tabs + sliders sit inline without their own boxes. */
+  .ta-controls .ta-tabs {
+    margin-bottom: 0;
+  }
+  .ta-controls .ta-sliders {
+    margin-bottom: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    gap: 0.5rem 1.25rem;
+  }
+
   .ta-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -817,6 +864,44 @@ const L = isEn
     background: var(--color-brand-800);
     border-color: var(--color-brand-800);
     color: white;
+  }
+
+  .ta-sliders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    background: white;
+    border: 1px solid var(--color-brand-100);
+    border-radius: 6px;
+  }
+  .ta-slider {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.8rem;
+    color: var(--color-brand-700);
+  }
+  .ta-slider-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  .ta-slider-name .ta-sym {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--color-brand-900);
+  }
+  .ta-slider-name small {
+    color: #94a3b8;
+    font-size: 0.7rem;
+  }
+  .ta-slider input[type="range"] {
+    width: 11rem;
+    max-width: 100%;
+    accent-color: var(--color-accent-500);
+    cursor: pointer;
   }
 
   .ta-svg {
@@ -1126,12 +1211,82 @@ const L = isEn
 
     let mode: Mode = (root.getAttribute("data-mode") as Mode) ?? "engine";
 
+    // ── Continuous controls (replace the discrete 3-mode buttons) ──────────
+    // θ (theta): pressure–displacement phase → drives the p–ξ loop area (I).
+    // gradT: wall ∇T slope on the T–x plot, DECOUPLED from θ (its own slider).
+    // amp: global amplitude multiplier (drive strength).
+    const presetGradT: Record<Mode, number> = {
+      flat: 0,
+      refrigerator: -0.3,
+      critical: -0.6,
+      engine: -1.2,
+    };
+    let theta = phases[mode];
+    let gradT = presetGradT[mode];
+    let amp = 1;
+
+    // External driver (crank piston) visibility, now driven by ∇T instead of a
+    // fixed mode: below the critical gradient the device must be driven from
+    // outside (refrigerator / sub-critical → piston shown); above it the engine
+    // self-excites from heat alone (→ no piston). flat preset = undriven spiral.
+    const crankAssembly = root.querySelector<SVGGElement>("#ta-crank-assembly");
+    const GRADT_CRIT = -0.6; // wall gradient at which the engine self-excites
+    function updatePiston() {
+      const show = mode !== "flat" && gradT > GRADT_CRIT;
+      if (crankAssembly) crankAssembly.style.display = show ? "inline" : "none";
+    }
+
+    // Close-up wall-temperature gradient, driven continuously by ∇T (gradT):
+    // white at ∇T=0, interpolating to blue (cold, left) / red (hot, right) as
+    // the gradient steepens.
+    const closeupBg = root.querySelector<SVGElement>("#ta-closeup-bg");
+    const gradStopL = root.querySelector<SVGStopElement>("#ta-grad-dyn-l");
+    const gradStopR = root.querySelector<SVGStopElement>("#ta-grad-dyn-r");
+    function lerpFromWhite(target: [number, number, number], frac: number) {
+      const c = target.map((v) => Math.round(255 + (v - 255) * frac));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+    function updateGradient() {
+      const frac = Math.min(1, Math.abs(gradT) / 1.2);
+      gradStopL?.setAttribute("stop-color", lerpFromWhite([96, 165, 250], frac)); // cold
+      gradStopR?.setAttribute("stop-color", lerpFromWhite([248, 113, 113], frac)); // hot
+      if (closeupBg) closeupBg.style.fill = "url(#ta-grad-dynamic)";
+    }
+
+    // Light up a preset button when the sliders land on its (θ, ∇T) values —
+    // amplitude is ignored (an engine is an engine at any drive strength).
+    // flat (均溫) is special: it's the undriven damped SPIRAL, which the
+    // steady sliders can't reproduce, so it only lights up when its own button
+    // put us in flat mode — never inferred from slider values.
+    function syncActiveButton() {
+      let active: Mode | null = null;
+      if (mode === "flat") {
+        active = "flat";
+      } else {
+        for (const m of ["refrigerator", "engine"] as Mode[]) {
+          if (
+            Math.abs(theta - phases[m]) < 0.003 &&
+            Math.abs(gradT - presetGradT[m]) < 0.03
+          ) {
+            active = m;
+            break;
+          }
+        }
+      }
+      tabs.forEach((b) => {
+        const on = b.getAttribute("data-mode") === active;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
+    }
+
     // ── Compute one frame's state from ωt and phase ────────────────────
     // `decay` ∈ (0, 1] scales every oscillation amplitude around its mean —
     // used for flat-mode damped spiral. Default 1 = no decay.
     function state(wt: number, phase: number, decay: number = 1) {
       const cwt = Math.cos(wt);
       const swt = Math.sin(wt);
+      decay *= amp; // global amplitude (drive-strength) slider
 
       // Parcel position — full spatial mirror of Swift (negate sign).
       // At ωt=0 parcel is at LEFT extreme (cold side in right-hot convention).
@@ -1239,39 +1394,50 @@ const L = isEn
       });
       stackTitle.textContent = titleByMode[newMode];
 
-      const phase = phases[newMode];
+      // A preset just loads slider values; renderTraces() does the drawing.
+      theta = phases[newMode];
+      gradT = presetGradT[newMode];
+      amp = 1;
+      syncSliders();
+      renderTraces();
+    }
 
-      // PV traces — both p–ξ (primary, orange) and p–V (secondary, cyan dashed)
-      const pvD = buildPVPath(phase, newMode);
-      const pvDV = buildPVPathOnV(phase, newMode);
+    // Rebuild every trace from the continuous controls:
+    //   θ (theta)  → loop areas / phasing,
+    //   ∇T (gradT) → wall-temperature line slope (independent of θ),
+    //   amp        → amplitude (folded inside state()).
+    function renderTraces() {
+      const pvD = buildPVPath(theta, mode);
+      const pvDV = buildPVPathOnV(theta, mode);
       pvLoop.setAttribute("d", pvD);
       pvLoopV.setAttribute("d", pvDV);
-      // Fill the primary p–ξ cycle (translucent amber) to highlight the area
-      // = I; suppress fill for the degenerate critical mode and the open
-      // spiral in flat mode.
+      // Fill the p–ξ area (= I); suppress when θ≈0 (degenerate line) or in the
+      // flat-mode open spiral.
       pvFill.setAttribute(
         "d",
-        phase === 0 || newMode === "flat" ? "" : pvD,
+        Math.abs(theta) < 0.004 || mode === "flat" ? "" : pvD,
       );
 
       // T-x trace
-      txLoop.setAttribute("d", buildTXPath(phase, newMode));
+      txLoop.setAttribute("d", buildTXPath(theta, mode));
 
-      // Wall T line — convention: ∇T > 0 (right hot, left cold) for engine.
-      // slopeMag here means dy/dx on the T-x plot; negative number means SVG y
-      // decreases (= temperature INCREASES on screen) as x grows.
-      const slopeMag = 4.286 * (phase - 0.14); // engine phase=-0.14 → -1.2
-      const yL = TX_CY - slopeMag * TX_AMP_T; // left side y
-      const yR = TX_CY + slopeMag * TX_AMP_T; // right side y
+      // Wall T line — slope is now the independent ∇T control. Convention:
+      // gradT < 0 ⇒ right hot / left cold (engine); negative SVG y = hotter.
+      const yL = TX_CY - gradT * TX_AMP_T; // left side y
+      const yR = TX_CY + gradT * TX_AMP_T; // right side y
       wallLine.setAttribute("y1", yL.toFixed(1));
       wallLine.setAttribute("y2", yR.toFixed(1));
 
       // Biwa 3D ellipse + 3 projection ellipses
-      const b = buildBiwaPaths(phase, newMode);
+      const b = buildBiwaPaths(theta, mode);
       biwaEllipse.setAttribute("d", b.main);
       biwaProjPxi.setAttribute("d", b.pxi);
       biwaProjSxi.setAttribute("d", b.sxi);
       biwaProjSp.setAttribute("d", b.sp);
+
+      updatePiston();
+      updateGradient();
+      syncActiveButton();
     }
 
     // ── Animation loop ─────────────────────────────────────────────────
@@ -1304,7 +1470,7 @@ const L = isEn
         wt = (t / PERIOD) * TWO_PI;
         decay = 1;
       }
-      const phase = phases[mode];
+      const phase = theta;
       const s = state(wt, phase, decay);
 
       const cwt = Math.cos(wt);
@@ -1314,7 +1480,7 @@ const L = isEn
       // right closed end where stack plates are). Same formula as wavefronts.
       // Negate so at wt=0 the parcel sits at its LEFT extreme — matches the
       // close-up parcel convention (see state(): parcelXNorm starts at -1).
-      const parcelDx = -(xiAmp(STACK_X0) * cwt + xiSmall(STACK_X0) * swt);
+      const parcelDx = -(xiAmp(STACK_X0) * cwt + xiSmall(STACK_X0) * swt) * amp;
       const sx = STACK_X0 + parcelDx;
       const sw = PARCEL_W0 + s.parcelSize * PARCEL_W_AMP - PARCEL_W_AMP;
       parcelStack.setAttribute("x", (sx - sw / 2).toFixed(1));
@@ -1325,7 +1491,7 @@ const L = isEn
       // (negated for consistent left-extreme-at-wt=0 phase convention).
       wavefronts.forEach((line) => {
         const x0 = parseFloat((line as SVGLineElement).dataset.x0!);
-        const dx = -(xiAmp(x0) * cwt + xiSmall(x0) * swt);
+        const dx = -(xiAmp(x0) * cwt + xiSmall(x0) * swt) * amp;
         line.setAttribute("transform", `translate(${dx.toFixed(1)} 0)`);
       });
 
@@ -1334,14 +1500,17 @@ const L = isEn
       // Phase-shift by π (use -cwt/-swt) so the piston is at its LEFTMOST
       // (retracted) position at wt=0 — keeps it in phase with the negated
       // wavefront / parcel formulas (which place gas at left extreme at wt=0).
-      const cpx = CRANK_CX - CRANK_R * cwt; // crank pin x (orbits)
-      const cpy = CRANK_CY - CRANK_R * swt; // crank pin y
+      // Crank radius scales with the amplitude slider so the piston stroke
+      // matches the wavefront amplitude (driver and gas move together).
+      const cr = CRANK_R * amp;
+      const cpx = CRANK_CX - cr * cwt; // crank pin x (orbits)
+      const cpy = CRANK_CY - cr * swt; // crank pin y
       // Piston is to the RIGHT of crank center → use + sqrt(...).
       // sin² invariant under sign flip, so sqrt term unchanged.
       const wristX =
         CRANK_CX -
-        CRANK_R * cwt +
-        Math.sqrt(ROD_LEN * ROD_LEN - CRANK_R * CRANK_R * swt * swt);
+        cr * cwt +
+        Math.sqrt(ROD_LEN * ROD_LEN - cr * cr * swt * swt);
       const wxs = wristX.toFixed(1);
       const cpxs = cpx.toFixed(1);
       const cpys = cpy.toFixed(1);
@@ -1406,7 +1575,10 @@ const L = isEn
       // formula reverts to Swift's exact form. shaftW > 0 → heat OUT, < 0 → heat IN.
       // Engine cycle: gas at right (hot) absorbs (shaftW < 0) at ωt=π,
       //               gas at left (cold) deposits (shaftW > 0) at ωt=0.
-      const shaftW = s.parcelTDev - 1.5 * cwt * 1.49 * (phase - 0.14);
+      // Heat-arrow magnitude/direction follows the independent ∇T (gradT).
+      // (Original coupled form used 1.49·(θ−0.14); gradT = 4.286·(θ−0.14), so
+      //  1.49·(θ−0.14) = 0.3476·gradT — same look at the presets.)
+      const shaftW = s.parcelTDev - 1.5 * cwt * 0.3476 * gradT;
       const w = Math.min(8, Math.abs(shaftW) * 14);
 
       const xs = cx.toFixed(1);
@@ -1476,6 +1648,43 @@ const L = isEn
         if (m && m in phases) applyMode(m);
       }),
     );
+
+    // ── Continuous sliders (θ / ∇T / amplitude) ────────────────────────
+    const thetaSlider = root.querySelector<HTMLInputElement>('[data-knob="theta"]');
+    const gradTSlider = root.querySelector<HTMLInputElement>('[data-knob="gradT"]');
+    const ampSlider = root.querySelector<HTMLInputElement>('[data-knob="amp"]');
+    function syncSliders() {
+      if (thetaSlider) thetaSlider.value = String(theta);
+      if (gradTSlider) gradTSlider.value = String(gradT);
+      if (ampSlider) ampSlider.value = String(amp);
+    }
+    // Dragging a slider means we left the named presets: drop the active tab
+    // styling and use a steady closed loop (not the flat-mode damped spiral).
+    function clearPresetHighlight() {
+      if (mode === "flat") {
+        mode = "engine";
+        root.setAttribute("data-mode", "engine");
+      }
+      tabs.forEach((b) => {
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
+    }
+    thetaSlider?.addEventListener("input", () => {
+      theta = parseFloat(thetaSlider.value);
+      clearPresetHighlight();
+      renderTraces();
+    });
+    gradTSlider?.addEventListener("input", () => {
+      gradT = parseFloat(gradTSlider.value);
+      clearPresetHighlight();
+      renderTraces();
+    });
+    ampSlider?.addEventListener("input", () => {
+      amp = parseFloat(ampSlider.value);
+      clearPresetHighlight();
+      renderTraces();
+    });
 
     // ── Keyboard shortcuts (f/r/c/e), respect Swift's UI ──────────────
     root.tabIndex = 0;
