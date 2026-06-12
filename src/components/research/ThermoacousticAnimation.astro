@@ -165,12 +165,19 @@ const L = isEn
       >
       <input type="range" data-knob="amp" min="0.3" max="1.2" step="0.05" value="1" />
     </label>
+    <label class="ta-slider">
+      <span class="ta-slider-name"
+        >{isEn ? "Stack" : "片堆位置"} <span class="ta-sym">x₀</span>
+        <small>{isEn ? "position in tube" : "在管中位置"}</small></span
+      >
+      <input type="range" data-knob="x0" min="150" max="580" step="5" value="525" />
+    </label>
   </div>
   </div>
 
   <svg
     class="ta-svg"
-    viewBox="-60 0 860 750"
+    viewBox="-60 0 860 840"
     role="img"
     aria-labelledby="ta-title ta-desc"
   >
@@ -407,6 +414,7 @@ const L = isEn
            parcel position = ξ(x₀, t) of one ξ-sheet); size bounds parcel
            motion (~±15 px). -->
       <ellipse
+        id="ta-stack-highlight"
         cx="525"
         cy="55"
         rx="22"
@@ -441,9 +449,27 @@ const L = isEn
       </text>
     </g>
 
+    <!-- ═══════════ Standing-wave field profile (|u₁|, |p₁| vs x) ═══════════
+         A clean strip directly below the resonator, x-aligned with it, so the
+         field is shown OUTSIDE the tube. JS fills the curves + tracks x₀. -->
+    <g id="ta-profile" transform="translate(40, 188)">
+      <text x="340" y="-6" font-size="11" fill="#1e3a5f" text-anchor="middle" font-weight="600"
+        >{isEn ? "Standing-wave field along the tube" : "管內駐波聲場 |p₁|, |u₁|"}</text>
+      <line x1="0" y1="58" x2="680" y2="58" stroke="#cbd5e1" stroke-width="1"></line>
+      <path id="ta-env-u" d="" fill="none" stroke="#2563eb" stroke-width="2"></path>
+      <path id="ta-env-p" d="" fill="none" stroke="#dc2626" stroke-width="2"></path>
+      <line id="ta-x0-guide" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"></line>
+      <circle id="ta-x0-dot-u" r="3.5" fill="#2563eb" stroke="white" stroke-width="1"></circle>
+      <circle id="ta-x0-dot-p" r="3.5" fill="#dc2626" stroke="white" stroke-width="1"></circle>
+      <text x="0" y="72" font-size="9" fill="#2563eb" text-anchor="start"
+        >{isEn ? "open · velocity antinode |u₁|" : "開口端 · 速度腹 |u₁|"}</text>
+      <text x="680" y="72" font-size="9" fill="#dc2626" text-anchor="end"
+        >{isEn ? "closed · pressure antinode |p₁|" : "閉口端 · 壓力腹 |p₁|"}</text>
+    </g>
+
     <!-- ═══════════ Panel 2: parcel close-up + heat arrows ═══════════ -->
     <!-- Larger panel: 340 wide × 200 tall content. -->
-    <g id="ta-closeup" transform="translate(420, 230)">
+    <g id="ta-closeup" transform="translate(420, 320)">
       <!-- Wall-temperature gradient between plates; CSS controls fill by mode -->
       <rect
         id="ta-closeup-bg"
@@ -569,7 +595,7 @@ const L = isEn
     <!-- Two overlaid traces:
          . p-xi (orange, primary) - matches Biwa Fig 6.2's I projection.
          . p-V (cyan dashed)      - classical thermo PV-loop, loop area = work. -->
-    <g id="ta-pv" transform="translate(20, 230)">
+    <g id="ta-pv" transform="translate(20, 320)">
       <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
         {L.panel_b}
       </text>
@@ -632,7 +658,7 @@ const L = isEn
     </g>
 
     <!-- ═══════════ Panel 4: T-x diagram ═══════════ -->
-    <g id="ta-tx" transform="translate(20, 490)">
+    <g id="ta-tx" transform="translate(20, 580)">
       <text x="120" y="-26" font-size="12" fill="#1e3a5f" text-anchor="middle" font-weight="600">
         {L.panel_d}
       </text>
@@ -692,7 +718,7 @@ const L = isEn
     </g>
 
     <!-- ═══════════ Panel 5: Biwa Fig 6.2 — 3D (p, S, ξ) orbit ═══════════ -->
-    <g id="ta-biwa" transform="translate(420, 490)">
+    <g id="ta-biwa" transform="translate(420, 580)">
       <!-- Header (attribution to Biwa moved to figcaption below the SVG) -->
       <text
         x="180"
@@ -1224,6 +1250,7 @@ const L = isEn
     let theta = phases[mode];
     let gradT = presetGradT[mode];
     let amp = 1;
+    let stackX0 = STACK_X0; // stack centre position along the resonator (x₀ slider)
 
     // External driver (crank piston) visibility, now driven by ∇T instead of a
     // fixed mode: below the critical gradient the device must be driven from
@@ -1234,6 +1261,45 @@ const L = isEn
     function updatePiston() {
       const show = mode !== "flat" && gradT > GRADT_CRIT;
       if (crankAssembly) crankAssembly.style.display = show ? "inline" : "none";
+    }
+
+    // Slide the stack plates + highlight along the resonator with x₀, and move
+    // the x₀ markers along the |u₁(x)| / |p₁(x)| standing-wave envelopes.
+    const stackPlates = root.querySelector<SVGGElement>("#ta-stack-plates");
+    const stackHighlight = root.querySelector<SVGEllipseElement>("#ta-stack-highlight");
+    const envU = root.querySelector<SVGPathElement>("#ta-env-u");
+    const envP = root.querySelector<SVGPathElement>("#ta-env-p");
+    const x0DotU = root.querySelector<SVGCircleElement>("#ta-x0-dot-u");
+    const x0DotP = root.querySelector<SVGCircleElement>("#ta-x0-dot-p");
+    const x0Guide = root.querySelector<SVGLineElement>("#ta-x0-guide");
+    const envYU = (x: number) => 58 - 46 * Math.cos((Math.PI * x) / (2 * RESO_LEN));
+    const envYP = (x: number) => 58 - 46 * Math.sin((Math.PI * x) / (2 * RESO_LEN));
+    {
+      // Build the two static envelope curves once (mode is a fixed quarter-wave).
+      const u: string[] = [];
+      const p: string[] = [];
+      for (let i = 0; i <= 68; i++) {
+        const x = (i / 68) * RESO_LEN;
+        u.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + envYU(x).toFixed(1));
+        p.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + envYP(x).toFixed(1));
+      }
+      envU?.setAttribute("d", u.join(" "));
+      envP?.setAttribute("d", p.join(" "));
+    }
+    function updateStackPos() {
+      const dx = (stackX0 - STACK_X0).toFixed(1);
+      stackPlates?.setAttribute("transform", `translate(${dx} 0)`);
+      stackHighlight?.setAttribute("transform", `translate(${dx} 0)`);
+      const yu = envYU(stackX0);
+      const yp = envYP(stackX0);
+      x0DotU?.setAttribute("cx", stackX0.toFixed(1));
+      x0DotU?.setAttribute("cy", yu.toFixed(1));
+      x0DotP?.setAttribute("cx", stackX0.toFixed(1));
+      x0DotP?.setAttribute("cy", yp.toFixed(1));
+      x0Guide?.setAttribute("x1", stackX0.toFixed(1));
+      x0Guide?.setAttribute("x2", stackX0.toFixed(1));
+      x0Guide?.setAttribute("y1", yu.toFixed(1));
+      x0Guide?.setAttribute("y2", yp.toFixed(1));
     }
 
     // Close-up wall-temperature gradient, driven continuously by ∇T (gradT):
@@ -1437,6 +1503,7 @@ const L = isEn
 
       updatePiston();
       updateGradient();
+      updateStackPos();
       syncActiveButton();
     }
 
@@ -1480,8 +1547,8 @@ const L = isEn
       // right closed end where stack plates are). Same formula as wavefronts.
       // Negate so at wt=0 the parcel sits at its LEFT extreme — matches the
       // close-up parcel convention (see state(): parcelXNorm starts at -1).
-      const parcelDx = -(xiAmp(STACK_X0) * cwt + xiSmall(STACK_X0) * swt) * amp;
-      const sx = STACK_X0 + parcelDx;
+      const parcelDx = -(xiAmp(stackX0) * cwt + xiSmall(stackX0) * swt) * amp;
+      const sx = stackX0 + parcelDx;
       const sw = PARCEL_W0 + s.parcelSize * PARCEL_W_AMP - PARCEL_W_AMP;
       parcelStack.setAttribute("x", (sx - sw / 2).toFixed(1));
       parcelStack.setAttribute("width", Math.max(0.5, sw).toFixed(1));
@@ -1653,10 +1720,12 @@ const L = isEn
     const thetaSlider = root.querySelector<HTMLInputElement>('[data-knob="theta"]');
     const gradTSlider = root.querySelector<HTMLInputElement>('[data-knob="gradT"]');
     const ampSlider = root.querySelector<HTMLInputElement>('[data-knob="amp"]');
+    const x0Slider = root.querySelector<HTMLInputElement>('[data-knob="x0"]');
     function syncSliders() {
       if (thetaSlider) thetaSlider.value = String(theta);
       if (gradTSlider) gradTSlider.value = String(gradT);
       if (ampSlider) ampSlider.value = String(amp);
+      if (x0Slider) x0Slider.value = String(stackX0);
     }
     // Dragging a slider means we left the named presets: drop the active tab
     // styling and use a steady closed loop (not the flat-mode damped spiral).
@@ -1684,6 +1753,10 @@ const L = isEn
       amp = parseFloat(ampSlider.value);
       clearPresetHighlight();
       renderTraces();
+    });
+    x0Slider?.addEventListener("input", () => {
+      stackX0 = parseFloat(x0Slider.value);
+      updateStackPos(); // stack position is independent of the engine/refrig preset
     });
 
     // ── Keyboard shortcuts (f/r/c/e), respect Swift's UI ──────────────
