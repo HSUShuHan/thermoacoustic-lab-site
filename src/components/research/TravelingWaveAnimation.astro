@@ -1,0 +1,1093 @@
+---
+// Traveling-wave (loop / TASHE) animation — v4.
+// Aligned with the lab's research-overview Fig. 4 and Biwa Fig. 4.8.
+//
+// Pedagogical spine (Ceperley): a traveling wave IS a pistonless Stirling
+// engine. Both devices share ONE straight core (cold HX – regenerator – hot
+// HX) drawn at the same place with the same tube bore. The toggle swaps only
+// what closes the two ends:
+//   mechanical — two solid pistons in cylinders, 90° apart;
+//   acoustic   — a constant-bore feedback loop; "oscillating gas columns"
+//                (ghost pistons) play the pistons' role.
+//
+// Physics model (normalized, isothermal regenerator):
+//   p'(t) = A·cos ωt,  u'(t) = A·cos(ωt+φ),  ξ'(t) = A·sin(ωt+φ)
+//   V'(t) = A·[k_T·(r−1)·sin(ωt+φ) − k_C·cos ωt],   r = T_H/T_C
+//   loop area ∝ (r−1)·cos φ → fat at φ=0 (traveling), a line at φ=90°
+//   (standing): an isothermal regenerator does no work at standing-wave
+//   phasing — why standing-wave engines need imperfect contact (χ″a).
+//   Ideal regenerator: Ī gain G = 1+(r−1)cosφ and Q̄(x) = −Ī(x) (H̄ = 0).
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const isEn = lang === "en";
+
+const L = isEn
+  ? {
+      drive: "Drive",
+      m_mech: "Mechanical α-Stirling",
+      m_ac: "Traveling wave (TASHE)",
+      s_phi: "Phase",
+      s_phi_hint: "traveling ↔ standing",
+      s_branch: "Branch length",
+      s_branch_hint: "acoustic load → phase",
+      s_ratio: "Temp ratio",
+      s_ratio_hint: "regenerator T_H/T_C",
+      s_amp: "Amplitude",
+      s_amp_hint: "drive strength",
+      title: "Traveling-wave Stirling engine — one cycle, two drives",
+      desc: "Toggle the drive: solid pistons or an acoustic traveling wave. The shared core (cold HX – regenerator – hot HX) and every lower panel stay put — they describe the same cycle.",
+      dev_mech: "(a) Mechanical α-Stirling — solid pistons",
+      dev_ac: "(a) Looped thermoacoustic engine — the wave replaces the pistons",
+      regen: "regenerator",
+      comp: "compression piston",
+      expn: "expansion piston",
+      ghost: "oscillating gas column = piston",
+      q_in: "heat in",
+      q_out: "heat out",
+      crest: "compressions travel around the loop — parcels only oscillate in place",
+      flux: "(b) Energy flow diagram",
+      flux_note: "ducts adiabatic (ωτ≫1): Q̄=0 · ideal regenerator: Q̄(x) = −Ī(x), H̄=0 · s̄=Q̄/T: flat = reversible (Carnot), sloped = entropy production",
+      flux_in_ac: "Ī in (feedback loop)",
+      flux_out_ac: "Ī out (amplified)",
+      flux_in_mech: "W in (compression piston)",
+      flux_out_mech: "W out (expansion piston)",
+      pv: "(c) Stirling p–V",
+      pv_note: "area = work / cycle",
+      pore: "(d) Parcel in a regenerator pore",
+      pore_note: "pore ≪ δα → parcel T ≡ wall T (isothermal)",
+      phasor: "(e) p–u phase",
+      cap_lead: "One cycle, two drives (cf. research overview Fig. 4).",
+      cap: "The two solid pistons (90° apart) and the traveling wave (p–u in phase) drive the same isothermal Stirling cycle — in the acoustic device the oscillating gas columns at the regenerator ends play the role of the pistons. Heat flow Q̄ entering at the hot exchanger is converted along the regenerator into a growing work flow Ī (gain T_H/T_C). The closed branch tube is the acoustic load that tunes the field: at L = λ/4 it presents the traveling-wave condition (φ = 0, the loop runs traveling while the branch holds a standing wave); lengthen or shorten it and the phasing detunes toward standing (a one-parameter teaching simplification — the real mapping follows from the loop–branch transfer matrices). At φ = 90° the pistons fall into step, the p–V loop collapses and amplification stops — an isothermal regenerator does no work in a standing wave, which is why standing-wave engines must rely on imperfect thermal contact (χ″a) instead.",
+      cap_link: "cf. Fig. 4 in the thermoacoustics overview",
+    }
+  : {
+      drive: "驅動方式",
+      m_mech: "機械式 α-Stirling",
+      m_ac: "行波熱聲（TASHE）",
+      s_phi: "相位差",
+      s_phi_hint: "行波 ↔ 駐波",
+      s_branch: "支管長度",
+      s_branch_hint: "聲負載 → 相位",
+      s_ratio: "溫度比",
+      s_ratio_hint: "蓄熱器 T_H/T_C",
+      s_amp: "振幅",
+      s_amp_hint: "驅動強度",
+      title: "行波型 Stirling 引擎 — 同一個循環，兩種驅動",
+      desc: "切換驅動方式：固體活塞或行波。共用核心（冷端熱交換器–蓄熱器–熱端熱交換器）與下方所有面板不變 —— 它們描述同一個循環。",
+      dev_mech: "(a) 機械式 α-Stirling — 固體活塞",
+      dev_ac: "(a) 環形熱聲引擎 — 行波取代活塞",
+      regen: "蓄熱器",
+      comp: "壓縮活塞",
+      expn: "膨脹活塞",
+      ghost: "振盪氣柱＝活塞",
+      q_in: "熱入",
+      q_out: "熱出",
+      crest: "疏密（壓縮帶）沿迴路傳播 — 氣塊僅原地往復",
+      flux: "(b) 能量流線圖",
+      flux_note: "管段絕熱（ωτ≫1）：Q̄=0 · 理想蓄熱器：Q̄(x) = −Ī(x)、H̄=0 · s̄=Q̄/T：水平＝可逆（Carnot）、傾斜＝熵生成",
+      flux_in_ac: "Ī 入（迴路回授）",
+      flux_out_ac: "Ī 出（已放大）",
+      flux_in_mech: "W 入（壓縮活塞）",
+      flux_out_mech: "W 出（膨脹活塞）",
+      pv: "(c) Stirling p–V",
+      pv_note: "面積 = 一週期之功",
+      pore: "(d) 蓄熱器孔內的氣塊",
+      pore_note: "孔徑 ≪ δα → 氣塊溫度 ≡ 壁溫（等溫）",
+      phasor: "(e) p–u 相位",
+      cap_lead: "同一個循環，兩種驅動（對照研究總論圖 4）。",
+      cap: "雙固體活塞（相差 90°）與行波（p–u 同相）驅動同一個等溫 Stirling 循環 —— 行波裝置裡，蓄熱器兩端的「振盪氣柱」就扮演活塞的角色。熱流 Q̄ 自熱端交換器進入，沿蓄熱器被轉換成逐漸增厚的功流 Ī（放大率 T_H/T_C）。閉端支管是調諧聲場的聲負載：L = λ/4 時呈現行波條件（φ = 0，迴路跑行波、支管內站駐波）；拉長或縮短支管，相位便偏向駐波（此為單參數教學簡化，嚴謹映射需解迴路＋支管的傳遞行列）。φ = 90° 時活塞變成同步、p–V 迴圈塌成線、放大停止 —— 等溫蓄熱器在駐波中不做功，這正是駐波型引擎必須改靠不完全熱接觸（χ″a）的原因。",
+      cap_link: "對照：熱聲效應總論 圖 4",
+    };
+---
+
+<figure class="tw-anim not-prose" data-mode="acoustic" data-lang={lang}>
+  <!-- ── Sticky controls: drive toggle + sliders (same pattern as 駐波頁) ── -->
+  <div
+    class="tw-controls sticky top-[68px] z-20 -mx-4 -mt-5 mb-2 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur"
+  >
+    <div class="tw-tabs" role="tablist" aria-label={L.drive}>
+      <span class="tw-tabs-label">{L.drive}</span>
+      <button type="button" class="tw-tab" data-mode="mechanical" role="tab">{L.m_mech}</button>
+      <button type="button" class="tw-tab active" data-mode="acoustic" role="tab" aria-selected="true"
+        >{L.m_ac}</button
+      >
+    </div>
+    <label class="tw-slider">
+      <span class="tw-slider-name"
+        >{L.s_phi} <span class="tw-sym">φ</span>
+        <small>{L.s_phi_hint}</small></span
+      >
+      <input type="range" data-knob="phi" min="0" max="90" step="1" value="0" />
+    </label>
+    <label class="tw-slider" id="tw-branch-slider">
+      <span class="tw-slider-name"
+        >{L.s_branch} <span class="tw-sym">L<sub>b</sub></span>
+        <small>{L.s_branch_hint}</small></span
+      >
+      <input type="range" data-knob="branch" min="0.05" max="0.45" step="0.01" value="0.25" />
+    </label>
+    <label class="tw-slider">
+      <span class="tw-slider-name"
+        >{L.s_ratio} <span class="tw-sym">T<sub>H</sub>/T<sub>C</sub></span>
+        <small>{L.s_ratio_hint}</small></span
+      >
+      <input type="range" data-knob="ratio" min="1" max="3" step="0.05" value="2.2" />
+    </label>
+    <label class="tw-slider">
+      <span class="tw-slider-name"
+        >{L.s_amp}
+        <small>{L.s_amp_hint}</small></span
+      >
+      <input type="range" data-knob="amp" min="0.3" max="1.2" step="0.05" value="1" />
+    </label>
+  </div>
+
+  <svg class="tw-svg" viewBox="0 0 760 930" role="img" aria-labelledby="tw-title tw-desc">
+    <title id="tw-title">{L.title}</title>
+    <desc id="tw-desc">{L.desc}</desc>
+
+    <defs>
+      <pattern id="tw-mesh" width="6" height="6" patternUnits="userSpaceOnUse">
+        <path d="M0 0 L6 6 M6 0 L0 6" stroke="#94a3b8" stroke-width="0.8"></path>
+      </pattern>
+      <marker id="tw-arr-i" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="#0e7490"></path>
+      </marker>
+      <marker id="tw-arr-hot" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="#d72121"></path>
+      </marker>
+      <marker id="tw-arr-cool" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="#58b3e5"></path>
+      </marker>
+      <marker id="tw-arr-axis" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="#1e3a5f"></path>
+      </marker>
+      <linearGradient id="tw-pore-grad" x1="0" y1="0" x2="1" y2="0">
+        <stop id="tw-pore-grad-l" offset="0%" stop-color="#ffffff"></stop>
+        <stop id="tw-pore-grad-r" offset="100%" stop-color="#ffffff"></stop>
+      </linearGradient>
+    </defs>
+
+    <!-- ═══════════ (a) Device — one straight core, two ways to close it ═══
+         Core run centre-line y = 150, bore 31 (y ≈ 134…166). Acoustic mode
+         closes it with a constant-bore racetrack loop (corner r = 52, top run
+         y = 46); mechanical mode closes it with two piston cylinders. -->
+    <g transform="translate(20, 100)">
+      <text id="tw-dev-title" x="0" y="-16" font-size="12.5" fill="#1e3a5f" font-weight="600"
+        >{L.dev_ac}</text
+      >
+
+      <!-- ── Acoustic: constant-bore feedback loop (racetrack ring) ── -->
+      <g class="tw-only-ac">
+        <path
+          d="M 162 150 L 558 150 A 52 52 0 0 0 610 98 A 52 52 0 0 0 558 46 L 162 46 A 52 52 0 0 0 110 98 A 52 52 0 0 0 162 150 Z"
+          fill="none"
+          stroke="#0f172a"
+          stroke-width="40"></path>
+        <path
+          d="M 162 150 L 558 150 A 52 52 0 0 0 610 98 A 52 52 0 0 0 558 46 L 162 46 A 52 52 0 0 0 110 98 A 52 52 0 0 0 162 150 Z"
+          fill="none"
+          stroke="#f8fafc"
+          stroke-width="31"></path>
+        <!-- compression–rarefaction tracer lines (built + animated by JS),
+             like the air-column animation's wavefronts -->
+        <g id="tw-tracers-ac" stroke="#64748b" stroke-width="1.1" opacity="0.75"></g>
+        <!-- branch tube (acoustic load / phase tuner): a closed quarter-wave
+             stub teed off the feedback run; JS sets its length from the L_b
+             slider and the standing wave inside it -->
+        <line id="tw-branch-dark" x1="360" y1="30" x2="360" y2="-50" stroke="#0f172a" stroke-width="40"></line>
+        <line id="tw-branch-light" x1="360" y1="40" x2="360" y2="-45" stroke="#f8fafc" stroke-width="31"></line>
+        <g id="tw-tracers-br" stroke="#64748b" stroke-width="1.1" opacity="0.75"></g>
+        <text id="tw-branch-lab" x="384" y="-36" font-size="9.5" fill="#475569"></text>
+        <!-- return direction inside the top run -->
+        <line x1="300" y1="46" x2="264" y2="46" stroke="#0e7490" stroke-width="1.8" marker-end="url(#tw-arr-i)" opacity="0.8"></line>
+        <text x="216" y="24" font-size="9.5" fill="#0e7490" text-anchor="middle">{L.crest}</text>
+        <!-- ghost gas-pistons: the wave playing the pistons -->
+        <rect id="tw-ghost-c" x="192" y="137" width="26" height="26" rx="3" fill="#0891b2" fill-opacity="0.35" stroke="#0e7490" stroke-width="1.3" stroke-dasharray="4 3"></rect>
+        <rect id="tw-ghost-h" x="502" y="137" width="26" height="26" rx="3" fill="#0891b2" fill-opacity="0.35" stroke="#0e7490" stroke-width="1.3" stroke-dasharray="4 3"></rect>
+        <text x="205" y="192" font-size="9.5" fill="#0e7490" text-anchor="middle" font-weight="600">{L.ghost}</text>
+        <text x="515" y="192" font-size="9.5" fill="#0e7490" text-anchor="middle" font-weight="600">{L.ghost}</text>
+        <!-- phase annotation, centred in the ring's empty interior -->
+        <text id="tw-ac-phase" x="360" y="100" font-size="10.5" fill="#475569" text-anchor="middle" font-weight="600"></text>
+      </g>
+
+      <!-- ── Mechanical α-Stirling, drawn after Biwa Fig. 4.1(a): the core
+           duct on top, elbows turning DOWN into two hanging cylinders, angled
+           con-rods to grounded cranks on one crankshaft, flywheel at right. ── -->
+      <g class="tw-only-mech">
+        <!-- gas circuit: cylinder – elbow – core run – elbow – cylinder -->
+        <path
+          d="M 140 222 L 140 180 A 30 30 0 0 1 170 150 L 550 150 A 30 30 0 0 1 580 180 L 580 222"
+          fill="none"
+          stroke="#0f172a"
+          stroke-width="40"></path>
+        <path
+          d="M 140 222 L 140 180 A 30 30 0 0 1 170 150 L 550 150 A 30 30 0 0 1 580 180 L 580 222"
+          fill="none"
+          stroke="#f8fafc"
+          stroke-width="31"></path>
+        <!-- compression–rarefaction tracers in the core run (JS) -->
+        <g id="tw-tracers-mech" stroke="#64748b" stroke-width="1.1" opacity="0.75"></g>
+        <!-- hanging cylinders — OPEN toward the crank (trunk-piston style),
+             so the con-rod exits without crossing a wall -->
+        <path d="M 118 258 L 118 196 L 162 196 L 162 258" fill="#eff6ff" stroke="#1e3a5f" stroke-width="2.5" stroke-linejoin="round"></path>
+        <path d="M 558 258 L 558 196 L 602 196 L 602 258" fill="#fef2f2" stroke="#1e3a5f" stroke-width="2.5" stroke-linejoin="round"></path>
+        <!-- connecting rods (big end on the crank pin, small end at the wrist
+             pin inside the piston skirt) + pistons (JS animates) -->
+        <line id="tw-rod-c" x1="140" y1="262" x2="140" y2="220" stroke="#475569" stroke-width="5" stroke-linecap="round"></line>
+        <line id="tw-rod-h" x1="580" y1="262" x2="580" y2="220" stroke="#475569" stroke-width="5" stroke-linecap="round"></line>
+        <rect id="tw-piston-c" x="123" y="214" width="34" height="12" fill="#16a34a" fill-opacity="0.9" stroke="#15803d"></rect>
+        <rect id="tw-piston-h" x="563" y="214" width="34" height="12" fill="#16a34a" fill-opacity="0.9" stroke="#15803d"></rect>
+        <circle id="tw-wrist-c" cx="140" cy="220" r="2.8" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"></circle>
+        <circle id="tw-wrist-h" cx="580" cy="220" r="2.8" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"></circle>
+        <!-- crankshaft below (one shaft keeps the 90° lock); crank discs and
+             the flywheel drawn as oblique 3-D wheels on the horizontal axle,
+             as in Biwa Fig. 1.9(a): narrow ellipse face + offset back rim -->
+        <line x1="140" y1="262" x2="580" y2="262" stroke="#475569" stroke-width="3"></line>
+        <!-- left crank disc -->
+        <line x1="134" y1="248" x2="140" y2="248" stroke="#0f172a" stroke-width="1.5"></line>
+        <line x1="134" y1="276" x2="140" y2="276" stroke="#0f172a" stroke-width="1.5"></line>
+        <ellipse cx="134" cy="262" rx="4.5" ry="14" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"></ellipse>
+        <ellipse cx="140" cy="262" rx="4.5" ry="14" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.5"></ellipse>
+        <!-- right flywheel: a larger 3-D disc; rim dot shows the spin -->
+        <line x1="572" y1="244" x2="580" y2="244" stroke="#0f172a" stroke-width="1.5"></line>
+        <line x1="572" y1="280" x2="580" y2="280" stroke="#0f172a" stroke-width="1.5"></line>
+        <ellipse cx="572" cy="262" rx="6" ry="18" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"></ellipse>
+        <ellipse cx="580" cy="262" rx="6" ry="18" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.5"></ellipse>
+        <circle id="tw-fly-dot" cx="580" cy="247" r="2" fill="#475569"></circle>
+        <line id="tw-crank-c" x1="140" y1="262" x2="140" y2="251" stroke="#334155" stroke-width="4" stroke-linecap="round"></line>
+        <line id="tw-crank-h" x1="580" y1="262" x2="580" y2="251" stroke="#334155" stroke-width="4" stroke-linecap="round"></line>
+        <circle cx="140" cy="262" r="2.5" fill="#0f172a"></circle>
+        <circle cx="580" cy="262" r="2.5" fill="#0f172a"></circle>
+        <circle id="tw-pin-c" cx="140" cy="251" r="3.2" fill="#1e293b"></circle>
+        <circle id="tw-pin-h" cx="580" cy="251" r="3.2" fill="#1e293b"></circle>
+        <!-- grounded bearings (hatched mounts, as in the textbook figure) -->
+        <g stroke="#475569" stroke-width="1.2">
+          <line x1="124" y1="280" x2="156" y2="280"></line>
+          <line x1="128" y1="280" x2="122" y2="287"></line>
+          <line x1="138" y1="280" x2="132" y2="287"></line>
+          <line x1="148" y1="280" x2="142" y2="287"></line>
+          <line x1="564" y1="284" x2="596" y2="284"></line>
+          <line x1="568" y1="284" x2="562" y2="291"></line>
+          <line x1="578" y1="284" x2="572" y2="291"></line>
+          <line x1="588" y1="284" x2="582" y2="291"></line>
+        </g>
+        <text x="108" y="225" font-size="9.5" fill="#475569" text-anchor="end">{L.comp}</text>
+        <text x="612" y="225" font-size="9.5" fill="#475569" text-anchor="start">{L.expn}</text>
+        <text x="606" y="288" font-size="9" fill="#475569" text-anchor="start">{isEn ? "flywheel" : "飛輪"}</text>
+        <!-- phase annotation, in the open space above the core -->
+        <text id="tw-mech-phase" x="360" y="246" font-size="10.5" fill="#475569" text-anchor="middle" font-weight="600"></text>
+      </g>
+
+      <!-- ── Shared core: cold HX – regenerator – hot HX (+ heat arrows) ── -->
+      <g>
+        <rect x="288" y="134" width="16" height="32" fill="#2563eb" fill-opacity="0.9"></rect>
+        <rect x="304" y="134" width="120" height="32" fill="url(#tw-mesh)" stroke="#475569" stroke-width="1.4"></rect>
+        <rect x="424" y="134" width="16" height="32" fill="#dc2626" fill-opacity="0.9"></rect>
+        <text x="296" y="124" font-size="9.5" fill="#2563eb" text-anchor="middle" font-weight="600">T<tspan dy="2" font-size="7.5">C</tspan></text>
+        <text x="364" y="124" font-size="10" fill="#475569" text-anchor="middle">{L.regen}</text>
+        <text x="432" y="124" font-size="9.5" fill="#dc2626" text-anchor="middle" font-weight="600">T<tspan dy="2" font-size="7.5">H</tspan></text>
+        <!-- tracked parcel inside the regenerator (cf. the research overview's
+             stirling-engine-wave figure): shuttles cold ⇄ hot, swells/shrinks,
+             and takes the process-step colour — synced with every panel below -->
+        <rect id="tw-regen-parcel" x="356" y="141" width="16" height="18" rx="2" fill="#0891b2" fill-opacity="0.9" stroke="#0e7490" stroke-width="1.2"></rect>
+        <!-- heat in at the hot HX / heat out at the cold HX -->
+        <line x1="432" y1="206" x2="432" y2="172" stroke="#d72121" stroke-width="4.5" marker-end="url(#tw-arr-hot)"></line>
+        <text x="442" y="200" font-size="9.5" fill="#d72121" font-weight="600">{L.q_in} Q̄<tspan dy="2" font-size="7.5">H</tspan></text>
+        <line x1="296" y1="172" x2="296" y2="206" stroke="#58b3e5" stroke-width="4.5" marker-end="url(#tw-arr-cool)"></line>
+        <text x="286" y="200" font-size="9.5" fill="#58b3e5" font-weight="600" text-anchor="end">{L.q_out} Q̄<tspan dy="2" font-size="7.5">C</tspan></text>
+      </g>
+    </g>
+
+    <!-- ═══════════ (b) Energy flow diagram — Biwa Fig. 4.8 ═══════════ -->
+    <g transform="translate(20, 440)">
+      <text x="0" y="-8" font-size="12.5" fill="#1e3a5f" font-weight="600">{L.flux}</text>
+
+      <!-- alignment guides at the HX faces, dropped STRAIGHT from the engine
+           model above (no duplicate schematic) -->
+      <line x1="288" y1="-44" x2="288" y2="192" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"></line>
+      <line x1="304" y1="-44" x2="304" y2="192" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"></line>
+      <line x1="424" y1="-44" x2="424" y2="192" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"></line>
+      <line x1="440" y1="-44" x2="440" y2="192" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"></line>
+
+      <!-- flux-vs-x axis -->
+      <line x1="60" y1="95" x2="670" y2="95" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#tw-arr-axis)"></line>
+      <text x="50" y="98" font-size="9" fill="#64748b" text-anchor="end">0</text>
+      <text x="668" y="108" font-size="10" font-style="italic" fill="#1e3a5f">x</text>
+
+      <path id="tw-flux-i" d="" fill="none" stroke="#0e7490" stroke-width="2.2"></path>
+      <text x="80" y="62" font-size="11" font-style="italic" fill="#0e7490" font-weight="600">Ī</text>
+      <path id="tw-flux-q" d="" fill="none" stroke="#ea580c" stroke-width="2.2"></path>
+      <text x="80" y="126" font-size="11" font-style="italic" fill="#ea580c" font-weight="600">Q̄</text>
+      <!-- entropy flux s̄ = Q̄/T (violet dashed): horizontal = reversible
+           (Carnot); sloped = entropy production (Fig. 4.9 / 4.10) -->
+      <path id="tw-flux-s" d="" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="5 3"></path>
+      <text id="tw-s-lab" x="364" y="120" font-size="10" font-style="italic" fill="#7c3aed" font-weight="600" text-anchor="middle">s̄</text>
+      <text id="tw-qc-lab" x="268" y="116" font-size="9.5" fill="#ea580c" text-anchor="end">Q̄<tspan dy="2" font-size="7.5">C</tspan></text>
+      <text id="tw-qh-lab" x="446" y="128" font-size="9.5" fill="#ea580c">Q̄<tspan dy="2" font-size="7.5">H</tspan></text>
+
+      <line id="tw-w-ext" x1="440" y1="80" x2="600" y2="80" stroke="#0e7490" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"></line>
+      <line id="tw-w-line" x1="585" y1="80" x2="585" y2="58" stroke="#1e3a5f" stroke-width="1.4" marker-start="url(#tw-arr-axis)" marker-end="url(#tw-arr-axis)"></line>
+      <text id="tw-w-text" x="592" y="72" font-size="10.5" font-style="italic" fill="#1e3a5f" font-weight="600">W</text>
+
+      <text id="tw-flux-left" x="60" y="204" font-size="10" fill="#0e7490" font-weight="600" text-anchor="start">{L.flux_in_ac}</text>
+      <text id="tw-flux-right" x="660" y="204" font-size="10" fill="#0e7490" font-weight="600" text-anchor="end">{L.flux_out_ac}</text>
+      <text x="360" y="218" font-size="9.5" fill="#64748b" text-anchor="middle">{L.flux_note}</text>
+      <text id="tw-gain" x="700" y="30" font-size="11" fill="#0e7490" text-anchor="end" font-weight="600"></text>
+    </g>
+
+    <!-- ═══════════ (c) Stirling p–V (with the 4 step-colour markers) ═══ -->
+    <g transform="translate(45, 710)">
+      <text x="95" y="-12" font-size="12" fill="#1e3a5f" font-weight="600" text-anchor="middle">{L.pv}</text>
+      <line x1="0" y1="160" x2="0" y2="0" stroke="#1e3a5f" stroke-width="1.5" marker-end="url(#tw-arr-axis)"></line>
+      <line x1="0" y1="160" x2="195" y2="160" stroke="#1e3a5f" stroke-width="1.5" marker-end="url(#tw-arr-axis)"></line>
+      <text x="-8" y="8" font-size="11" font-style="italic" fill="#1e3a5f" text-anchor="end">p</text>
+      <text x="193" y="175" font-size="11" font-style="italic" fill="#1e3a5f" text-anchor="end">V</text>
+      <path id="tw-pv-fill" d="" fill="#bae6fd" fill-opacity="0.35"></path>
+      <path id="tw-pv-loop" d="" fill="none" stroke="#0e7490" stroke-width="2"></path>
+      <circle id="tw-pv-q0" r="3.2" fill="#d72121"></circle>
+      <circle id="tw-pv-q1" r="3.2" fill="#e27c2f"></circle>
+      <circle id="tw-pv-q2" r="3.2" fill="#58b3e5"></circle>
+      <circle id="tw-pv-q3" r="3.2" fill="#2563eb"></circle>
+      <circle id="tw-pv-dot" r="5" fill="#0e7490" stroke="white" stroke-width="1.2"></circle>
+      <text x="95" y="178" font-size="9.5" fill="#64748b" text-anchor="middle">{L.pv_note}</text>
+    </g>
+
+    <!-- ═══════════ (d) Regenerator-pore parcel + Fig.-4b step label ═══ -->
+    <g transform="translate(305, 710)">
+      <text x="120" y="-12" font-size="12" fill="#1e3a5f" font-weight="600" text-anchor="middle">{L.pore}</text>
+      <text id="tw-step" x="120" y="6" font-size="11.5" font-weight="700" text-anchor="middle"></text>
+      <!-- pore walls (thin) + channel with soft wall-temperature backdrop -->
+      <rect x="0" y="16" width="240" height="18" fill="url(#tw-mesh)" stroke="#475569" stroke-width="1"></rect>
+      <rect x="0" y="124" width="240" height="18" fill="url(#tw-mesh)" stroke="#475569" stroke-width="1"></rect>
+      <rect x="0" y="34" width="240" height="90" fill="url(#tw-pore-grad)"></rect>
+      <line x1="0" y1="34" x2="240" y2="34" stroke="#475569" stroke-width="1.4"></line>
+      <line x1="0" y1="124" x2="240" y2="124" stroke="#475569" stroke-width="1.4"></line>
+      <text x="6" y="48" font-size="9" fill="#2563eb">T<tspan dy="2" font-size="7">C</tspan></text>
+      <text x="234" y="48" font-size="9" fill="#dc2626" text-anchor="end">T<tspan dy="2" font-size="7">H</tspan></text>
+      <line id="tw-heat-top" x1="120" y1="38" x2="120" y2="58" stroke="#d72121" stroke-width="3" marker-end="url(#tw-arr-hot)"></line>
+      <line id="tw-heat-bot" x1="120" y1="120" x2="120" y2="100" stroke="#d72121" stroke-width="3" marker-end="url(#tw-arr-hot)"></line>
+      <rect id="tw-parcel" x="103" y="61" width="34" height="36" rx="4" fill="#0891b2" fill-opacity="0.85" stroke="#0e7490" stroke-width="1.4"></rect>
+      <text x="120" y="160" font-size="9.5" fill="#64748b" text-anchor="middle">{L.pore_note}</text>
+    </g>
+
+    <!-- ═══════════ (e) p–u phasor ═══════════ -->
+    <g transform="translate(585, 710)">
+      <text x="75" y="-12" font-size="12" fill="#1e3a5f" font-weight="600" text-anchor="middle">{L.phasor}</text>
+      <circle cx="75" cy="72" r="58" fill="none" stroke="#e2e8f0" stroke-width="1.5"></circle>
+      <path id="tw-ph-arc" d="" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 2"></path>
+      <line id="tw-ph-p" x1="75" y1="72" x2="131" y2="72" stroke="#dc2626" stroke-width="2.6" marker-end="url(#tw-arr-hot)"></line>
+      <line id="tw-ph-u" x1="75" y1="72" x2="117" y2="72" stroke="#0e7490" stroke-width="2.6" marker-end="url(#tw-arr-i)"></line>
+      <text id="tw-ph-p-label" x="0" y="0" font-size="10.5" font-style="italic" fill="#dc2626" font-weight="600">p</text>
+      <text id="tw-ph-u-label" x="0" y="0" font-size="10.5" font-style="italic" fill="#0e7490" font-weight="600">u</text>
+      <text id="tw-ph-deg" x="75" y="160" font-size="10" fill="#475569" text-anchor="middle"></text>
+    </g>
+  </svg>
+
+  <figcaption class="tw-cap">
+    <p><strong>{L.cap_lead}</strong> {L.cap}</p>
+    <p>
+      <a href="/research/thermoacoustic-effect" class="tw-cap-link">{L.cap_link} →</a>
+    </p>
+  </figcaption>
+</figure>
+
+<style>
+  .tw-anim {
+    margin: 2.5rem 0;
+    padding: 1.25rem 1rem 0.75rem;
+    border: 1px solid var(--color-brand-100);
+    border-radius: 0.5rem;
+    background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
+  }
+  .tw-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .tw-tabs-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-brand-400);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 0.15rem;
+  }
+  .tw-tab {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--color-brand-200);
+    background: white;
+    color: var(--color-brand-700);
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      background 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .tw-tab:hover {
+    border-color: var(--color-brand-500);
+    color: var(--color-brand-900);
+  }
+  .tw-tab.active {
+    background: var(--color-brand-800);
+    border-color: var(--color-brand-800);
+    color: white;
+  }
+  .tw-slider {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.8rem;
+    color: var(--color-brand-700);
+  }
+  .tw-slider-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  .tw-slider-name .tw-sym {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--color-brand-900);
+  }
+  .tw-slider-name small {
+    color: #94a3b8;
+    font-size: 0.7rem;
+  }
+  .tw-slider input[type="range"] {
+    width: 10rem;
+    max-width: 100%;
+    accent-color: var(--color-accent-500);
+    cursor: pointer;
+  }
+  .tw-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: white;
+    border-radius: 0.25rem;
+  }
+  .tw-only-mech,
+  .tw-only-ac {
+    display: none;
+  }
+  .tw-anim[data-mode="mechanical"] .tw-only-mech {
+    display: inline;
+  }
+  .tw-anim[data-mode="acoustic"] .tw-only-ac {
+    display: inline;
+  }
+  .tw-cap {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.55;
+  }
+  .tw-cap p {
+    margin: 0.5rem 0;
+  }
+  .tw-cap strong {
+    color: var(--color-brand-900);
+    font-weight: 600;
+  }
+  .tw-cap-link {
+    font-size: 0.8rem;
+    color: var(--color-brand-500);
+    text-decoration: underline;
+  }
+  .tw-cap-link:hover {
+    color: var(--color-accent-600);
+  }
+</style>
+
+<script>
+  type Mode = "mechanical" | "acoustic";
+  const TWO_PI = Math.PI * 2;
+  const PERIOD = 5.0; // seconds per cycle
+
+  function initAnimation(root: HTMLElement) {
+    const $ = <T extends Element>(id: string) => root.querySelector<T>("#" + id);
+    const tabs = root.querySelectorAll<HTMLButtonElement>(".tw-tab");
+    const isEn = root.getAttribute("data-lang") === "en";
+
+    // ── State ───────────────────────────────────────────────────────────
+    let mode: Mode = (root.getAttribute("data-mode") as Mode) ?? "acoustic";
+    let phi = 0; // p–u phase, rad: 0 traveling … π/2 standing
+    let branchLen = 0.25; // branch-tube length in λ; λ/4 → traveling condition
+    let ratio = 2.2; // T_H / T_C
+    let amp = 1;
+
+    const K_T = 0.5;
+    const K_C = 0.45;
+    const pOf = (wt: number) => amp * Math.cos(wt);
+    const xiOf = (wt: number) => amp * Math.sin(wt + phi);
+    const vOf = (wt: number) =>
+      amp * (K_T * (ratio - 1) * Math.sin(wt + phi) - K_C * Math.cos(wt));
+    const dvOf = (wt: number) =>
+      amp * (K_T * (ratio - 1) * Math.cos(wt + phi) + K_C * Math.sin(wt));
+
+    // ── DOM refs ────────────────────────────────────────────────────────
+    const devTitle = $<SVGTextElement>("tw-dev-title")!;
+    const pistonC = $<SVGRectElement>("tw-piston-c");
+    const rodC = $<SVGLineElement>("tw-rod-c");
+    const pistonH = $<SVGRectElement>("tw-piston-h");
+    const rodH = $<SVGLineElement>("tw-rod-h");
+    const ghostC = $<SVGRectElement>("tw-ghost-c");
+    const ghostH = $<SVGRectElement>("tw-ghost-h");
+    const mechPhase = $<SVGTextElement>("tw-mech-phase");
+    const acPhase = $<SVGTextElement>("tw-ac-phase");
+    const tracersAc = $<SVGGElement>("tw-tracers-ac");
+    const tracersMech = $<SVGGElement>("tw-tracers-mech");
+    const crankC = $<SVGLineElement>("tw-crank-c");
+    const crankH = $<SVGLineElement>("tw-crank-h");
+    const pinC = $<SVGCircleElement>("tw-pin-c");
+    const pinH = $<SVGCircleElement>("tw-pin-h");
+    const wristC = $<SVGCircleElement>("tw-wrist-c");
+    const wristH = $<SVGCircleElement>("tw-wrist-h");
+    const flyDot = $<SVGCircleElement>("tw-fly-dot");
+    const regenParcel = $<SVGRectElement>("tw-regen-parcel");
+    const branchDark = $<SVGLineElement>("tw-branch-dark");
+    const branchLight = $<SVGLineElement>("tw-branch-light");
+    const branchLab = $<SVGTextElement>("tw-branch-lab");
+    const tracersBr = $<SVGGElement>("tw-tracers-br");
+    const branchWrap = root.querySelector<HTMLElement>("#tw-branch-slider");
+    const fluxI = $<SVGPathElement>("tw-flux-i");
+    const fluxQ = $<SVGPathElement>("tw-flux-q");
+    const fluxS = $<SVGPathElement>("tw-flux-s");
+    const sLab = $<SVGTextElement>("tw-s-lab");
+    const qcLab = $<SVGTextElement>("tw-qc-lab");
+    const qhLab = $<SVGTextElement>("tw-qh-lab");
+    const wExt = $<SVGLineElement>("tw-w-ext");
+    const wLine = $<SVGLineElement>("tw-w-line");
+    const wText = $<SVGTextElement>("tw-w-text");
+    const gainText = $<SVGTextElement>("tw-gain");
+    const fluxLeft = $<SVGTextElement>("tw-flux-left")!;
+    const fluxRight = $<SVGTextElement>("tw-flux-right")!;
+    const pvLoop = $<SVGPathElement>("tw-pv-loop");
+    const pvFill = $<SVGPathElement>("tw-pv-fill");
+    const pvDot = $<SVGCircleElement>("tw-pv-dot");
+    const pvQ = [
+      $<SVGCircleElement>("tw-pv-q0"),
+      $<SVGCircleElement>("tw-pv-q1"),
+      $<SVGCircleElement>("tw-pv-q2"),
+      $<SVGCircleElement>("tw-pv-q3"),
+    ];
+    const parcel = $<SVGRectElement>("tw-parcel");
+    const heatTop = $<SVGLineElement>("tw-heat-top");
+    const heatBot = $<SVGLineElement>("tw-heat-bot");
+    const stepText = $<SVGTextElement>("tw-step");
+    const poreGradL = $<SVGStopElement>("tw-pore-grad-l");
+    const poreGradR = $<SVGStopElement>("tw-pore-grad-r");
+    const phP = $<SVGLineElement>("tw-ph-p");
+    const phU = $<SVGLineElement>("tw-ph-u");
+    const phArc = $<SVGPathElement>("tw-ph-arc");
+    const phPLabel = $<SVGTextElement>("tw-ph-p-label");
+    const phULabel = $<SVGTextElement>("tw-ph-u-label");
+    const phDeg = $<SVGTextElement>("tw-ph-deg");
+
+    const titleMech = isEn
+      ? "(a) Mechanical α-Stirling — solid pistons"
+      : "(a) 機械式 α-Stirling — 固體活塞";
+    const titleAc = isEn
+      ? "(a) Looped thermoacoustic engine — the wave replaces the pistons"
+      : "(a) 環形熱聲引擎 — 行波取代活塞";
+    const inAc = isEn ? "Ī in (feedback loop)" : "Ī 入（迴路回授）";
+    const outAc = isEn ? "Ī out (amplified)" : "Ī 出（已放大）";
+    const inMech = isEn ? "W in (compression piston)" : "W 入（壓縮活塞）";
+    const outMech = isEn ? "W out (expansion piston)" : "W 出（膨脹活塞）";
+
+    // Fig.-4b process steps (加熱 → 膨脹 → 冷卻 → 壓縮), colour-matched.
+    const STEPS = isEn
+      ? [
+          { t: "heating (toward hot)", c: "#d72121" },
+          { t: "expansion (hot end)", c: "#e27c2f" },
+          { t: "cooling (toward cold)", c: "#58b3e5" },
+          { t: "compression (cold end)", c: "#2563eb" },
+        ]
+      : [
+          { t: "加熱（往熱端）", c: "#d72121" },
+          { t: "膨脹（熱端）", c: "#e27c2f" },
+          { t: "冷卻（往冷端）", c: "#58b3e5" },
+          { t: "壓縮（冷端）", c: "#2563eb" },
+        ];
+
+    // ── PV loop geometry (panel-local: 195 × 160) ───────────────────────
+    const PV_CX = 97,
+      PV_CY = 78,
+      PV_SX = 58,
+      PV_SY = 52;
+    const pvX = (wt: number) => PV_CX + PV_SX * vOf(wt);
+    const pvY = (wt: number) => PV_CY - PV_SY * pOf(wt);
+
+    // ── Ring sampler for the wave crests (racetrack centreline) ─────────
+    // Bottom run y150 (162→558), corner r 52, top run y46 (558→162).
+    const R = 52;
+    type Seg = { len: number; at: (u: number) => { x: number; y: number } };
+    const arc = (cx: number, cy: number, a0: number, a1: number): Seg => ({
+      len: (Math.PI / 2) * R,
+      at: (u) => {
+        const a = a0 + (a1 - a0) * u;
+        return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+      },
+    });
+    const lineSeg = (x0: number, y0: number, x1: number, y1: number): Seg => ({
+      len: Math.hypot(x1 - x0, y1 - y0),
+      at: (u) => ({ x: x0 + (x1 - x0) * u, y: y0 + (y1 - y0) * u }),
+    });
+    const SEGS: Seg[] = [
+      lineSeg(162, 150, 558, 150), // core run, cold → hot
+      arc(558, 98, Math.PI / 2, 0), // bottom-right corner, up
+      arc(558, 98, 0, -Math.PI / 2), // to the top run
+      lineSeg(558, 46, 162, 46), // top run, returning
+      arc(162, 98, -Math.PI / 2, -Math.PI), // top-left corner, down
+      arc(162, 98, Math.PI, Math.PI / 2), // back to the core run
+    ];
+    const TOTAL = SEGS.reduce((s, g) => s + g.len, 0);
+    function ringPoint(s: number) {
+      let d = ((s % 1) + 1) % 1 * TOTAL;
+      for (const g of SEGS) {
+        if (d <= g.len) return g.at(d / g.len);
+        d -= g.len;
+      }
+      return SEGS[SEGS.length - 1].at(1);
+    }
+
+    // ── Compression–rarefaction tracers (à la the air-column animation) ──
+    // Tracer marks ride the gas displacement field: where they bunch up is a
+    // compression travelling around the ring; each mark only oscillates
+    // around its rest position — exactly what the gas does.
+    const NS = "http://www.w3.org/2000/svg";
+    const AC_N = 56;
+    const acTracers: { el: SVGLineElement; s0: number }[] = [];
+    if (tracersAc) {
+      for (let k = 0; k < AC_N; k++) {
+        const el = document.createElementNS(NS, "line");
+        tracersAc.appendChild(el);
+        acTracers.push({ el, s0: k / AC_N });
+      }
+    }
+    // perpendicular tick of half-length 11 at ring position s
+    function placeRingTick(el: SVGLineElement, s: number) {
+      const p0 = ringPoint(s - 0.001);
+      const p1 = ringPoint(s + 0.001);
+      const dx = p1.x - p0.x,
+        dy = p1.y - p0.y;
+      const n = Math.hypot(dx, dy) || 1;
+      const nx = (-dy / n) * 11,
+        ny = (dx / n) * 11;
+      const c = ringPoint(s);
+      el.setAttribute("x1", (c.x - nx).toFixed(1));
+      el.setAttribute("y1", (c.y - ny).toFixed(1));
+      el.setAttribute("x2", (c.x + nx).toFixed(1));
+      el.setAttribute("y2", (c.y + ny).toFixed(1));
+    }
+    // hide tracers where the regenerator + HXs occupy the core run
+    function onCore(s: number) {
+      const d = (((s % 1) + 1) % 1) * TOTAL;
+      return d >= 121 && d <= 283; // bottom run x = 162 + d → 283…445
+    }
+    const MECH_N = 26;
+    const mechTracers: { el: SVGLineElement; x0: number }[] = [];
+    if (tracersMech) {
+      for (let k = 0; k < MECH_N; k++) {
+        const el = document.createElementNS(NS, "line");
+        el.setAttribute("y1", "139.5");
+        el.setAttribute("y2", "160.5");
+        tracersMech.appendChild(el);
+        mechTracers.push({ el, x0: 180 + (k / (MECH_N - 1)) * 360 });
+      }
+    }
+    // branch-tube tracers: a standing wave in the closed stub (node at the
+    // closed end, max motion at the junction) — loop runs traveling, branch
+    // stands. f = fractional distance from the closed end; y0 set per length.
+    const BR_N = 6;
+    const brTracers: { el: SVGLineElement; f: number; y0: number }[] = [];
+    if (tracersBr) {
+      for (let k = 0; k < BR_N; k++) {
+        const el = document.createElementNS(NS, "line");
+        el.setAttribute("x1", "349.5");
+        el.setAttribute("x2", "370.5");
+        tracersBr.appendChild(el);
+        brTracers.push({ el, f: (k + 0.5) / BR_N, y0: 20 });
+      }
+    }
+    const S_JUNCTION = 757 / TOTAL; // ring position of the branch tee (x=360, top run)
+    const S_RC = 202 / TOTAL; // ring position of the regenerator centre (x=364, core run)
+
+    // ── Static (control-dependent) rendering ────────────────────────────
+    function renderStatic() {
+      // PV loop + the 4 step-colour markers (ωt = 0, π/2, π, 3π/2)
+      const pts: string[] = [];
+      for (let i = 0; i <= 90; i++) {
+        const wt = (i / 90) * TWO_PI;
+        pts.push((i === 0 ? "M " : "L ") + pvX(wt).toFixed(1) + " " + pvY(wt).toFixed(1));
+      }
+      const d = pts.join(" ") + " Z";
+      pvLoop?.setAttribute("d", d);
+      pvFill?.setAttribute("d", d);
+      pvQ.forEach((dot, k) => {
+        const wt = (k * Math.PI) / 2;
+        dot?.setAttribute("cx", pvX(wt).toFixed(1));
+        dot?.setAttribute("cy", pvY(wt).toFixed(1));
+      });
+
+      // Energy flow diagram (Biwa Fig. 4.8): Ī(x) flat–ramp–flat in the
+      // positive half; Q̄(x) = −Ī(x) inside the ideal regenerator, ramping to
+      // zero across each HX, zero in the adiabatic ducts.
+      // x landmarks: a=180, b=210, c=510, d=540.
+      // x landmarks aligned with the device core: a=288, b=304, c=424, d=440.
+      const G = 1 + (ratio - 1) * Math.cos(phi);
+      const y0 = 95;
+      const hIn = 18 * amp + 5; // tall plot scale (vertical stretch ×2)
+      const hOut = hIn * G;
+      fluxI?.setAttribute(
+        "d",
+        `M 60 ${(y0 - hIn).toFixed(1)} L 304 ${(y0 - hIn).toFixed(1)} L 424 ${(y0 - hOut).toFixed(1)} L 660 ${(y0 - hOut).toFixed(1)}`,
+      );
+      fluxQ?.setAttribute(
+        "d",
+        `M 60 ${y0} L 288 ${y0} L 304 ${(y0 + hIn).toFixed(1)} L 424 ${(y0 + hOut).toFixed(1)} L 440 ${y0} L 660 ${y0}`,
+      );
+      // entropy flux s̄ = Q̄/T (plot-scaled ×0.62): flat inside the
+      // regenerator when reversible (φ=0, Carnot), sloped otherwise.
+      {
+        const SS = 0.62;
+        const pts: string[] = [`M 60 ${y0}`, `L 288 ${y0}`, `L 304 ${(y0 + SS * hIn).toFixed(1)}`];
+        for (let i = 1; i <= 24; i++) {
+          const f = i / 24;
+          const q = hIn + (hOut - hIn) * f;
+          const Tn = 1 + (ratio - 1) * f;
+          pts.push(`L ${(304 + 120 * f).toFixed(1)} ${(y0 + (SS * q) / Tn).toFixed(1)}`);
+        }
+        pts.push(`L 440 ${y0}`, `L 660 ${y0}`);
+        fluxS?.setAttribute("d", pts.join(" "));
+        const qMid = hIn + (hOut - hIn) * 0.5;
+        const tMid = 1 + (ratio - 1) * 0.5;
+        sLab?.setAttribute("y", (y0 + (SS * qMid) / tMid + 13).toFixed(1));
+      }
+      qcLab?.setAttribute("y", (y0 + hIn + 12).toFixed(1));
+      qhLab?.setAttribute("y", (y0 + hOut + 12).toFixed(1));
+      wExt?.setAttribute("y1", (y0 - hIn).toFixed(1));
+      wExt?.setAttribute("y2", (y0 - hIn).toFixed(1));
+      wLine?.setAttribute("y1", (y0 - hIn).toFixed(1));
+      wLine?.setAttribute("y2", (y0 - hOut).toFixed(1));
+      const showW = G > 1.06;
+      wExt?.setAttribute("opacity", showW ? "0.7" : "0");
+      wLine?.setAttribute("opacity", showW ? "1" : "0");
+      wText?.setAttribute("opacity", showW ? "1" : "0");
+      wText?.setAttribute("y", (y0 - (hIn + hOut) / 2 + 4).toFixed(1));
+      if (gainText)
+        gainText.textContent = (isEn ? "gain " : "放大 ") + "Ī×" + G.toFixed(2);
+
+      // pore backdrop (soft pastel)
+      const frac = Math.min(1, (ratio - 1) / 2);
+      const lerp = (t: [number, number, number]) =>
+        `rgb(${t.map((v) => Math.round(255 + (v - 255) * frac)).join(",")})`;
+      poreGradL?.setAttribute("stop-color", lerp([191, 219, 254]));
+      poreGradR?.setAttribute("stop-color", lerp([254, 202, 202]));
+
+      // branch tube: visible length from L_b (0.05–0.45 λ → 26–100 px);
+      // top of the stub is the closed end (dark cap = dark stroke overhang)
+      const Lpx = 26 + ((branchLen - 0.05) / 0.4) * 74;
+      const topY = 26 - Lpx;
+      branchDark?.setAttribute("y2", (topY - 4.5).toFixed(1));
+      branchLight?.setAttribute("y2", topY.toFixed(1));
+      branchLab?.setAttribute("y", (topY + 12).toFixed(1));
+      if (branchLab)
+        branchLab.textContent =
+          (isEn ? "branch " : "支管 ") + "L = " + branchLen.toFixed(2) + "λ";
+      {
+        const jY = 38;
+        const span = jY - (topY + 7);
+        for (const tr of brTracers) tr.y0 = topY + 7 + tr.f * span;
+      }
+
+      // phase annotations (cf. research Fig. 4a wording)
+      const deg = Math.round((phi * 180) / Math.PI);
+      if (mechPhase)
+        mechPhase.textContent = isEn
+          ? `two-piston phase diff. = ${90 - deg}°`
+          : `雙活塞相位差 = ${90 - deg}°`;
+      if (acPhase)
+        acPhase.textContent = isEn
+          ? `traveling-wave phase: p–u diff. = ${deg}°`
+          : `行波相位：p–u 相位差 = ${deg}°`;
+      if (phDeg)
+        phDeg.textContent =
+          "φ = " + deg + "°" +
+          (phi < 0.05 ? (isEn ? " (traveling)" : "（行波·同相）") : "") +
+          (phi > Math.PI / 2 - 0.05 ? (isEn ? " (standing)" : "（駐波·90°）") : "");
+      // phasor angle arc between p̂ and û (visible once φ > ~5°)
+      if (phArc) {
+        if (phi > 0.09) {
+          const r = 30;
+          const x0 = 75 + r, // p̂ at angle 0 reference; arc drawn in frame()
+            y0a = 72;
+          phArc.setAttribute("data-r", String(r));
+          phArc.setAttribute("opacity", "1");
+          void x0;
+          void y0a;
+        } else {
+          phArc.setAttribute("opacity", "0");
+        }
+      }
+    }
+
+    // ── Mode toggle ─────────────────────────────────────────────────────
+    function applyMode(m: Mode) {
+      mode = m;
+      root.setAttribute("data-mode", m);
+      tabs.forEach((b) => {
+        const on = b.getAttribute("data-mode") === m;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
+      devTitle.textContent = m === "mechanical" ? titleMech : titleAc;
+      fluxLeft.textContent = m === "mechanical" ? inMech : inAc;
+      fluxRight.textContent = m === "mechanical" ? outMech : outAc;
+      // the branch tube only exists on the acoustic device
+      const brInput = root.querySelector<HTMLInputElement>('[data-knob="branch"]');
+      if (brInput) brInput.disabled = m === "mechanical";
+      if (branchWrap) branchWrap.style.opacity = m === "mechanical" ? "0.4" : "1";
+    }
+    tabs.forEach((b) =>
+      b.addEventListener("click", () => applyMode(b.getAttribute("data-mode") as Mode)),
+    );
+
+    // ── Sliders ─────────────────────────────────────────────────────────
+    const phiSlider = root.querySelector<HTMLInputElement>('[data-knob="phi"]');
+    const branchSlider = root.querySelector<HTMLInputElement>('[data-knob="branch"]');
+    const ratioSlider = root.querySelector<HTMLInputElement>('[data-knob="ratio"]');
+    const ampSlider = root.querySelector<HTMLInputElement>('[data-knob="amp"]');
+    // L_b ↔ φ coupling (pedagogical one-parameter map, noted in the caption):
+    // L_b = λ/4 presents the traveling-wave load (φ=0); detuning either way
+    // pushes the field toward standing-wave phasing (φ→90°).
+    phiSlider?.addEventListener("input", () => {
+      phi = (parseFloat(phiSlider.value) * Math.PI) / 180;
+      branchLen = 0.25 + 0.2 * (phi / (Math.PI / 2));
+      if (branchSlider) branchSlider.value = branchLen.toFixed(2);
+      renderStatic();
+    });
+    branchSlider?.addEventListener("input", () => {
+      branchLen = parseFloat(branchSlider.value);
+      phi = Math.min(1, Math.abs(branchLen - 0.25) / 0.2) * (Math.PI / 2);
+      if (phiSlider) phiSlider.value = String(Math.round((phi * 180) / Math.PI));
+      renderStatic();
+    });
+    ratioSlider?.addEventListener("input", () => {
+      ratio = parseFloat(ratioSlider.value);
+      renderStatic();
+    });
+    ampSlider?.addEventListener("input", () => {
+      amp = parseFloat(ampSlider.value);
+      renderStatic();
+    });
+
+    // ── Animation loop ──────────────────────────────────────────────────
+    let start: number | null = null;
+    function frame(ts: number) {
+      if (start === null) start = ts;
+      const t = (ts - start) / 1000;
+      const wt = ((t / PERIOD) % 1) * TWO_PI;
+
+      // ── Drive kinematics. Phase gap Δ = 90° − φ (φ=0 → Stirling's 90°;
+      // φ=90° → cranks in step: the gas merely sloshes, the loop collapses).
+      const delta = Math.PI / 2 - phi;
+
+      // Mechanical: crank pins orbit at a FIXED radius (a real crank's stroke
+      // is set by its geometry, not by drive strength); pistons hang off the
+      // pins; the 90° gap is visible right on the crank circles.
+      // crank pins orbit on the oblique 3-D disc faces: full vertical throw
+      // (rc), foreshortened horizontal excursion (the discs are seen edge-on)
+      const rc = 11;
+      const pcx = 140 + 3.5 * Math.sin(wt + phi);
+      const pcy = 262 - rc * Math.cos(wt + phi); // crank pin (left), pivot at y=262
+      const phx = 580 + 4 * Math.sin(wt + phi - delta);
+      const phy = 262 - rc * Math.cos(wt + phi - delta);
+      const pyC = pcy - 48; // piston rect-top follows its pin via the rod
+      const pyH = phy - 48;
+      // flywheel rim dot (opposite the crank pin) shows the spin
+      flyDot?.setAttribute("cx", (580 + 5 * Math.sin(wt + phi - delta + Math.PI)).toFixed(1));
+      flyDot?.setAttribute("cy", (262 - 15 * Math.cos(wt + phi - delta + Math.PI)).toFixed(1));
+      wristC?.setAttribute("cy", (pyC + 6).toFixed(1));
+      wristH?.setAttribute("cy", (pyH + 6).toFixed(1));
+      crankC?.setAttribute("x2", pcx.toFixed(1));
+      crankC?.setAttribute("y2", pcy.toFixed(1));
+      pinC?.setAttribute("cx", pcx.toFixed(1));
+      pinC?.setAttribute("cy", pcy.toFixed(1));
+      pistonC?.setAttribute("y", pyC.toFixed(1));
+      if (rodC) {
+        rodC.setAttribute("x1", pcx.toFixed(1));
+        rodC.setAttribute("y1", pcy.toFixed(1));
+        rodC.setAttribute("x2", "140");
+        rodC.setAttribute("y2", (pyC + 6).toFixed(1));
+      }
+      crankH?.setAttribute("x2", phx.toFixed(1));
+      crankH?.setAttribute("y2", phy.toFixed(1));
+      pinH?.setAttribute("cx", phx.toFixed(1));
+      pinH?.setAttribute("cy", phy.toFixed(1));
+      pistonH?.setAttribute("y", pyH.toFixed(1));
+      if (rodH) {
+        rodH.setAttribute("x1", phx.toFixed(1));
+        rodH.setAttribute("y1", phy.toFixed(1));
+        rodH.setAttribute("x2", "580");
+        rodH.setAttribute("y2", (pyH + 6).toFixed(1));
+      }
+
+      // ── Gas displacement fields (what the tracers + ghosts ride on) ──
+      // Acoustic ring: traveling ↔ standing mix by φ, one wavelength per lap,
+      // PHASE-ANCHORED at the regenerator centre so the tube texture, ghost
+      // pistons, branch and the thermodynamic panels all show ξ′ = sin(ωt+φ)
+      // at the same instant (every panel stays in sync):
+      //   ξ(s,t) = cosφ·sin(ωt+φ − 2πΔ) + sinφ·cos(2πΔ)·sin(ωt+φ),  Δ = s−s_rc
+      const field = (s: number) => {
+        const d = TWO_PI * (s - S_RC);
+        return (
+          Math.cos(phi) * Math.sin(wt + phi - d) +
+          Math.sin(phi) * Math.cos(d) * Math.sin(wt + phi)
+        );
+      };
+      const dsAmp = 0.016 * amp;
+      for (const tr of acTracers) {
+        const s = tr.s0 + dsAmp * field(tr.s0);
+        if (onCore(s)) {
+          tr.el.setAttribute("opacity", "0");
+        } else {
+          tr.el.removeAttribute("opacity");
+          placeRingTick(tr.el, s);
+        }
+      }
+      // ghost gas-pistons ride the same field at their own ring positions
+      const sGC = 43 / TOTAL;
+      const sGH = 353 / TOTAL;
+      ghostC?.setAttribute("x", (192 + 16 * amp * field(sGC)).toFixed(1));
+      ghostH?.setAttribute("x", (502 + 16 * amp * field(sGH)).toFixed(1));
+
+      // tracked parcel inside the regenerator — same ξ′/V′ cycle as every
+      // panel below: position, size and process-step colour all in sync
+      if (regenParcel) {
+        const w = Math.max(8, 16 * (1 + 0.45 * vOf(wt)));
+        regenParcel.setAttribute("x", (364 + 34 * xiOf(wt) - w / 2).toFixed(1));
+        regenParcel.setAttribute("width", w.toFixed(1));
+        const act = (ratio - 1) * Math.cos(phi) * amp;
+        if (act > 0.18) {
+          const q = Math.floor((((wt + Math.PI / 4) % TWO_PI) / (Math.PI / 2)) % 4);
+          regenParcel.setAttribute("fill", STEPS[q].c);
+        } else {
+          regenParcel.setAttribute("fill", "#0891b2");
+        }
+      }
+
+      // branch tube: standing wave in the closed stub — node at the closed
+      // end, max motion at the junction, driven by the ring field there
+      const jDrive = field(S_JUNCTION);
+      for (const tr of brTracers) {
+        const y = tr.y0 + 8 * amp * Math.sin((tr.f * Math.PI) / 2) * jDrive;
+        tr.el.setAttribute("y1", y.toFixed(1));
+        tr.el.setAttribute("y2", y.toFixed(1));
+      }
+
+      // Mechanical duct: displacement interpolates between the two pistons'
+      // strokes — the same oscillating gas column, seen between the cranks.
+      const sC = 13 * Math.cos(wt + phi); // fixed stroke (set by the crank)
+      const sH = 13 * Math.cos(wt + phi - delta);
+      for (const tr of mechTracers) {
+        const f = (tr.x0 - 170) / 380;
+        const x = tr.x0 + (sC * (1 - f) + sH * f);
+        if (x >= 283 && x <= 445) {
+          tr.el.setAttribute("opacity", "0");
+        } else {
+          tr.el.removeAttribute("opacity");
+          tr.el.setAttribute("x1", x.toFixed(1));
+          tr.el.setAttribute("x2", x.toFixed(1));
+        }
+      }
+
+      // PV dot
+      pvDot?.setAttribute("cx", pvX(wt).toFixed(1));
+      pvDot?.setAttribute("cy", pvY(wt).toFixed(1));
+
+      // Pore parcel + heat arrows + step label
+      if (parcel) {
+        const cx = 120 + 62 * xiOf(wt);
+        const w = 34 * (1 + 0.45 * vOf(wt));
+        const wc = Math.max(12, w);
+        parcel.setAttribute("x", (cx - wc / 2).toFixed(1));
+        parcel.setAttribute("width", wc.toFixed(1));
+        const dv = dvOf(wt);
+        const mag = Math.min(5.5, Math.abs(dv) * 3.4);
+        const into = dv > 0; // expanding → heat flows wall → parcel
+        for (const [el, yWall, yParcel] of [
+          [heatTop, 38, 58],
+          [heatBot, 120, 100],
+        ] as const) {
+          if (!el) continue;
+          el.setAttribute("x1", cx.toFixed(1));
+          el.setAttribute("x2", cx.toFixed(1));
+          el.setAttribute("y1", into ? String(yWall) : String(yParcel));
+          el.setAttribute("y2", into ? String(yParcel) : String(yWall));
+          el.setAttribute("stroke-width", mag.toFixed(1));
+          el.setAttribute("opacity", mag < 0.4 ? "0" : "1");
+        }
+        if (stepText) {
+          const activity = (ratio - 1) * Math.cos(phi) * amp;
+          if (activity > 0.18) {
+            const q = Math.floor((((wt + Math.PI / 4) % TWO_PI) / (Math.PI / 2)) % 4);
+            stepText.textContent = STEPS[q].t;
+            stepText.setAttribute("fill", STEPS[q].c);
+            parcel.setAttribute("fill", STEPS[q].c); // same colour as the regen parcel
+          } else {
+            stepText.textContent = isEn ? "(cycle degenerate)" : "（循環退化）";
+            stepText.setAttribute("fill", "#94a3b8");
+            parcel.setAttribute("fill", "#0891b2");
+          }
+        }
+      }
+
+      // Phasor: p̂ rotates at ωt, û leads by φ; dashed arc shows the gap.
+      const C = { x: 75, y: 72 };
+      const aP = -wt;
+      const aU = -wt - phi;
+      const set = (
+        el: SVGLineElement | null,
+        lab: SVGTextElement | null,
+        a: number,
+        r: number,
+      ) => {
+        const x = C.x + r * Math.cos(a);
+        const y = C.y + r * Math.sin(a);
+        el?.setAttribute("x2", x.toFixed(1));
+        el?.setAttribute("y2", y.toFixed(1));
+        lab?.setAttribute("x", (C.x + (r + 13) * Math.cos(a)).toFixed(1));
+        lab?.setAttribute("y", (C.y + (r + 13) * Math.sin(a) + 4).toFixed(1));
+      };
+      set(phP, phPLabel, aP, 56 * amp);
+      set(phU, phULabel, aU, 44 * amp);
+      if (phArc && phi > 0.09) {
+        const r = 30;
+        const x1 = C.x + r * Math.cos(aP),
+          y1 = C.y + r * Math.sin(aP);
+        const x2 = C.x + r * Math.cos(aU),
+          y2 = C.y + r * Math.sin(aU);
+        phArc.setAttribute(
+          "d",
+          `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 0 ${x2.toFixed(1)} ${y2.toFixed(1)}`,
+        );
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    applyMode(mode);
+    renderStatic();
+    requestAnimationFrame(frame);
+  }
+
+  document.querySelectorAll<HTMLElement>(".tw-anim").forEach((el) => initAnimation(el));
+</script>

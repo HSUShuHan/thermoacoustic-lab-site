@@ -1,0 +1,99 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TravelingWaveAnimation from "~/components/research/TravelingWaveAnimation.astro";
+import katex from "katex";
+
+const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
+const md = (tex: string) =>
+  katex.renderToString(tex, { throwOnError: false, displayMode: true });
+---
+
+<BaseLayout
+  title="動畫 · 行波型"
+  description="行波型 Stirling 熱聲引擎（TASHE）互動動畫：迴路拓樸、蓄熱器內等溫 Stirling 循環、p–u 同相、能量流（功流/熱流）；機械式 α-Stirling 與行波熱聲可切換對照。"
+>
+  <section class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Research / Animations</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">熱聲機制動畫</h1>
+    <p class="mt-2 text-xl font-light tracking-wide text-brand-600">行波型 · Traveling-Wave Type</p>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+      <a href="/research/animations/standing-wave" class="underline hover:text-accent-600">駐波型</a>靠
+      <strong>不可逆</strong>的 <span set:html={m("W_{stand}")} />、效率有限；行波型把氣塊擺進<strong>會循環的迴路</strong>、用<strong>蓄熱器（regenerator）</strong>讓氣塊與壁<strong>等溫</strong>接觸，做出<strong>可逆的 Stirling 循環</strong>，靠 <span set:html={m("W_{prog}")} />，效率<strong>逼近 Carnot</strong>。以下只談與駐波型不同之處（氣塊振盪、<span set:html={m("p'\\!-\\!\\xi'")} /> = 功流、行波/駐波分解等基礎已在駐波頁說明）。
+    </p>
+  </section>
+
+  <TravelingWaveAnimation />
+
+  <section class="mt-12 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold text-brand-900">行波型的三個關鍵</h2>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">① 迴路 + 蓄熱器：為何可逆</h3>
+    <p class="mt-2 text-gray-700">
+      純行波需要<strong>迴路（loop）</strong>才能維持（直管只給駐波）。迴路上的<strong>蓄熱器</strong>是密集細網，<strong>孔半徑遠小於熱擴散層厚度</strong>（<span set:html={m("r \\ll \\delta_\\alpha")} />，<span set:html={m("r")} />：流路半徑、<span set:html={m("\\delta_\\alpha")} />：熱擴散層厚度（下標 α＝熱擴散係數））。孔夠細 → 氣塊隨時與壁<strong>等溫</strong> → 熱交換<strong>可逆</strong>。對比駐波型的 stack（板距 <span set:html={m("\\sim \\delta_\\alpha")} />，接觸不完全 → 不可逆）。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">② <span set:html={m("p")} />–<span set:html={m("u")} /> 同相 → Stirling 循環</h3>
+    <p class="mt-2 text-gray-700">
+      行波中壓力 <span set:html={m("p'")} /> 與流速 <span set:html={m("u'")} /> <strong>同相</strong>（駐波是差 <span set:html={m("90^\\circ")} />）。於是氣塊「<strong>壓縮時往熱端走、膨脹時往冷端走</strong>」，在蓄熱器裡完成<strong>等溫壓縮 → 等溫膨脹</strong>的 Stirling 循環——<span set:html={m("p")} />–<span set:html={m("V")} /> 是一個<strong>胖迴圈</strong>（面積=功，可逆）。駐波型則是瘦迴圈。
+    </p>
+
+    <h3 class="mt-6 text-lg font-medium text-brand-800">③ 能量流：熱流 <span set:html={m("\\bar Q")} /> 變功流 <span set:html={m("\\bar I")} /></h3>
+    <p class="mt-2 text-gray-700">
+      以<strong>能量流</strong>看裝置：熱流 <span set:html={m("\\bar Q")} />（heat flow）從熱端進入，沿蓄熱器被轉成<strong>功流 <span set:html={m("\\bar I")} /></strong>（work flow）—— 行波的聲功 <span set:html={m("\\bar I")} /> <strong>一路被放大</strong>。二者守恆：
+    </p>
+    <div set:html={md("\\frac{d(\\bar I+\\bar Q)}{dx}=0,\\qquad W_{prog}=\\beta\\,\\frac{dT_m}{dx}\\,\\chi'_a\\,I")}></div>
+    <p class="mt-2 text-sm text-gray-600">
+      <span set:html={m("W_{prog}")} />：行波成分的功源（單位長度產生的聲功），正比於 <span set:html={m("\\chi'_a")} />（熱應答函數實部，對應<strong>可逆</strong>熱交換）→ 它<strong>放大 <span set:html={m("I")} /></strong> 而非耗散。<span set:html={m("\\beta")} />：熱膨脹率、<span set:html={m("T_m")} />：平均溫度、<span set:html={m("dT_m/dx")} />：蓄熱器溫度梯度。（<span set:html={m("\\bar I,\\bar Q,\\chi'_a")} /> 的定義見<a href="/research/animations/standing-wave" class="underline hover:text-accent-600">駐波頁</a>。）
+    </p>
+
+    <h2 class="mt-10 text-2xl font-semibold text-brand-900">駐波型 vs 行波型</h2>
+    <table class="mt-4 w-full text-sm">
+      <thead class="text-left text-brand-700">
+        <tr class="border-b-2 border-brand-200">
+          <th class="py-2 pr-4"></th>
+          <th class="py-2 pr-4">駐波型（standing）</th>
+          <th class="py-2">行波型（traveling）</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">幾何</td>
+          <td class="py-2 pr-4">直管共鳴</td>
+          <td class="py-2">迴路（loop）</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">核心元件</td>
+          <td class="py-2 pr-4">stack（板距 <span set:html={m("\\sim\\delta_\\alpha")} />）</td>
+          <td class="py-2">蓄熱器（孔 <span set:html={m("\\ll\\delta_\\alpha")} />）</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium"><span set:html={m("p")} />–<span set:html={m("u")} /> 相位</td>
+          <td class="py-2 pr-4"><span set:html={m("90^\\circ")} /></td>
+          <td class="py-2">同相</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">氣塊循環</td>
+          <td class="py-2 pr-4">瘦迴圈</td>
+          <td class="py-2">Stirling 胖迴圈</td>
+        </tr>
+        <tr class="border-b border-brand-100">
+          <td class="py-2 pr-4 font-medium">能量轉換</td>
+          <td class="py-2 pr-4"><span set:html={m("W_{stand}\\propto\\chi''_a")} />（不可逆）</td>
+          <td class="py-2"><span set:html={m("W_{prog}\\propto\\chi'_a")} />（可逆）</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-4 font-medium">效率</td>
+          <td class="py-2 pr-4">較低</td>
+          <td class="py-2">近 Carnot</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
+      <a href="/research/animations" class="underline hover:text-accent-600">← 回動畫總覽</a>
+      <a href="/research/animations/standing-wave" class="underline hover:text-accent-600">駐波型</a>
+      <a href="/research/thermoacoustic-effect" class="underline hover:text-accent-600">熱聲效應總論</a>
+    </p>
+  </section>
+</BaseLayout>
