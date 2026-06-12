@@ -286,18 +286,18 @@ const L = isEn
         <rect x="288" y="134" width="16" height="32" fill="#2563eb" fill-opacity="0.9"></rect>
         <rect x="304" y="134" width="120" height="32" fill="url(#tw-mesh)" stroke="#475569" stroke-width="1.4"></rect>
         <rect x="424" y="134" width="16" height="32" fill="#dc2626" fill-opacity="0.9"></rect>
-        <text x="296" y="124" font-size="9.5" fill="#2563eb" text-anchor="middle" font-weight="600">T<tspan dy="2" font-size="7.5">C</tspan></text>
+        <text x="296" y="124" font-size="9.5" fill="#2563eb" text-anchor="middle" font-weight="600" font-style="italic">T<tspan font-style="normal" dy="2" font-size="7.5">C</tspan></text>
         <text x="364" y="124" font-size="10" fill="#475569" text-anchor="middle">{L.regen}</text>
-        <text x="432" y="124" font-size="9.5" fill="#dc2626" text-anchor="middle" font-weight="600">T<tspan dy="2" font-size="7.5">H</tspan></text>
+        <text x="432" y="124" font-size="9.5" fill="#dc2626" text-anchor="middle" font-weight="600" font-style="italic">T<tspan font-style="normal" dy="2" font-size="7.5">H</tspan></text>
         <!-- tracked parcel inside the regenerator (cf. the research overview's
              stirling-engine-wave figure): shuttles cold ⇄ hot, swells/shrinks,
              and takes the process-step colour — synced with every panel below -->
         <rect id="tw-regen-parcel" x="356" y="141" width="16" height="18" rx="2" fill="#0891b2" fill-opacity="0.9" stroke="#0e7490" stroke-width="1.2"></rect>
         <!-- heat in at the hot HX / heat out at the cold HX -->
         <line x1="432" y1="206" x2="432" y2="172" stroke="#d72121" stroke-width="4.5" marker-end="url(#tw-arr-hot)"></line>
-        <text x="442" y="200" font-size="9.5" fill="#d72121" font-weight="600">{L.q_in} Q̄<tspan dy="2" font-size="7.5">H</tspan></text>
+        <text x="442" y="200" font-size="9.5" fill="#d72121" font-weight="600">{L.q_in} <tspan font-style="italic">Q̄</tspan><tspan dy="2" font-size="7.5">H</tspan></text>
         <line x1="296" y1="172" x2="296" y2="206" stroke="#58b3e5" stroke-width="4.5" marker-end="url(#tw-arr-cool)"></line>
-        <text x="286" y="200" font-size="9.5" fill="#58b3e5" font-weight="600" text-anchor="end">{L.q_out} Q̄<tspan dy="2" font-size="7.5">C</tspan></text>
+        <text x="286" y="200" font-size="9.5" fill="#58b3e5" font-weight="600" text-anchor="end">{L.q_out} <tspan font-style="italic">Q̄</tspan><tspan dy="2" font-size="7.5">C</tspan></text>
       </g>
     </g>
 
@@ -325,8 +325,8 @@ const L = isEn
            (Carnot); sloped = entropy production (Fig. 4.9 / 4.10) -->
       <path id="tw-flux-s" d="" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="5 3"></path>
       <text id="tw-s-lab" x="364" y="120" font-size="10" font-style="italic" fill="#7c3aed" font-weight="600" text-anchor="middle">s̄</text>
-      <text id="tw-qc-lab" x="268" y="116" font-size="9.5" fill="#ea580c" text-anchor="end">Q̄<tspan dy="2" font-size="7.5">C</tspan></text>
-      <text id="tw-qh-lab" x="446" y="128" font-size="9.5" fill="#ea580c">Q̄<tspan dy="2" font-size="7.5">H</tspan></text>
+      <text id="tw-qc-lab" x="268" y="116" font-size="9.5" fill="#ea580c" text-anchor="end"><tspan font-style="italic">Q̄</tspan><tspan dy="2" font-size="7.5">C</tspan></text>
+      <text id="tw-qh-lab" x="446" y="128" font-size="9.5" fill="#ea580c"><tspan font-style="italic">Q̄</tspan><tspan dy="2" font-size="7.5">H</tspan></text>
 
       <line id="tw-w-ext" x1="440" y1="80" x2="600" y2="80" stroke="#0e7490" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"></line>
       <line id="tw-w-line" x1="585" y1="80" x2="585" y2="58" stroke="#1e3a5f" stroke-width="1.4" marker-start="url(#tw-arr-axis)" marker-end="url(#tw-arr-axis)"></line>
@@ -365,8 +365,8 @@ const L = isEn
       <rect x="0" y="34" width="240" height="90" fill="url(#tw-pore-grad)"></rect>
       <line x1="0" y1="34" x2="240" y2="34" stroke="#475569" stroke-width="1.4"></line>
       <line x1="0" y1="124" x2="240" y2="124" stroke="#475569" stroke-width="1.4"></line>
-      <text x="6" y="48" font-size="9" fill="#2563eb">T<tspan dy="2" font-size="7">C</tspan></text>
-      <text x="234" y="48" font-size="9" fill="#dc2626" text-anchor="end">T<tspan dy="2" font-size="7">H</tspan></text>
+      <text x="6" y="48" font-size="9" fill="#2563eb" font-style="italic">T<tspan font-style="normal" dy="2" font-size="7">C</tspan></text>
+      <text x="234" y="48" font-size="9" fill="#dc2626" text-anchor="end" font-style="italic">T<tspan font-style="normal" dy="2" font-size="7">H</tspan></text>
       <line id="tw-heat-top" x1="120" y1="38" x2="120" y2="58" stroke="#d72121" stroke-width="3" marker-end="url(#tw-arr-hot)"></line>
       <line id="tw-heat-bot" x1="120" y1="120" x2="120" y2="100" stroke="#d72121" stroke-width="3" marker-end="url(#tw-arr-hot)"></line>
       <rect id="tw-parcel" x="103" y="61" width="34" height="36" rx="4" fill="#0891b2" fill-opacity="0.85" stroke="#0e7490" stroke-width="1.4"></rect>
@@ -799,7 +799,7 @@ const L = isEn
       wText?.setAttribute("opacity", showW ? "1" : "0");
       wText?.setAttribute("y", (y0 - (hIn + hOut) / 2 + 4).toFixed(1));
       if (gainText)
-        gainText.textContent = (isEn ? "gain " : "放大 ") + "Ī×" + G.toFixed(2);
+        gainText.innerHTML = (isEn ? "gain " : "放大 ") + '<tspan font-style="italic">Ī</tspan>×' + G.toFixed(2);
 
       // pore backdrop (soft pastel)
       const frac = Math.min(1, (ratio - 1) / 2);
@@ -816,8 +816,11 @@ const L = isEn
       branchLight?.setAttribute("y2", topY.toFixed(1));
       branchLab?.setAttribute("y", (topY + 12).toFixed(1));
       if (branchLab)
-        branchLab.textContent =
-          (isEn ? "branch " : "支管 ") + "L = " + branchLen.toFixed(2) + "λ";
+        branchLab.innerHTML =
+          (isEn ? "branch " : "支管 ") +
+          '<tspan font-style="italic">L</tspan> = ' +
+          branchLen.toFixed(2) +
+          '<tspan font-style="italic">λ</tspan>';
       {
         const jY = 38;
         const span = jY - (topY + 7);
@@ -831,12 +834,12 @@ const L = isEn
           ? `two-piston phase diff. = ${90 - deg}°`
           : `雙活塞相位差 = ${90 - deg}°`;
       if (acPhase)
-        acPhase.textContent = isEn
-          ? `traveling-wave phase: p–u diff. = ${deg}°`
-          : `行波相位：p–u 相位差 = ${deg}°`;
+        acPhase.innerHTML = isEn
+          ? `traveling-wave phase: <tspan font-style="italic">p–u</tspan> diff. = ${deg}°`
+          : `行波相位：<tspan font-style="italic">p–u</tspan> 相位差 = ${deg}°`;
       if (phDeg)
-        phDeg.textContent =
-          "φ = " + deg + "°" +
+        phDeg.innerHTML =
+          '<tspan font-style="italic">φ</tspan> = ' + deg + "°" +
           (phi < 0.05 ? (isEn ? " (traveling)" : "（行波·同相）") : "") +
           (phi > Math.PI / 2 - 0.05 ? (isEn ? " (standing)" : "（駐波·90°）") : "");
       // phasor angle arc between p̂ and û (visible once φ > ~5°)
