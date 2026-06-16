@@ -1378,15 +1378,18 @@ const L = isEn
       const swt = Math.sin(wt);
       decay *= amp; // global amplitude (drive-strength) slider
 
-      // Local standing-wave amplitudes at the stack position x₀, normalized to
-      // the default position (525). Moving the stack changes the |u₁|:|p₁|
-      // ratio, so the p–ξ / T–x / 3-D loops change shape: wide-and-short near
-      // the velocity antinode (open end), tall-and-narrow near the pressure
-      // antinode (closed end). uFac scales displacement/volume-like quantities,
-      // pFac the pressure/temperature-like ones (clamped to stay in-panel).
+      // Local standing-wave amplitudes at the stack position x₀. Moving the
+      // stack changes the |u₁|:|p₁| RATIO, so the p–ξ / T–x / 3-D loops change
+      // SHAPE: wide-and-short near the velocity antinode (open end),
+      // tall-and-narrow near the pressure antinode (closed end). uFac scales
+      // displacement/volume-like quantities, pFac the pressure/temperature
+      // ones. Both are normalized over the slider range so they stay ≤ 1 (the
+      // panels are sized for a unit loop) — the loop changes aspect, not size,
+      // so it never overruns the axes. (0.4 floor keeps it readable; cos peaks
+      // at 0.9405 and sin at 0.9735 across x₀ ∈ [150, 580].)
       const kx = (Math.PI * stackX0) / (2 * RESO_LEN);
-      const uFac = Math.max(0.6, Math.min(1.45, Math.cos(kx) / 0.3508));
-      const pFac = Math.max(0.6, Math.min(1.2, Math.sin(kx) / 0.9364));
+      const uFac = 0.4 + 0.6 * (Math.cos(kx) / 0.9405);
+      const pFac = 0.4 + 0.6 * (Math.sin(kx) / 0.9735);
 
       // Parcel position — full spatial mirror of Swift (negate sign).
       // At ωt=0 parcel is at LEFT extreme (cold side in right-hot convention).
