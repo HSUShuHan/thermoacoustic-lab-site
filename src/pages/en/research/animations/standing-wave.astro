@@ -83,6 +83,17 @@ const m = (tex: string) => katex.renderToString(tex, { throwOnError: false });
       <span set:html={m("\\xi'")} /> and <span set:html={m("V'")} /> have different phase relationships for the same
       parcel (in a standing wave, they are not perfectly in phase).
     </p>
+    <p class="mt-2 text-gray-700 text-sm">
+      <strong>Drag the "stack position <span set:html={m("x_0")} />" slider</strong> and these
+      trajectories change shape: the loop's <strong>displacement-axis width</strong> scales with the
+      local velocity amplitude <span set:html={m("|u_1(x_0)|")} /> and its <strong
+        >pressure-axis height</strong
+      > with the local pressure amplitude <span set:html={m("|p_1(x_0)|")} /> (the blue and red dot
+      heights in the profile below). Near the velocity antinode (open end) → wide and short; near the
+      pressure antinode (closed end) → tall and narrow. The loop area <span
+        set:html={m("\\propto |p_1||u_1|")}
+      /> — exactly the work-flow density <span set:html={m("I")} />.
+    </p>
 
     <h3 class="mt-6 text-lg font-medium text-brand-800">④ <span set:html={m("T'")} />–<span set:html={m("x")} /> (temperature–position) trajectory</h3>
     <p class="mt-2 text-gray-700">

@@ -1378,6 +1378,16 @@ const L = isEn
       const swt = Math.sin(wt);
       decay *= amp; // global amplitude (drive-strength) slider
 
+      // Local standing-wave amplitudes at the stack position x₀, normalized to
+      // the default position (525). Moving the stack changes the |u₁|:|p₁|
+      // ratio, so the p–ξ / T–x / 3-D loops change shape: wide-and-short near
+      // the velocity antinode (open end), tall-and-narrow near the pressure
+      // antinode (closed end). uFac scales displacement/volume-like quantities,
+      // pFac the pressure/temperature-like ones (clamped to stay in-panel).
+      const kx = (Math.PI * stackX0) / (2 * RESO_LEN);
+      const uFac = Math.max(0.6, Math.min(1.45, Math.cos(kx) / 0.3508));
+      const pFac = Math.max(0.6, Math.min(1.2, Math.sin(kx) / 0.9364));
+
       // Parcel position — full spatial mirror of Swift (negate sign).
       // At ωt=0 parcel is at LEFT extreme (cold side in right-hot convention).
       //
@@ -1394,14 +1404,14 @@ const L = isEn
       // 0.9 — exaggerates the p–ξ ellipse area for pedagogical clarity at the
       // cost of physical fidelity to Swift's standing.py.
       const parcelXNorm =
-        (-(0.5556 * cwt + 0.9 * phase * swt) / 0.557) * decay;
-      const parcelSize = 1 + 0.3 * cwt * decay;
-      const parcelTDev = -0.3 * Math.cos(wt + 2.5 * phase + 0.073) * decay;
+        (-(0.5556 * cwt + 0.9 * phase * swt) / 0.557) * decay * uFac;
+      const parcelSize = 1 + 0.3 * cwt * decay * uFac;
+      const parcelTDev = -0.3 * Math.cos(wt + 2.5 * phase + 0.073) * decay * pFac;
 
       // PV: pvx = cos(wt - phase) — decays around 0;
       // pvy = -0.5 + (oscillation around -0.5 with amp 0.8) — decays around -0.5
-      const pvxRaw = Math.cos(wt - phase) * decay;
-      const pvyRaw = -0.5 - 0.8 * cwt * decay;
+      const pvxRaw = Math.cos(wt - phase) * decay * uFac;
+      const pvyRaw = -0.5 - 0.8 * cwt * decay * pFac;
 
       return { parcelXNorm, parcelSize, parcelTDev, pvxRaw, pvyRaw };
     }
@@ -1797,6 +1807,7 @@ const L = isEn
     });
     x0Slider?.addEventListener("input", () => {
       stackX0 = parseFloat(x0Slider.value);
+      renderTraces(); // loops rescale with the local |u₁(x₀)|, |p₁(x₀)|
       updateStackPos(); // stack position is independent of the engine/refrig preset
     });
 
