@@ -23,6 +23,10 @@ const ms = byRole("ms");
 const undergrad = byRole("undergrad");
 const ra = byRole("research-assistant");
 const alumni = byRole("alumni");
+// Alumni grouped by graduation year (Gregorian), newest first
+const alumniYears = [
+  ...new Set(alumni.map((m) => (m.data.graduated ?? "").slice(0, 4))),
+].sort((a, b) => b.localeCompare(a));
 
 const roleSections = [
   { label: "Postdoc", members: postdoc },
@@ -170,14 +174,19 @@ const roleSections = [
           Alumni
         </p>
         <h2 class="mt-2 text-2xl font-semibold text-brand-900">Alumni</h2>
-        <div class="mt-6 grid gap-3 md:grid-cols-2">
-          {alumni.map((m) => (
-            <div class="rounded-lg border border-brand-100 p-4">
-              <p class="font-medium text-brand-900">
-                {m.data.name_en}{" "}
-                <span class="text-sm text-brand-500">{m.data.name_zh}</span>
-              </p>
-              {m.data.graduated && (
+        {alumniYears.map((year) => (
+          <div class="mt-6">
+            <h3 class="text-lg font-medium text-brand-800">{year}</h3>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+              {alumni
+                .filter((m) => (m.data.graduated ?? "").slice(0, 4) === year)
+                .map((m) => (
+                  <div class="rounded-lg border border-brand-100 p-4">
+                    <p class="font-medium text-brand-900">
+                      {m.data.name_en}{" "}
+                      <span class="text-sm text-brand-500">{m.data.name_zh}</span>
+                    </p>
+                    {m.data.graduated && (
                 <p class="mt-1 text-sm text-brand-500">
                   Graduated {m.data.graduated}
                 </p>
@@ -223,11 +232,13 @@ const roleSections = [
                         </a>
                       </Fragment>
                     ))}
-                </p>
-              )}
+                      </p>
+                    )}
+                  </div>
+                ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </section>
     )
   }
