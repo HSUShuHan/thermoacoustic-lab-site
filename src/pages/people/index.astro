@@ -172,7 +172,7 @@ const roleSections = [
               </p>
               {m.data.graduated && (
                 <p class="mt-1 text-sm text-brand-500">
-                  畢業 {m.data.graduated}
+                  {`畢業 ${m.data.graduated}${m.data.academic_year ? `（${m.data.academic_year} 學年度）` : ""}`}
                 </p>
               )}
               {m.data.thesis && (

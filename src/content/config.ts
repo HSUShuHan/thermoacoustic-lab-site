@@ -70,6 +70,8 @@ const members = defineCollection({
     orcid: z.string().optional(),
     joined: z.string().optional(),
     graduated: z.string().optional(),
+    // 畢業學年度（民國，如 "113"）
+    academic_year: z.string().optional(),
     current_position: z.string().optional(),
     // 校友學位論文題目（畢業主題）
     thesis: z.string().optional(),
