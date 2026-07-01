@@ -184,7 +184,19 @@ const roleSections = [
               )}
               {(m.data.thesis_en ?? m.data.thesis) && (
                 <p class="mt-1 text-sm text-gray-700">
-                  Thesis: {m.data.thesis_en ?? m.data.thesis}
+                  Thesis:{" "}
+                  {m.data.thesis_url ? (
+                    <a
+                      href={m.data.thesis_url}
+                      target="_blank"
+                      rel="noopener"
+                      class="text-accent-600 underline hover:text-accent-700"
+                    >
+                      {m.data.thesis_en ?? m.data.thesis}
+                    </a>
+                  ) : (
+                    m.data.thesis_en ?? m.data.thesis
+                  )}
                 </p>
               )}
               {m.data.current_position && (

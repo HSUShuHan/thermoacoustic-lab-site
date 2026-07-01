@@ -73,9 +73,10 @@ const members = defineCollection({
     // 畢業學年度（民國，如 "113"）
     academic_year: z.string().optional(),
     current_position: z.string().optional(),
-    // 校友學位論文題目（畢業主題）
+    // 校友學位論文題目（畢業主題）與 NDLTD 全文連結
     thesis: z.string().optional(),
     thesis_en: z.string().optional(),
+    thesis_url: z.string().url().optional(),
     // 相關論文成果：對應 publications collection 的 slug（校友在學期間成果）
     related_pubs: z.array(z.string()).default([]),
     order: z.number().default(100),
