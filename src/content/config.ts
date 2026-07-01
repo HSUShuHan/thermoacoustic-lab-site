@@ -156,6 +156,8 @@ const projects = defineCollection({
     // 計畫總經費（單位：千元 NTD）— optional
     budget_twd: z.number().optional(),
     active: z.boolean().default(true),
+    // 計畫種類：研究（國科會等）/ 教學（教育部教學實踐）/ 產學合作
+    category: z.enum(["research", "teaching", "industry"]).default("research"),
   }),
 });
 
