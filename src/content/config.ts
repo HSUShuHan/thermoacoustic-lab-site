@@ -71,6 +71,11 @@ const members = defineCollection({
     joined: z.string().optional(),
     graduated: z.string().optional(),
     current_position: z.string().optional(),
+    // 校友學位論文題目（畢業主題）
+    thesis: z.string().optional(),
+    thesis_en: z.string().optional(),
+    // 相關論文成果：對應 publications collection 的 slug（校友在學期間成果）
+    related_pubs: z.array(z.string()).default([]),
     order: z.number().default(100),
   }),
 });

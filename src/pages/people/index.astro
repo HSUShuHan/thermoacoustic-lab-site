@@ -6,6 +6,8 @@ import Prose from "~/components/Prose.astro";
 const all = (await getCollection("members")).filter(
   (m) => !m.slug.endsWith("-en"),
 );
+const pubs = await getCollection("publications");
+const pubMap = new Map(pubs.map((p) => [p.slug, p.data]));
 const byRole = (role: string) =>
   all
     .filter((m) => m.data.role === role)
@@ -173,9 +175,35 @@ const roleSections = [
                   畢業 {m.data.graduated}
                 </p>
               )}
+              {m.data.thesis && (
+                <p class="mt-1 text-sm text-gray-700">
+                  論文：{m.data.thesis}
+                </p>
+              )}
               {m.data.current_position && (
                 <p class="mt-1 text-sm text-gray-700">
                   {m.data.current_position}
+                </p>
+              )}
+              {m.data.related_pubs.length > 0 && (
+                <p class="mt-1 text-sm text-gray-600">
+                  相關論文成果：
+                  {m.data.related_pubs
+                    .map((slug) => pubMap.get(slug))
+                    .filter((p) => p !== undefined)
+                    .map((p, i) => (
+                      <Fragment>
+                        {i > 0 && "、"}
+                        <a
+                          href={p.doi ? `https://doi.org/${p.doi}` : "/publications/"}
+                          target="_blank"
+                          rel="noopener"
+                          class="text-accent-600 underline hover:text-accent-700"
+                        >
+                          {p.venue_short ?? p.venue} {p.year}
+                        </a>
+                      </Fragment>
+                    ))}
                 </p>
               )}
             </div>
