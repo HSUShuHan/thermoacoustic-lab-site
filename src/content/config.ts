@@ -72,6 +72,8 @@ const members = defineCollection({
     graduated: z.string().optional(),
     // 畢業學年度（民國，如 "113"）
     academic_year: z.string().optional(),
+    // 取得學位（"碩士" / "博士"）
+    degree: z.string().optional(),
     current_position: z.string().optional(),
     // 校友學位論文題目（畢業主題）與 NDLTD 全文連結
     thesis: z.string().optional(),

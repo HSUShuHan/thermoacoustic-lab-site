@@ -183,7 +183,7 @@ const roleSections = [
                     </p>
                     {m.data.graduated && (
                       <p class="mt-1 text-sm text-brand-500">
-                        畢業 {m.data.graduated}
+                        {`畢業 ${m.data.graduated}${m.data.degree ? ` · ${m.data.degree}` : ""}`}
                       </p>
                     )}
               {m.data.thesis && (
