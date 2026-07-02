@@ -367,13 +367,17 @@ const roleSections = [
                   </a>
                 )}
               </div>
-              {a.data.image && (
-                <img
-                  src={a.data.image}
-                  alt={a.data.image_alt ?? a.data.title_en ?? a.data.title_zh}
-                  class="mt-3 max-h-64 w-auto rounded-lg border border-brand-100 object-contain"
-                  loading="lazy"
-                />
+              {a.data.images.length > 0 && (
+                <div class="mt-3 flex flex-wrap gap-3">
+                  {a.data.images.map((img) => (
+                    <img
+                      src={img.src}
+                      alt={img.alt ?? a.data.title_en ?? a.data.title_zh}
+                      class="max-h-64 w-auto rounded-lg border border-brand-100 object-contain"
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
               )}
             </article>
           ))}
