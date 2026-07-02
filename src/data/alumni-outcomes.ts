@@ -7,6 +7,8 @@ export type Sector = { zh: string; en: string; n: number };
 export const alumniOutcomes = {
   // 目前已掌握去向的人數（其餘校友資料建置中）
   knownCount: 13,
+  // 曾赴國內外研究所深造之校友人數（部分深造後再就業，故與就業有重疊）
+  furtherStudyCount: 3,
 
   // 就業產業別（人數）
   sectors: [
