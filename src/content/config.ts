@@ -190,6 +190,8 @@ const awards = defineCollection({
     advisor: z.string().optional(),
     related_pub: z.string().optional(), // publications slug
     url: z.string().url().optional(), // 得獎報導
+    image: z.string().optional(), // 得獎作品照（/images/awards/...）
+    image_alt: z.string().optional(),
   }),
 });
 

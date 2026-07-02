@@ -367,6 +367,14 @@ const roleSections = [
                   </a>
                 )}
               </div>
+              {a.data.image && (
+                <img
+                  src={a.data.image}
+                  alt={a.data.image_alt ?? a.data.title_en ?? a.data.title_zh}
+                  class="mt-3 max-h-64 w-auto rounded-lg border border-brand-100 object-contain"
+                  loading="lazy"
+                />
+              )}
             </article>
           ))}
         </div>
