@@ -182,7 +182,7 @@ const heroNews = allNews
             )}
             <p class="mt-4 text-sm">
               <a
-                href={`/en/people/${pi.slug}`}
+                href={`/en/people/${pi.slug.replace(/-en$/, "")}`}
                 class="text-brand-700 underline transition hover:text-accent-600"
               >
                 Full CV →
