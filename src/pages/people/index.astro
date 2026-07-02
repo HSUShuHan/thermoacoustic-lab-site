@@ -50,10 +50,19 @@ const roleSections = [
   { label: "博士後", members: postdoc },
   { label: "博士生", members: phd },
   { label: "碩士生", members: ms },
-  { label: "大學部專題生", members: undergrad },
   { label: "交換學生", members: exchange },
   { label: "研究助理", members: ra },
 ];
+// 大學部專題生依專題（interests[0]）分組
+const undergradTeams = (() => {
+  const map = new Map<string, typeof undergrad>();
+  for (const m of undergrad) {
+    const key = m.data.interests[0] ?? "";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(m);
+  }
+  return [...map.values()];
+})();
 ---
 
 <BaseLayout
@@ -149,35 +158,63 @@ const roleSections = [
     </p>
     <h2 class="mt-2 text-2xl font-semibold text-brand-900">團隊成員</h2>
     {
-      roleSections.every((s) => s.members.length === 0) ? (
+      roleSections.every((s) => s.members.length === 0) &&
+      undergrad.length === 0 ? (
         <p class="mt-4 text-gray-500">
           團隊成員資料更新中，最新名單將陸續上線。
         </p>
       ) : (
-        roleSections.map((s) =>
-          s.members.length > 0 ? (
-            <div class="mt-6">
-              <h3 class="text-lg font-medium text-brand-800">{s.label}</h3>
-              <div class="mt-3 grid gap-3 md:grid-cols-2">
-                {s.members.map((m) => (
-                  <div class="rounded-lg border border-brand-100 p-4 transition hover:border-brand-300">
-                    <p class="font-medium text-brand-900">
-                      {m.data.name_zh}{" "}
-                      <span class="text-sm text-brand-500">
-                        {m.data.name_en}
-                      </span>
-                    </p>
-                    {m.data.interests.length > 0 && (
-                      <p class="mt-1 text-sm text-gray-600">
-                        {m.data.interests.join("、")}
+        <>
+          {roleSections.map((s) =>
+            s.members.length > 0 ? (
+              <div class="mt-6">
+                <h3 class="text-lg font-medium text-brand-800">{s.label}</h3>
+                <div class="mt-3 grid gap-3 md:grid-cols-2">
+                  {s.members.map((m) => (
+                    <div class="rounded-lg border border-brand-100 p-4 transition hover:border-brand-300">
+                      <p class="font-medium text-brand-900">
+                        {m.data.name_zh}{" "}
+                        <span class="text-sm text-brand-500">
+                          {m.data.name_en}
+                        </span>
                       </p>
-                    )}
+                      {m.data.interests.length > 0 && (
+                        <p class="mt-1 text-sm text-gray-600">
+                          {m.data.interests.join("、")}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null,
+          )}
+
+          {undergrad.length > 0 && (
+            <div class="mt-6">
+              <h3 class="text-lg font-medium text-brand-800">大學部專題生</h3>
+              <div class="mt-3 space-y-3">
+                {undergradTeams.map((team) => (
+                  <div class="rounded-lg border border-brand-100 p-4">
+                    <p class="text-sm font-medium text-brand-700">
+                      {team[0].data.interests[0]}
+                    </p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      {team.map((m) => (
+                        <span class="rounded-md border border-brand-100 bg-brand-50 px-2.5 py-1 text-sm text-brand-900">
+                          {m.data.name_zh}{" "}
+                          <span class="text-xs text-brand-500">
+                            {m.data.name_en}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          ) : null,
-        )
+          )}
+        </>
       )
     }
   </section>
