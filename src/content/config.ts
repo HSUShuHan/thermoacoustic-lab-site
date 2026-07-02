@@ -76,6 +76,10 @@ const members = defineCollection({
     // 取得學位（"碩士" / "博士"）
     degree: z.string().optional(),
     current_position: z.string().optional(),
+    // 畢業去向類別（供去向統計圖）：升學 / 就業 / 其他
+    destination_type: z
+      .enum(["further-study", "industry", "other"])
+      .optional(),
     // 校友學位論文題目（畢業主題）與 NDLTD 全文連結
     thesis: z.string().optional(),
     thesis_en: z.string().optional(),

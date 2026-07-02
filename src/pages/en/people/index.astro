@@ -41,6 +41,33 @@ const awards = (await getCollection("awards")).sort((a, b) =>
   b.data.date.localeCompare(a.data.date),
 );
 
+// Alumni statistics
+const degreeCounts = degreeOrder
+  .map((d) => ({
+    label: degreeEn[d] ?? d,
+    n: alumni.filter((m) => m.data.degree === d).length,
+  }))
+  .filter((x) => x.n > 0);
+const yearCounts = alumniYears.map((y) => ({
+  label: y || "Other",
+  n: alumni.filter((m) => (m.data.graduated ?? "").slice(0, 4) === y).length,
+}));
+const destMeta = [
+  { key: "further-study", label: "Further study" },
+  { key: "industry", label: "Industry" },
+  { key: "other", label: "Other" },
+];
+const destCounts = destMeta
+  .map((d) => ({
+    label: d.label,
+    n: alumni.filter((m) => m.data.destination_type === d.key).length,
+  }))
+  .filter((x) => x.n > 0);
+const maxDegree = Math.max(...degreeCounts.map((x) => x.n), 1);
+const maxYear = Math.max(...yearCounts.map((x) => x.n), 1);
+const maxDest = Math.max(...destCounts.map((x) => x.n), 1);
+const pct = (n: number, max: number) => Math.round((n / max) * 100);
+
 const roleSections = [
   { label: "Postdoc", members: postdoc },
   { label: "Ph.D. Students", members: phd },
@@ -189,7 +216,63 @@ const roleSections = [
         </p>
         <h2 class="mt-2 text-2xl font-semibold text-brand-900">Alumni</h2>
 
-        <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div class="mt-4 rounded-lg border border-brand-100 bg-brand-50 p-5">
+          <p class="text-sm text-gray-700">
+            <strong class="text-brand-900">{alumni.length}</strong> graduates in total（{degreeCounts.map((d) => `${d.label} ${d.n}`).join(", ")}）
+          </p>
+          <div class="mt-4 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+            <div>
+              <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
+                Degrees
+              </h3>
+              <div class="mt-2 space-y-1.5">
+                {degreeCounts.map((d) => (
+                  <div class="grid grid-cols-[3rem_1fr_1.5rem] items-center gap-2">
+                    <span class="text-right text-xs text-gray-600">{d.label}</span>
+                    <span class="h-3.5 rounded bg-brand-700" style={`width:${pct(d.n, maxDegree)}%`} />
+                    <span class="text-xs text-gray-500">{d.n}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
+                By graduation year
+              </h3>
+              <div class="mt-2 space-y-1.5">
+                {yearCounts.map((y) => (
+                  <div class="grid grid-cols-[3rem_1fr_1.5rem] items-center gap-2">
+                    <span class="text-right font-mono text-xs text-gray-600">{y.label}</span>
+                    <span class="h-3.5 rounded bg-accent-500" style={`width:${pct(y.n, maxYear)}%`} />
+                    <span class="text-xs text-gray-500">{y.n}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {destCounts.length > 0 ? (
+            <div class="mt-5">
+              <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
+                Destinations
+              </h3>
+              <div class="mt-2 space-y-1.5 sm:max-w-md">
+                {destCounts.map((d) => (
+                  <div class="grid grid-cols-[6rem_1fr_1.5rem] items-center gap-2">
+                    <span class="text-right text-xs text-gray-600">{d.label}</span>
+                    <span class="h-3.5 rounded bg-brand-500" style={`width:${pct(d.n, maxDest)}%`} />
+                    <span class="text-xs text-gray-500">{d.n}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p class="mt-4 text-xs text-gray-400">
+              Destination statistics coming soon (alumni placements are being updated).
+            </p>
+          )}
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
           <div class="flex items-center gap-2">
             <span class="font-mono text-xs uppercase tracking-widest text-gray-500">Year</span>
             <div class="flex flex-wrap gap-1" data-alumni-filter="year">
