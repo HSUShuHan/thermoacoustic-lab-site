@@ -37,6 +37,9 @@ const degreeOrder = ["學士", "碩士", "博士"];
 const alumniDegrees = degreeOrder.filter((d) =>
   alumni.some((m) => m.data.degree === d),
 );
+const awards = (await getCollection("awards")).sort((a, b) =>
+  b.data.date.localeCompare(a.data.date),
+);
 
 const roleSections = [
   { label: "Postdoc", members: postdoc },
@@ -286,6 +289,23 @@ const roleSections = [
                     ))}
                       </p>
                     )}
+                    {(m.data.award_en ?? m.data.award_zh) && (
+                      <p class="mt-1 text-sm text-gray-600">
+                        Award:{" "}
+                        {m.data.award_url ? (
+                          <a
+                            href={m.data.award_url}
+                            target="_blank"
+                            rel="noopener"
+                            class="text-accent-600 underline hover:text-accent-700"
+                          >
+                            {m.data.award_en ?? m.data.award_zh}
+                          </a>
+                        ) : (
+                          m.data.award_en ?? m.data.award_zh
+                        )}
+                      </p>
+                    )}
                   </div>
                 ))}
             </div>
@@ -295,6 +315,61 @@ const roleSections = [
         <p id="alumni-empty" hidden class="mt-6 text-sm text-gray-500">
           No alumni match the selected filters.
         </p>
+      </section>
+    )
+  }
+
+  {
+    awards.length > 0 && (
+      <section class="mt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">
+          Honors
+        </p>
+        <h2 class="mt-2 text-2xl font-semibold text-brand-900">Honors</h2>
+        <div class="mt-6 space-y-4">
+          {awards.map((a) => (
+            <article class="rounded-lg border border-brand-100 p-5">
+              <p class="text-sm">
+                <span class="rounded bg-accent-50 px-2 py-0.5 text-xs font-medium text-accent-700">
+                  {a.data.award_en ?? a.data.award_zh}
+                </span>
+                <span class="ml-2 font-mono text-brand-500">{a.data.date}</span>
+              </p>
+              <h3 class="mt-2 text-lg font-semibold text-brand-900">
+                {a.data.title_en ?? a.data.title_zh}
+              </h3>
+              <p class="mt-1 text-sm text-brand-600">
+                {a.data.event_en ?? a.data.event_zh}
+              </p>
+              {a.data.recipients.length > 0 && (
+                <p class="mt-1 text-sm text-gray-700">
+                  {a.data.recipients.join(", ")}
+                  {a.data.advisor && ` (advisor: ${a.data.advisor})`}
+                </p>
+              )}
+              <div class="mt-2 flex flex-wrap gap-4 text-xs">
+                {a.data.url && (
+                  <a
+                    href={a.data.url}
+                    target="_blank"
+                    rel="noopener"
+                    class="text-accent-600 underline hover:text-accent-700"
+                  >
+                    Award report ↗
+                  </a>
+                )}
+                {a.data.related_pub && pubMap.get(a.data.related_pub) && (
+                  <a
+                    href="/en/publications/"
+                    class="text-accent-600 underline hover:text-accent-700"
+                  >
+                    Related paper
+                  </a>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
     )
   }

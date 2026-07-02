@@ -82,6 +82,10 @@ const members = defineCollection({
     thesis_url: z.string().url().optional(),
     // 相關論文成果：對應 publications collection 的 slug（校友在學期間成果）
     related_pubs: z.array(z.string()).default([]),
+    // 得獎（卡片顯示，連結得獎報導）
+    award_zh: z.string().optional(),
+    award_en: z.string().optional(),
+    award_url: z.string().url().optional(),
     order: z.number().default(100),
   }),
 });
@@ -172,10 +176,28 @@ const projects = defineCollection({
   }),
 });
 
+const awards = defineCollection({
+  type: "content",
+  schema: z.object({
+    title_zh: z.string(), // 作品／事由
+    title_en: z.string().optional(),
+    date: z.string(), // YYYY 或 YYYY-MM
+    award_zh: z.string(), // 名次／獎項
+    award_en: z.string().optional(),
+    event_zh: z.string(), // 競賽／頒獎單位
+    event_en: z.string().optional(),
+    recipients: z.array(z.string()).default([]),
+    advisor: z.string().optional(),
+    related_pub: z.string().optional(), // publications slug
+    url: z.string().url().optional(), // 得獎報導
+  }),
+});
+
 export const collections = {
   videos,
   publications,
   members,
+  awards,
   research,
   courses,
   software,
