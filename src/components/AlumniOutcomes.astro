@@ -45,14 +45,32 @@ const L = {
       ))
     }
   </div>
-  <div class="mt-4 grid gap-4 sm:grid-cols-3">
+  <div class="mt-4 space-y-4">
     <div>
       <p class="text-xs text-gray-500">{L.schools}</p>
-      <p class="mt-1 text-sm text-gray-700">{list(alumniOutcomes.gradSchools)}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        {alumniOutcomes.gradSchools.map((x) => (
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-brand-100 bg-white px-2 py-1 text-sm text-gray-700">
+            {x.logo && (
+              <img src={x.logo} alt={lang === "en" ? x.en : x.zh} class="h-5 w-auto" loading="lazy" />
+            )}
+            <span>{lang === "en" ? x.en : x.zh}</span>
+          </span>
+        ))}
+      </div>
     </div>
     <div>
       <p class="text-xs text-gray-500">{L.employers}</p>
-      <p class="mt-1 text-sm text-gray-700">{list(alumniOutcomes.employers)}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        {alumniOutcomes.employers.map((x) => (
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-brand-100 bg-white px-2 py-1 text-sm text-gray-700">
+            {x.logo && (
+              <img src={x.logo} alt={lang === "en" ? x.en : x.zh} class="h-5 w-auto" loading="lazy" />
+            )}
+            <span>{lang === "en" ? x.en : x.zh}</span>
+          </span>
+        ))}
+      </div>
     </div>
     <div>
       <p class="text-xs text-gray-500">{L.roles}</p>
