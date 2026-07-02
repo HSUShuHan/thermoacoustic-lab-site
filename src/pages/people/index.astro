@@ -24,6 +24,10 @@ const alumni = byRole("alumni");
 const alumniYears = [
   ...new Set(alumni.map((m) => m.data.academic_year ?? "")),
 ].sort((a, b) => b.localeCompare(a));
+const degreeOrder = ["學士", "碩士", "博士"];
+const alumniDegrees = degreeOrder.filter((d) =>
+  alumni.some((m) => m.data.degree === d),
+);
 
 const roleSections = [
   { label: "Postdoc", members: postdoc },
@@ -167,8 +171,41 @@ const roleSections = [
           Alumni
         </p>
         <h2 class="mt-2 text-2xl font-semibold text-brand-900">畢業學生</h2>
+
+        <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs uppercase tracking-widest text-gray-500">年份</span>
+            <div class="flex flex-wrap gap-1" data-alumni-filter="year">
+              <button class="filter-btn" data-filter-value="all" data-active="true">
+                全部
+              </button>
+              {alumniYears.map((y) => (
+                <button class="filter-btn" data-filter-value={y}>
+                  {y ? `${y} 學年度` : "其他"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {alumniDegrees.length > 1 && (
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs uppercase tracking-widest text-gray-500">學位</span>
+              <div class="flex flex-wrap gap-1" data-alumni-filter="degree">
+                <button class="filter-btn" data-filter-value="all" data-active="true">
+                  全部
+                </button>
+                {alumniDegrees.map((d) => (
+                  <button class="filter-btn" data-filter-value={d}>
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div id="alumni-list">
         {alumniYears.map((year) => (
-          <div class="mt-6">
+          <div class="mt-6" data-year-group={year}>
             <h3>
               <span class="inline-block rounded bg-brand-50 px-2.5 py-1 font-mono text-sm font-medium text-brand-700">
                 {year ? `${year} 學年度` : "其他"}
@@ -178,7 +215,11 @@ const roleSections = [
               {alumni
                 .filter((m) => (m.data.academic_year ?? "") === year)
                 .map((m) => (
-                  <div class="rounded-lg border border-brand-100 p-4">
+                  <div
+                    class="rounded-lg border border-brand-100 p-4"
+                    data-year={year}
+                    data-degree={m.data.degree ?? ""}
+                  >
                     <p class="font-medium text-brand-900">
                       {m.data.name_zh}{" "}
                       <span class="text-sm text-brand-500">{m.data.name_en}</span>
@@ -236,7 +277,53 @@ const roleSections = [
             </div>
           </div>
         ))}
+        </div>
+        <p id="alumni-empty" hidden class="mt-6 text-sm text-gray-500">
+          無符合條件的校友。
+        </p>
       </section>
     )
   }
 </BaseLayout>
+
+<script>
+  const groups = document.querySelectorAll<HTMLElement>("[data-alumni-filter]");
+  const cards = document.querySelectorAll<HTMLElement>(
+    "#alumni-list [data-year][data-degree]",
+  );
+  const yearGroups =
+    document.querySelectorAll<HTMLElement>("#alumni-list [data-year-group]");
+  const empty = document.getElementById("alumni-empty") as HTMLElement | null;
+  const state: Record<string, string> = { year: "all", degree: "all" };
+
+  groups.forEach((g) => {
+    g.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-filter-value]",
+      );
+      if (!btn) return;
+      const group = g.dataset.alumniFilter!;
+      state[group] = btn.dataset.filterValue!;
+      g.querySelectorAll<HTMLElement>("[data-filter-value]").forEach((b) =>
+        b.setAttribute("data-active", String(b === btn)),
+      );
+      apply();
+    });
+  });
+
+  function apply() {
+    let visible = 0;
+    cards.forEach((c) => {
+      const match =
+        (state.year === "all" || state.year === c.dataset.year) &&
+        (state.degree === "all" || state.degree === c.dataset.degree);
+      c.hidden = !match;
+      if (match) visible++;
+    });
+    yearGroups.forEach((yg) => {
+      yg.hidden =
+        yg.querySelectorAll<HTMLElement>("[data-year]:not([hidden])").length === 0;
+    });
+    if (empty) empty.hidden = visible > 0;
+  }
+</script>
