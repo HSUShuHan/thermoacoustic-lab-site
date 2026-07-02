@@ -23,7 +23,11 @@ const ms = byRole("ms");
 const undergrad = byRole("undergrad");
 const ra = byRole("research-assistant");
 const alumni = byRole("alumni");
-const degreeEn: Record<string, string> = { 碩士: "M.S.", 博士: "Ph.D." };
+const degreeEn: Record<string, string> = {
+  學士: "B.S.",
+  碩士: "M.S.",
+  博士: "Ph.D.",
+};
 // Alumni grouped by graduation year (Gregorian), newest first
 const alumniYears = [
   ...new Set(alumni.map((m) => (m.data.graduated ?? "").slice(0, 4))),
