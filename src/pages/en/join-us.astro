@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
+import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
 ---
 
 <BaseLayout
@@ -207,5 +208,23 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
         <strong>applications to study abroad</strong>.
       </p>
     </div>
+  </section>
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">Where our graduates go</h2>
+    <p class="mt-3 text-gray-700">
+      Most of our graduates join the semiconductor and tech sector, and several
+      pursue graduate study at home and abroad. An aggregate overview of alumni
+      destinations (not linked to individuals):
+    </p>
+    <div class="mt-5 rounded-lg border border-brand-100 bg-brand-50 p-5">
+      <AlumniOutcomes lang="en" />
+    </div>
+    <p class="mt-3 text-sm text-gray-500">
+      Full alumni list and statistics on the <a
+        href="/en/people"
+        class="text-accent-600 underline hover:text-accent-700">People page</a
+      >.
+    </p>
   </section>
 </BaseLayout>

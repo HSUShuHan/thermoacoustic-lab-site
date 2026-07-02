@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
+import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
 ---
 
 <BaseLayout
@@ -97,5 +98,21 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
         歡迎心態積極的同學以「完成優良專題成果」為目標一同努力，為未來升學、就業，乃至 <strong>國外留學申請</strong> 預先累積實質學術歷練。
       </p>
     </div>
+  </section>
+
+  <section class="mt-12 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-brand-900">畢業出路</h2>
+    <p class="mt-3 text-gray-700">
+      我們的畢業生多進入半導體與科技產業，也有校友赴國內外研究所深造。以下為歷屆畢業生的去向概況（聚合統計，不對應個人）：
+    </p>
+    <div class="mt-5 rounded-lg border border-brand-100 bg-brand-50 p-5">
+      <AlumniOutcomes lang="zh" />
+    </div>
+    <p class="mt-3 text-sm text-gray-500">
+      完整畢業生名單與統計見<a
+        href="/people"
+        class="text-accent-600 underline hover:text-accent-700">成員頁</a
+      >。
+    </p>
   </section>
 </BaseLayout>

@@ -1,0 +1,65 @@
+---
+import { alumniOutcomes } from "~/data/alumni-outcomes";
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+
+const maxSector = Math.max(...alumniOutcomes.sectors.map((s) => s.n), 1);
+const pct = (n: number, max: number) => Math.round((n / max) * 100);
+
+const L = {
+  sectors: lang === "en" ? "Employment by sector (headcount)" : "就業產業別（人數）",
+  schools: lang === "en" ? "Graduate schools" : "升學學校",
+  employers: lang === "en" ? "Employers" : "就業單位",
+  roles: lang === "en" ? "Roles" : "職位",
+};
+---
+
+<div>
+  <p class="text-xs text-gray-500">{L.sectors}</p>
+  <div class="mt-2 space-y-1.5 sm:max-w-lg">
+    {
+      alumniOutcomes.sectors.map((s) => (
+        <div
+          class:list={[
+            "grid items-center gap-2",
+            lang === "en"
+              ? "grid-cols-[10rem_1fr_1.5rem]"
+              : "grid-cols-[8rem_1fr_1.5rem]",
+          ]}
+        >
+          <span class="text-right text-xs text-gray-600">
+            {lang === "en" ? s.en : s.zh}
+          </span>
+          <span
+            class="h-3.5 rounded bg-brand-500"
+            style={`width:${pct(s.n, maxSector)}%`}
+          />
+          <span class="text-xs text-gray-500">{s.n}</span>
+        </div>
+      ))
+    }
+  </div>
+  <div class="mt-4 grid gap-4 sm:grid-cols-3">
+    <div>
+      <p class="text-xs text-gray-500">{L.schools}</p>
+      <p class="mt-1 text-sm text-gray-700">
+        {alumniOutcomes.gradSchools.join("、")}
+      </p>
+    </div>
+    <div>
+      <p class="text-xs text-gray-500">{L.employers}</p>
+      <p class="mt-1 text-sm text-gray-700">
+        {alumniOutcomes.employers.join("、")}
+      </p>
+    </div>
+    <div>
+      <p class="text-xs text-gray-500">{L.roles}</p>
+      <p class="mt-1 text-sm text-gray-700">
+        {alumniOutcomes.positions.join("、")}
+      </p>
+    </div>
+  </div>
+</div>

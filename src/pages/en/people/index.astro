@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
-import { alumniOutcomes } from "~/data/alumni-outcomes";
+import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
 
 const allRaw = await getCollection("members");
 const baseMembers = allRaw.filter((m) => !m.slug.endsWith("-en"));
@@ -55,7 +55,6 @@ const yearCounts = alumniYears.map((y) => ({
 }));
 const maxDegree = Math.max(...degreeCounts.map((x) => x.n), 1);
 const maxYear = Math.max(...yearCounts.map((x) => x.n), 1);
-const maxSector = Math.max(...alumniOutcomes.sectors.map((s) => s.n), 1);
 const pct = (n: number, max: number) => Math.round((n / max) * 100);
 
 const roleSections = [
@@ -245,36 +244,7 @@ const roleSections = [
               Destinations
             </h3>
             <div class="mt-3">
-              <p class="text-xs text-gray-500">Employment by sector (headcount)</p>
-              <div class="mt-2 space-y-1.5 sm:max-w-lg">
-                {alumniOutcomes.sectors.map((s) => (
-                  <div class="grid grid-cols-[10rem_1fr_1.5rem] items-center gap-2">
-                    <span class="text-right text-xs text-gray-600">{s.en}</span>
-                    <span class="h-3.5 rounded bg-brand-500" style={`width:${pct(s.n, maxSector)}%`} />
-                    <span class="text-xs text-gray-500">{s.n}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div class="mt-4 grid gap-4 sm:grid-cols-3">
-              <div>
-                <p class="text-xs text-gray-500">Graduate schools</p>
-                <p class="mt-1 text-sm text-gray-700">
-                  {alumniOutcomes.gradSchools.join("、")}
-                </p>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500">Employers</p>
-                <p class="mt-1 text-sm text-gray-700">
-                  {alumniOutcomes.employers.join("、")}
-                </p>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500">Roles</p>
-                <p class="mt-1 text-sm text-gray-700">
-                  {alumniOutcomes.positions.join("、")}
-                </p>
-              </div>
+              <AlumniOutcomes lang="en" />
             </div>
           </div>
         </div>
