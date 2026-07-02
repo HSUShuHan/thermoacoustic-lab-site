@@ -15,19 +15,19 @@ export const alumniOutcomes = {
     { zh: "機械、模具與製造", en: "Machinery & manufacturing", n: 5 },
   ] as Sector[],
 
-  // 就業單位（不重複；不對應到個人）
+  // 就業單位與職位（聚合清單，不對應到個人）
   employers: [
-    "台積電",
-    "台灣應用材料",
-    "東京威力科創",
-    "台達電子",
-    "Supermicro",
-    "巨騰事務機器",
-    "昇拓模具",
-    "永隆工程",
-    "佳興油壓五金行",
-    "PK AUTOPACK",
-  ],
+    { org: "台積電", title: "設備工程師" },
+    { org: "台灣應用材料", title: "客戶工程師" },
+    { org: "東京威力科創", title: "現場工程師" },
+    { org: "台達電子", title: "資深機構工程師" },
+    { org: "Supermicro", title: "BMC FW Engineer" },
+    { org: "巨騰事務機器", title: "業務" },
+    { org: "昇拓模具", title: "經理" },
+    { org: "永隆工程", title: "設計部" },
+    { org: "佳興油壓五金行", title: "執行長" },
+    { org: "PK AUTOPACK", title: "業務" },
+  ] as { org: string; title: string }[],
 
   // 升學學校（校友深造過之研究所；部分校友深造後再就業）
   gradSchools: [
