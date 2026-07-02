@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
+import { alumniOutcomes } from "~/data/alumni-outcomes";
 
 const all = (await getCollection("members")).filter(
   (m) => !m.slug.endsWith("-en"),
@@ -41,20 +42,9 @@ const yearCounts = alumniYears.map((y) => ({
   label: y ? `${y} 學年度` : "其他",
   n: alumni.filter((m) => (m.data.academic_year ?? "") === y).length,
 }));
-const destMeta = [
-  { key: "further-study", label: "升學" },
-  { key: "industry", label: "就業" },
-  { key: "other", label: "其他" },
-];
-const destCounts = destMeta
-  .map((d) => ({
-    label: d.label,
-    n: alumni.filter((m) => m.data.destination_type === d.key).length,
-  }))
-  .filter((x) => x.n > 0);
 const maxDegree = Math.max(...degreeCounts.map((x) => x.n), 1);
 const maxYear = Math.max(...yearCounts.map((x) => x.n), 1);
-const maxDest = Math.max(...destCounts.map((x) => x.n), 1);
+const maxSector = Math.max(...alumniOutcomes.sectors.map((s) => s.n), 1);
 const pct = (n: number, max: number) => Math.round((n / max) * 100);
 
 const roleSections = [
@@ -235,26 +225,40 @@ const roleSections = [
               </div>
             </div>
           </div>
-          {destCounts.length > 0 ? (
-            <div class="mt-5">
-              <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
-                畢業去向
-              </h3>
-              <div class="mt-2 space-y-1.5 sm:max-w-md">
-                {destCounts.map((d) => (
-                  <div class="grid grid-cols-[3rem_1fr_1.5rem] items-center gap-2">
-                    <span class="text-right text-xs text-gray-600">{d.label}</span>
-                    <span class="h-3.5 rounded bg-brand-500" style={`width:${pct(d.n, maxDest)}%`} />
-                    <span class="text-xs text-gray-500">{d.n}</span>
+          <div class="mt-6 border-t border-brand-100 pt-4">
+            <h3 class="text-xs font-medium uppercase tracking-widest text-brand-500">
+              畢業去向
+            </h3>
+            <p class="mt-2 text-sm text-gray-700">
+              已掌握 {alumniOutcomes.knownCount} 位去向：升學 {alumniOutcomes.furtherStudyCount}、就業 {alumniOutcomes.employmentCount}。
+            </p>
+            <div class="mt-3">
+              <p class="text-xs text-gray-500">就業產業別（人數）</p>
+              <div class="mt-2 space-y-1.5 sm:max-w-lg">
+                {alumniOutcomes.sectors.map((s) => (
+                  <div class="grid grid-cols-[8rem_1fr_1.5rem] items-center gap-2">
+                    <span class="text-right text-xs text-gray-600">{s.zh}</span>
+                    <span class="h-3.5 rounded bg-brand-500" style={`width:${pct(s.n, maxSector)}%`} />
+                    <span class="text-xs text-gray-500">{s.n}</span>
                   </div>
                 ))}
               </div>
             </div>
-          ) : (
-            <p class="mt-4 text-xs text-gray-400">
-              畢業去向統計待建置（校友動向陸續更新中）。
-            </p>
-          )}
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div>
+                <p class="text-xs text-gray-500">升學學校</p>
+                <p class="mt-1 text-sm text-gray-700">
+                  {alumniOutcomes.gradSchools.join("、")}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">就業單位</p>
+                <p class="mt-1 text-sm text-gray-700">
+                  {alumniOutcomes.employers.join("、")}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
