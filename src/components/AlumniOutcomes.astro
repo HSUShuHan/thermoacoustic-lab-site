@@ -8,6 +8,9 @@ const { lang = "zh" } = Astro.props;
 
 const maxSector = Math.max(...alumniOutcomes.sectors.map((s) => s.n), 1);
 const pct = (n: number, max: number) => Math.round((n / max) * 100);
+const sep = lang === "en" ? ", " : "、";
+const list = (arr: { zh: string; en: string }[]) =>
+  arr.map((x) => (lang === "en" ? x.en : x.zh)).join(sep);
 
 const L = {
   sectors: lang === "en" ? "Employment by sector (headcount)" : "就業產業別（人數）",
@@ -45,21 +48,15 @@ const L = {
   <div class="mt-4 grid gap-4 sm:grid-cols-3">
     <div>
       <p class="text-xs text-gray-500">{L.schools}</p>
-      <p class="mt-1 text-sm text-gray-700">
-        {alumniOutcomes.gradSchools.join("、")}
-      </p>
+      <p class="mt-1 text-sm text-gray-700">{list(alumniOutcomes.gradSchools)}</p>
     </div>
     <div>
       <p class="text-xs text-gray-500">{L.employers}</p>
-      <p class="mt-1 text-sm text-gray-700">
-        {alumniOutcomes.employers.join("、")}
-      </p>
+      <p class="mt-1 text-sm text-gray-700">{list(alumniOutcomes.employers)}</p>
     </div>
     <div>
       <p class="text-xs text-gray-500">{L.roles}</p>
-      <p class="mt-1 text-sm text-gray-700">
-        {alumniOutcomes.positions.join("、")}
-      </p>
+      <p class="mt-1 text-sm text-gray-700">{list(alumniOutcomes.positions)}</p>
     </div>
   </div>
 </div>

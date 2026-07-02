@@ -17,35 +17,38 @@ export const alumniOutcomes = {
 
   // 就業單位（聚合、去重、不對應到個人、不與職位配對）
   employers: [
-    "台積電",
-    "台灣應用材料",
-    "東京威力科創",
-    "台達電子",
-    "Supermicro",
-    "巨騰事務機器",
-    "昇拓模具",
-    "永隆工程",
-    "佳興油壓五金行",
-    "PK AUTOPACK",
-  ],
+    { zh: "台積電", en: "TSMC" },
+    { zh: "台灣應用材料", en: "Applied Materials" },
+    { zh: "東京威力科創", en: "Tokyo Electron" },
+    { zh: "台達電子", en: "Delta Electronics" },
+    { zh: "Supermicro", en: "Supermicro" },
+    { zh: "巨騰事務機器", en: "Ju Teng" },
+    { zh: "昇拓模具", en: "Sheng-Tuo Mould" },
+    { zh: "永隆工程", en: "Yong-Long Engineering" },
+    { zh: "佳興油壓五金行", en: "Jia-Xing Hydraulics" },
+    { zh: "PK AUTOPACK", en: "PK AUTOPACK" },
+  ] as { zh: string; en: string }[],
 
   // 職位（聚合、去重、不與單位配對）
   positions: [
-    "設備工程師",
-    "客戶工程師",
-    "現場工程師",
-    "資深機構工程師",
-    "BMC FW Engineer",
-    "業務",
-    "經理",
-    "設計部",
-    "執行長",
-  ],
+    { zh: "設備工程師", en: "Equipment Engineer" },
+    { zh: "客戶工程師", en: "Customer Engineer" },
+    { zh: "現場工程師", en: "Field Engineer" },
+    { zh: "資深機構工程師", en: "Senior Mechanical Engineer" },
+    { zh: "BMC FW Engineer", en: "BMC FW Engineer" },
+    { zh: "業務", en: "Sales" },
+    { zh: "經理", en: "Manager" },
+    { zh: "設計部", en: "Design Dept." },
+    { zh: "執行長", en: "CEO" },
+  ] as { zh: string; en: string }[],
 
   // 升學學校（校友深造過之研究所；部分校友深造後再就業）
   gradSchools: [
-    "國立臺灣大學 機械所",
-    "日本 東京科學大學",
-    "加拿大 University of British Columbia",
-  ],
+    { zh: "國立臺灣大學 機械所", en: "National Taiwan University (Mech. Eng.)" },
+    { zh: "日本 東京科學大學", en: "Institute of Science Tokyo (Japan)" },
+    {
+      zh: "加拿大 University of British Columbia",
+      en: "University of British Columbia (Canada)",
+    },
+  ] as { zh: string; en: string }[],
 };
