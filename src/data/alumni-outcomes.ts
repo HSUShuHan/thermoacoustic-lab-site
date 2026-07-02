@@ -24,7 +24,7 @@ export const alumniOutcomes = {
     { zh: "Supermicro", en: "Supermicro" },
     { zh: "巨騰事務機器", en: "Ju Teng" },
     { zh: "昇拓模具", en: "Sheng-Tuo Mould" },
-    { zh: "永隆工程", en: "Yong-Long Engineering" },
+    { zh: "永隆工程", en: "Yung Loong Engineering" },
     { zh: "佳興油壓五金行", en: "Jia-Xing Hydraulics" },
     { zh: "PK AUTOPACK", en: "PK AUTOPACK" },
   ] as { zh: string; en: string }[],
