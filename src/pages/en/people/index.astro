@@ -184,7 +184,10 @@ const roleSections = [
                     </p>
                     {m.data.interests.length > 0 && (
                       <p class="mt-1 text-sm text-gray-600">
-                        {m.data.interests.join(", ")}
+                        {(m.data.interests_en.length
+                          ? m.data.interests_en
+                          : m.data.interests
+                        ).join(", ")}
                       </p>
                     )}
                   </div>

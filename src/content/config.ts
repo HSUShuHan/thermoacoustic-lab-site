@@ -65,6 +65,7 @@ const members = defineCollection({
     photo: z.string().optional(),
     affiliation: z.string().optional(),
     interests: z.array(z.string()).default([]),
+    interests_en: z.array(z.string()).default([]),
     cv: z.string().optional(),
     homepage: z.string().url().optional(),
     google_scholar: z.string().url().optional(),
