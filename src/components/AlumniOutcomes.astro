@@ -64,7 +64,11 @@ const L = {
       </div>
     </div>
     <div>
-      <p class="text-xs text-gray-500">{L.employers}</p>
+      <p class="text-xs text-gray-500">
+        {L.employers}{lang === "en"
+          ? ` (${alumniOutcomes.employmentCount})`
+          : `（${alumniOutcomes.employmentCount} 位）`}
+      </p>
       <div class="mt-2 flex flex-wrap items-center gap-2">
         {alumniOutcomes.employers.map((x) => (
           <span class="inline-flex items-center gap-1.5 rounded-md border border-brand-100 bg-white px-2 py-1 text-sm text-gray-700">

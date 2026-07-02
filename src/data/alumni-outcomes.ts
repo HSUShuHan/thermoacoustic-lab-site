@@ -9,6 +9,8 @@ export const alumniOutcomes = {
   knownCount: 13,
   // 曾赴國內外研究所深造之校友人數（部分深造後再就業，故與就業有重疊）
   furtherStudyCount: 3,
+  // 目前於業界任職之校友人數（＝就業產業別人數合計）
+  employmentCount: 11,
 
   // 就業產業別（人數）
   sectors: [
