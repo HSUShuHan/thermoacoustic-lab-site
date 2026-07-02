@@ -241,7 +241,7 @@ const roleSections = [
                 ))}
               </div>
             </div>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div class="mt-4 grid gap-4 sm:grid-cols-3">
               <div>
                 <p class="text-xs text-gray-500">升學學校</p>
                 <p class="mt-1 text-sm text-gray-700">
@@ -249,9 +249,15 @@ const roleSections = [
                 </p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">就業單位與職位</p>
+                <p class="text-xs text-gray-500">就業單位</p>
                 <p class="mt-1 text-sm text-gray-700">
-                  {alumniOutcomes.employers.map((e) => `${e.org} · ${e.title}`).join("、")}
+                  {alumniOutcomes.employers.join("、")}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">職位</p>
+                <p class="mt-1 text-sm text-gray-700">
+                  {alumniOutcomes.positions.join("、")}
                 </p>
               </div>
             </div>

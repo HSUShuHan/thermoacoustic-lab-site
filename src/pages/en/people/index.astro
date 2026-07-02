@@ -256,7 +256,7 @@ const roleSections = [
                 ))}
               </div>
             </div>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div class="mt-4 grid gap-4 sm:grid-cols-3">
               <div>
                 <p class="text-xs text-gray-500">Graduate schools</p>
                 <p class="mt-1 text-sm text-gray-700">
@@ -264,9 +264,15 @@ const roleSections = [
                 </p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">Employers & roles</p>
+                <p class="text-xs text-gray-500">Employers</p>
                 <p class="mt-1 text-sm text-gray-700">
-                  {alumniOutcomes.employers.map((e) => `${e.org} · ${e.title}`).join("、")}
+                  {alumniOutcomes.employers.join("、")}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Roles</p>
+                <p class="mt-1 text-sm text-gray-700">
+                  {alumniOutcomes.positions.join("、")}
                 </p>
               </div>
             </div>
