@@ -57,6 +57,7 @@ const members = defineCollection({
       "phd",
       "ms",
       "undergrad",
+      "exchange",
       "research-assistant",
       "alumni",
     ]),

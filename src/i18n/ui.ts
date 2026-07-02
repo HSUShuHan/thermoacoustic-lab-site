@@ -69,6 +69,7 @@ export const ui = {
     "role.phd": "博士生",
     "role.ms": "碩士生",
     "role.undergrad": "大學部專題生",
+    "role.exchange": "交換學生",
     "role.research-assistant": "研究助理",
     "role.alumni": "校友",
 
@@ -172,6 +173,7 @@ export const ui = {
     "role.phd": "PhD Student",
     "role.ms": "MS Student",
     "role.undergrad": "Undergraduate Student",
+    "role.exchange": "Exchange Student",
     "role.research-assistant": "Research Assistant",
     "role.alumni": "Alumni",
 
