@@ -1,0 +1,209 @@
+---
+import { getCollection } from "astro:content";
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const en = lang === "en";
+
+const allVideos = await getCollection("videos");
+const videos = allVideos.sort((a, b) => {
+  if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+  return (b.data.year ?? 0) - (a.data.year ?? 0);
+});
+const pubs = await getCollection("publications");
+const pubBySlug = new Map(pubs.map((p) => [p.slug, p]));
+
+// 照片區（聚合，中英標題）
+const photos = [
+  {
+    src: "/images/media/rotating-drum-coffee.jpg",
+    zh: "旋轉滾筒咖啡豆顆粒流實驗機（透明壓克力滾筒）",
+    en: "Rotating-drum coffee-bean granular-flow rig (transparent acrylic drum)",
+  },
+  {
+    src: "/images/awards/2023-liquid-load-apparatus.jpg",
+    zh: "液柱負載與多蓄熱器熱聲引擎實驗裝置",
+    en: "Liquid-column-loaded multi-regenerator thermoacoustic engine",
+  },
+  {
+    src: "/images/awards/2022-coffee-drum-piv.png",
+    zh: "咖啡豆顆粒流 PIV 速度場疊加圖",
+    en: "Coffee-bean granular-flow PIV velocity field",
+  },
+];
+
+const L = {
+  videos: en ? "Videos" : "影片",
+  photos: en ? "Photos" : "照片",
+  paper: en ? "Related paper" : "對應論文",
+  play: en ? "Play video" : "播放影片",
+};
+const vtitle = (v: (typeof videos)[number]) =>
+  en ? (v.data.title_en ?? v.data.title) : (v.data.title_zh ?? v.data.title);
+const vdesc = (v: (typeof videos)[number]) =>
+  en ? (v.data.description_en ?? v.data.description) : v.data.description;
+---
+
+<div class="mg" data-mg>
+  {
+    videos.length > 0 && (
+      <section>
+        <h2 class="text-2xl font-semibold text-brand-900">{L.videos}</h2>
+        <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {videos.map((v) => {
+            const pub = v.data.related_pub ? pubBySlug.get(v.data.related_pub) : null;
+            const url = pub
+              ? pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
+              : null;
+            return (
+              <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300">
+                <button
+                  type="button"
+                  class="group relative block aspect-video w-full bg-black"
+                  data-yt={v.data.youtube_id}
+                  data-title={vtitle(v)}
+                  aria-label={`${L.play}: ${vtitle(v)}`}
+                >
+                  <img
+                    src={`https://i.ytimg.com/vi/${v.data.youtube_id}/hqdefault.jpg`}
+                    alt={vtitle(v)}
+                    loading="lazy"
+                    class="absolute inset-0 h-full w-full object-cover transition group-hover:opacity-90"
+                  />
+                  <span class="absolute inset-0 flex items-center justify-center">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-full bg-white/85 shadow transition group-hover:scale-110">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="#dc2626" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+                <figcaption class="p-4">
+                  {v.data.year && (
+                    <p class="text-xs uppercase tracking-widest text-brand-500">{v.data.year}</p>
+                  )}
+                  <h3 class="mt-1 text-base font-semibold leading-snug text-brand-900">{vtitle(v)}</h3>
+                  {vdesc(v) && <p class="mt-2 text-sm text-gray-700">{vdesc(v)}</p>}
+                  {pub && (
+                    <p class="mt-3 text-sm">
+                      <span class="text-brand-600">{L.paper}：</span>
+                      {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">
+                          {pub.data.venue_short ?? pub.data.venue} ({pub.data.year}) <span class="text-xs">↗</span>
+                        </a>
+                      ) : (
+                        <span class="text-gray-700">{pub.data.venue_short ?? pub.data.venue} ({pub.data.year})</span>
+                      )}
+                    </p>
+                  )}
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    photos.length > 0 && (
+      <section class="mt-12">
+        <h2 class="text-2xl font-semibold text-brand-900">{L.photos}</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {photos.map((p) => (
+            <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300">
+              <button
+                type="button"
+                class="group block aspect-[4/3] w-full bg-brand-50"
+                data-img={p.src}
+                data-caption={en ? p.en : p.zh}
+                aria-label={en ? p.en : p.zh}
+              >
+                <img src={p.src} alt={en ? p.en : p.zh} loading="lazy" class="h-full w-full object-cover transition group-hover:opacity-90" />
+              </button>
+              <figcaption class="p-3 text-sm text-gray-700">{en ? p.en : p.zh}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <div class="mg-lb" data-lb hidden>
+    <button type="button" class="mg-close" data-close aria-label="Close">×</button>
+    <div class="mg-stage" data-stage></div>
+    <p class="mg-cap" data-cap></p>
+  </div>
+</div>
+
+<style>
+  .mg-lb {
+    position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 0.75rem; padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(2px);
+  }
+  .mg-lb[hidden] { display: none; }
+  .mg-stage {
+    width: min(92vw, 1100px); max-height: 80vh; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .mg-stage :global(iframe) { width: min(92vw, 1100px); aspect-ratio: 16 / 9; border: 0; border-radius: 0.5rem; }
+  .mg-stage :global(img) { max-width: 92vw; max-height: 80vh; border-radius: 0.5rem; }
+  .mg-cap { color: #e2e8f0; font-size: 0.9rem; text-align: center; max-width: 92vw; }
+  .mg-close {
+    position: absolute; top: 1rem; right: 1.25rem; color: #fff; font-size: 2rem;
+    line-height: 1; background: none; border: 0; cursor: pointer; opacity: 0.8;
+  }
+  .mg-close:hover { opacity: 1; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-mg]").forEach((root) => {
+    const lb = root.querySelector<HTMLElement>("[data-lb]");
+    const stage = root.querySelector<HTMLElement>("[data-stage]");
+    const cap = root.querySelector<HTMLElement>("[data-cap]");
+    if (!lb || !stage || !cap) return;
+
+    const open = (node: Node, caption: string) => {
+      stage.replaceChildren(node);
+      cap.textContent = caption;
+      lb.hidden = false;
+      document.body.style.overflow = "hidden";
+    };
+    const close = () => {
+      lb.hidden = true;
+      stage.replaceChildren();
+      document.body.style.overflow = "";
+    };
+
+    root.querySelectorAll<HTMLButtonElement>("[data-yt]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const id = b.dataset.yt!;
+        const f = document.createElement("iframe");
+        f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+        f.title = b.dataset.title ?? "";
+        f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        f.setAttribute("allowfullscreen", "");
+        f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        open(f, b.dataset.title ?? "");
+      }),
+    );
+    root.querySelectorAll<HTMLButtonElement>("[data-img]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const img = document.createElement("img");
+        img.src = b.dataset.img!;
+        img.alt = b.dataset.caption ?? "";
+        open(img, b.dataset.caption ?? "");
+      }),
+    );
+    lb.querySelector("[data-close]")?.addEventListener("click", close);
+    lb.addEventListener("click", (e) => {
+      if (e.target === lb) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !lb.hidden) close();
+    });
+  });
+</script>
