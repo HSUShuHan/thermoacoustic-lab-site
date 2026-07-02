@@ -7,8 +7,6 @@ export type Sector = { zh: string; en: string; n: number };
 export const alumniOutcomes = {
   // 目前已掌握去向的人數（其餘校友資料建置中）
   knownCount: 13,
-  furtherStudyCount: 2,
-  employmentCount: 11,
 
   // 就業產業別（人數）
   sectors: [
@@ -31,6 +29,10 @@ export const alumniOutcomes = {
     "PK AUTOPACK",
   ],
 
-  // 升學學校
-  gradSchools: ["國立臺灣大學 機械所", "日本東京科學大學"],
+  // 升學學校（校友深造過之研究所；部分校友深造後再就業）
+  gradSchools: [
+    "國立臺灣大學 機械所",
+    "日本 東京科學大學",
+    "加拿大 University of British Columbia",
+  ],
 };
