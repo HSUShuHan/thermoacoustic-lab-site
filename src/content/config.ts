@@ -180,6 +180,8 @@ const projects = defineCollection({
     active: z.boolean().default(true),
     // 計畫種類：研究（國科會等）/ 教學（教育部教學實踐）/ 產學合作
     category: z.enum(["research", "teaching", "industry"]).default("research"),
+    // 該計畫產出之論文（publications slug 陣列）
+    related_pubs: z.array(z.string()).default([]),
   }),
 });
 
