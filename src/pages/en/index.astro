@@ -362,7 +362,7 @@ const heroNews = allNews
                     </span>
                   )}
                 </p>
-                <p class="mt-1 text-sm italic text-gray-600">{p.data.venue}</p>
+                <p class="mt-1 text-sm italic text-gray-600">{p.data.venue_en ?? p.data.venue}</p>
                 {p.data.type === "journal" && (
                   <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
                     {p.data.impact_factor !== undefined && (

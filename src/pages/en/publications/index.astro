@@ -126,7 +126,7 @@ const LAB_AUTHORS = new Set([
                 </>
               ))}
             </p>
-            <p class="mt-0.5 font-mono text-xs italic text-gray-500">{p.data.venue}</p>
+            <p class="mt-0.5 font-mono text-xs italic text-gray-500">{p.data.venue_en ?? p.data.venue}</p>
             {p.data.type === "journal" && (
               <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
                 {p.data.impact_factor !== undefined && (

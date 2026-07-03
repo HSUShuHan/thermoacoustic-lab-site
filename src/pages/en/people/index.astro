@@ -415,7 +415,7 @@ const teamTopic = (team: typeof undergrad) =>
                           rel="noopener"
                           class="text-accent-600 underline hover:text-accent-700"
                         >
-                          {p.venue_short ?? p.venue} {p.year}
+                          {p.venue_en ?? p.venue_short ?? p.venue} {p.year}
                         </a>
                       </Fragment>
                     ))}
@@ -468,7 +468,10 @@ const teamTopic = (team: typeof undergrad) =>
                           rel="noopener"
                           class="text-accent-600 underline hover:text-accent-700"
                         >
-                          Related work: {team.pub.venue_short ?? team.pub.venue}{" "}
+                          Related work:{" "}
+                          {team.pub.venue_en ??
+                            team.pub.venue_short ??
+                            team.pub.venue}{" "}
                           {team.pub.year}
                         </a>
                       )}
