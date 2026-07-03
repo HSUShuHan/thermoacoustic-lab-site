@@ -15,52 +15,82 @@ const videos = allVideos.sort((a, b) => {
 const pubs = await getCollection("publications");
 const pubBySlug = new Map(pubs.map((p) => [p.slug, p]));
 
-// 照片區（聚合，中英標題；pub 可選，連結對應論文）
-const photos = [
+// 照片區依研究主軸分組（中英標題；pub 可選，連結對應論文）
+const photoGroups = [
   {
-    src: "/images/media/condensation-shock-highlight.jpg",
-    zh: "濕式熱聲原動機中誘發的凝結震波——實驗裝置與壓力／溫度歷程",
-    en: "Condensation shock in a wet thermoacoustic prime mover — apparatus with pressure/temperature histories",
-    pub: "2024-hsu-condensation-shock",
+    zh: "濕式熱聲與凝結震波",
+    en: "Wet thermoacoustics & condensation shock",
+    photos: [
+      {
+        src: "/images/media/condensation-shock-highlight.jpg",
+        zh: "濕式熱聲原動機中誘發的凝結震波——實驗裝置與壓力／溫度歷程",
+        en: "Condensation shock in a wet thermoacoustic prime mover — apparatus with pressure/temperature histories",
+        pub: "2024-hsu-condensation-shock",
+      },
+      {
+        src: "/images/media/condensation-shock-spectrogram.jpg",
+        zh: "壓力訊號時頻圖與冷熱端溫度歷程（無液膜）：加熱過程中約 360 Hz 基頻自發起振後衰減",
+        en: "Time–frequency map of the pressure signal with hot/cold-end temperatures (no membrane): a ~360 Hz fundamental self-excites then decays during heating",
+        pub: "2024-hsu-condensation-shock",
+      },
+    ],
   },
   {
-    src: "/images/media/condensation-shock-spectrogram.jpg",
-    zh: "壓力訊號時頻圖與冷熱端溫度歷程（無液膜）：加熱過程中約 360 Hz 基頻自發起振後衰減",
-    en: "Time–frequency map of the pressure signal with hot/cold-end temperatures (no membrane): a ~360 Hz fundamental self-excites then decays during heating",
-    pub: "2024-hsu-condensation-shock",
+    zh: "非線性動力學：起振、分歧與飽和",
+    en: "Nonlinear dynamics: onset, bifurcation & saturation",
+    photos: [
+      {
+        src: "/images/media/subcritical-hopf-triggering.jpg",
+        zh: "亞臨界霍普夫分歧的觸發（ΔT = 340 K）：間歇擾動觸發後成長為極限環，以史特勞–朗道模型擬合",
+        en: "Triggering across a subcritical Hopf bifurcation (ΔT = 340 K): intermittent perturbations grow into a limit cycle, fitted with a Stuart–Landau model",
+        pub: "2024-lai-hopf-bifurcation",
+      },
+      {
+        src: "/images/media/subcritical-hopf-saturation.jpg",
+        zh: "極限環振幅飽和（ΔT = 347 K）：振幅成長至飽和，成長率 d(ln|A|)/dt 對 |A|² 呈史特勞–朗道相圖（R² = 0.99）",
+        en: "Limit-cycle amplitude saturation (ΔT = 347 K): amplitude grows to saturation; growth rate d(ln|A|)/dt versus |A|² gives the Stuart–Landau phase portrait (R² = 0.99)",
+        pub: "2024-lai-hopf-bifurcation",
+      },
+    ],
   },
   {
-    src: "/images/media/subcritical-hopf-triggering.jpg",
-    zh: "亞臨界霍普夫分歧的觸發（ΔT = 340 K）：間歇擾動觸發後成長為極限環，以史特勞–蘭道模型擬合",
-    en: "Triggering across a subcritical Hopf bifurcation (ΔT = 340 K): intermittent perturbations grow into a limit cycle, fitted with a Stuart–Landau model",
-    pub: "2024-lai-hopf-bifurcation",
+    zh: "熱聲引擎與蓄熱器",
+    en: "Thermoacoustic engines & regenerators",
+    photos: [
+      {
+        src: "/images/media/speaker-load-onset-setup.jpg",
+        zh: "負載揚聲器之環形管熱聲史特靈引擎發振條件量測配置",
+        en: "Looped-tube thermoacoustic Stirling engine loaded with a loudspeaker — onset-condition measurement setup",
+        pub: "2023-hsu-onset-conditions",
+      },
+      {
+        src: "/images/media/effective-radius-setup.jpg",
+        zh: "堆疊金屬絲網蓄熱器等效流路半徑之雙揚聲器聲學量測裝置",
+        en: "Two-driver acoustic setup for the effective flow radius of a stacked-screen regenerator",
+        pub: "2017-hsu-stacked-screen-modeling",
+      },
+      {
+        src: "/images/awards/2023-liquid-load-apparatus.jpg",
+        zh: "液柱負載與多蓄熱器熱聲引擎實驗裝置",
+        en: "Liquid-column-loaded multi-regenerator thermoacoustic engine",
+      },
+    ],
   },
   {
-    src: "/images/media/speaker-load-onset-setup.jpg",
-    zh: "負載揚聲器之環形管熱聲史特靈引擎發振條件量測配置",
-    en: "Looped-tube thermoacoustic Stirling engine loaded with a loudspeaker — onset-condition measurement setup",
-    pub: "2023-hsu-onset-conditions",
-  },
-  {
-    src: "/images/media/effective-radius-setup.jpg",
-    zh: "堆疊金屬絲網蓄熱器等效流路半徑之雙揚聲器聲學量測裝置",
-    en: "Two-driver acoustic setup for the effective flow radius of a stacked-screen regenerator",
-    pub: "2017-hsu-stacked-screen-modeling",
-  },
-  {
-    src: "/images/media/rotating-drum-coffee.jpg",
-    zh: "旋轉滾筒咖啡豆顆粒流實驗機（透明壓克力滾筒）",
-    en: "Rotating-drum coffee-bean granular-flow rig (transparent acrylic drum)",
-  },
-  {
-    src: "/images/awards/2023-liquid-load-apparatus.jpg",
-    zh: "液柱負載與多蓄熱器熱聲引擎實驗裝置",
-    en: "Liquid-column-loaded multi-regenerator thermoacoustic engine",
-  },
-  {
-    src: "/images/awards/2022-coffee-drum-piv.png",
-    zh: "咖啡豆顆粒流 PIV 速度場疊加圖",
-    en: "Coffee-bean granular-flow PIV velocity field",
+    zh: "顆粒流",
+    en: "Granular flow",
+    photos: [
+      {
+        src: "/images/media/rotating-drum-coffee.jpg",
+        zh: "旋轉滾筒咖啡豆顆粒流實驗機（透明壓克力滾筒）",
+        en: "Rotating-drum coffee-bean granular-flow rig (transparent acrylic drum)",
+      },
+      {
+        src: "/images/awards/2022-coffee-drum-piv.png",
+        zh: "咖啡豆顆粒流 PIV 速度場疊加圖",
+        en: "Coffee-bean granular-flow PIV velocity field",
+      },
+    ],
   },
 ];
 
@@ -138,50 +168,57 @@ const vdesc = (v: (typeof videos)[number]) =>
   }
 
   {
-    photos.length > 0 && (
+    photoGroups.length > 0 && (
       <section class="mt-12">
         <h2 class="text-2xl font-semibold text-brand-900">{L.photos}</h2>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {photos.map((p) => {
-            const pub = "pub" in p && p.pub ? pubBySlug.get(p.pub) : null;
-            const url = pub
-              ? pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
-              : null;
-            const venue = pub
-              ? en
-                ? (pub.data.venue_en ?? pub.data.venue_short ?? pub.data.venue)
-                : (pub.data.venue_short ?? pub.data.venue)
-              : null;
-            return (
-              <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300">
-                <button
-                  type="button"
-                  class="group block aspect-[4/3] w-full bg-brand-50"
-                  data-img={p.src}
-                  data-caption={en ? p.en : p.zh}
-                  aria-label={en ? p.en : p.zh}
-                >
-                  <img src={p.src} alt={en ? p.en : p.zh} loading="lazy" class="h-full w-full object-cover transition group-hover:opacity-90" />
-                </button>
-                <figcaption class="p-3 text-sm text-gray-700">
-                  {en ? p.en : p.zh}
-                  {pub && (
-                    <span class="mt-2 block text-xs">
-                      <span class="text-brand-600">{L.paper}：</span>
-                      {url ? (
-                        <a href={url} target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">
-                          {venue} ({pub.data.year}) <span>↗</span>
-                        </a>
-                      ) : (
-                        <span class="text-gray-700">{venue} ({pub.data.year})</span>
+        {photoGroups.map((group) => (
+          <div class="mt-8 first:mt-6">
+            <h3 class="text-sm font-semibold uppercase tracking-widest text-brand-500">
+              {en ? group.en : group.zh}
+            </h3>
+            <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {group.photos.map((p) => {
+                const pub = "pub" in p && p.pub ? pubBySlug.get(p.pub) : null;
+                const url = pub
+                  ? pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
+                  : null;
+                const venue = pub
+                  ? en
+                    ? (pub.data.venue_en ?? pub.data.venue_short ?? pub.data.venue)
+                    : (pub.data.venue_short ?? pub.data.venue)
+                  : null;
+                return (
+                  <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300">
+                    <button
+                      type="button"
+                      class="group block aspect-[4/3] w-full bg-brand-50"
+                      data-img={p.src}
+                      data-caption={en ? p.en : p.zh}
+                      aria-label={en ? p.en : p.zh}
+                    >
+                      <img src={p.src} alt={en ? p.en : p.zh} loading="lazy" class="h-full w-full object-cover transition group-hover:opacity-90" />
+                    </button>
+                    <figcaption class="p-3 text-sm text-gray-700">
+                      {en ? p.en : p.zh}
+                      {pub && (
+                        <span class="mt-2 block text-xs">
+                          <span class="text-brand-600">{L.paper}：</span>
+                          {url ? (
+                            <a href={url} target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">
+                              {venue} ({pub.data.year}) <span>↗</span>
+                            </a>
+                          ) : (
+                            <span class="text-gray-700">{venue} ({pub.data.year})</span>
+                          )}
+                        </span>
                       )}
-                    </span>
-                  )}
-                </figcaption>
-              </figure>
-            );
-          })}
-        </div>
+                    </figcaption>
+                  </figure>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </section>
     )
   }
