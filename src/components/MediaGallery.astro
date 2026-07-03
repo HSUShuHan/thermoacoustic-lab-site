@@ -15,20 +15,31 @@ const videos = allVideos.sort((a, b) => {
 const pubs = await getCollection("publications");
 const pubBySlug = new Map(pubs.map((p) => [p.slug, p]));
 
+// 凝結爆衝：影片＋數據圖並排特別區塊（從一般影片格與照片組抽出）
+const CONDENSATION_PUB = "2024-hsu-condensation-shock";
+const featuredVideo =
+  videos.find((v) => v.data.related_pub === CONDENSATION_PUB) ?? null;
+const gridVideos = videos.filter((v) => v !== featuredVideo);
+const featuredFigure = {
+  zh: "無薄膜時的壓力訊號時間序列與冷熱端溫度：加熱過程中自發起振，最大 p′ ≈ 1285 Pa（t ≈ 328 s）後衰減",
+  en: "Pressure time series with hot/cold-end temperatures for the no-membrane case: self-excited oscillation during heating, peaking at p′ ≈ 1285 Pa (t ≈ 328 s) before decaying",
+  src: "/images/media/condensation-shock-timeseries.jpg",
+};
+const featuredPub = pubBySlug.get(CONDENSATION_PUB) ?? null;
+const featuredUrl = featuredPub
+  ? featuredPub.data.url ||
+    (featuredPub.data.doi ? `https://doi.org/${featuredPub.data.doi}` : null)
+  : null;
+const featuredVenue = featuredPub
+  ? en
+    ? (featuredPub.data.venue_en ??
+      featuredPub.data.venue_short ??
+      featuredPub.data.venue)
+    : (featuredPub.data.venue_short ?? featuredPub.data.venue)
+  : null;
+
 // 照片區依研究主軸分組（中英標題；pub 可選，連結對應論文）
 const photoGroups = [
-  {
-    zh: "濕熱聲與凝結爆衝",
-    en: "Wet thermoacoustics & condensation shock",
-    photos: [
-      {
-        src: "/images/media/condensation-shock-timeseries.jpg",
-        zh: "無薄膜時的壓力訊號時間序列與冷熱端溫度：加熱過程中自發起振，最大 p′ ≈ 1285 Pa（t ≈ 328 s）後衰減",
-        en: "Pressure time series with hot/cold-end temperatures for the no-membrane case: self-excited oscillation during heating, peaking at p′ ≈ 1285 Pa (t ≈ 328 s) before decaying",
-        pub: "2024-hsu-condensation-shock",
-      },
-    ],
-  },
   {
     zh: "非線性動力學：起振、分歧與飽和",
     en: "Nonlinear dynamics: onset, bifurcation & saturation",
@@ -105,6 +116,9 @@ const L = {
   photos: en ? "Photos" : "照片",
   paper: en ? "Related paper" : "對應論文",
   play: en ? "Play video" : "播放影片",
+  featured: en ? "Featured" : "特別收錄",
+  footage: en ? "Experiment footage" : "實驗影片",
+  data: en ? "Measured data" : "量測數據",
 };
 const vtitle = (v: (typeof videos)[number]) =>
   en ? (v.data.title_en ?? v.data.title) : (v.data.title_zh ?? v.data.title);
@@ -114,11 +128,82 @@ const vdesc = (v: (typeof videos)[number]) =>
 
 <div class="mg" data-mg>
   {
-    videos.length > 0 && (
+    featuredVideo && (
+      <section class="mb-12 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
+        <p class="text-xs uppercase tracking-[0.3em] text-brand-500">{L.featured}</p>
+        <h2 class="mt-1 text-2xl font-semibold text-brand-900">{vtitle(featuredVideo)}</h2>
+        <div class="mt-5 grid items-start gap-5 lg:grid-cols-2">
+          <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm">
+            <button
+              type="button"
+              class="group relative block aspect-video w-full bg-black"
+              data-yt={featuredVideo.data.youtube_id}
+              data-title={vtitle(featuredVideo)}
+              aria-label={`${L.play}: ${vtitle(featuredVideo)}`}
+            >
+              <img
+                src={`https://i.ytimg.com/vi/${featuredVideo.data.youtube_id}/hqdefault.jpg`}
+                alt={vtitle(featuredVideo)}
+                loading="lazy"
+                class="absolute inset-0 h-full w-full object-cover transition group-hover:opacity-90"
+              />
+              <span class="absolute inset-0 flex items-center justify-center">
+                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-white/85 shadow transition group-hover:scale-110">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="#dc2626" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+              </span>
+            </button>
+            <figcaption class="p-4">
+              <p class="text-xs uppercase tracking-widest text-brand-500">{L.footage}</p>
+              {vdesc(featuredVideo) && (
+                <p class="mt-1 text-sm text-gray-700">{vdesc(featuredVideo)}</p>
+              )}
+            </figcaption>
+          </figure>
+          <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm">
+            <button
+              type="button"
+              class="group block aspect-video w-full bg-white"
+              data-img={featuredFigure.src}
+              data-caption={en ? featuredFigure.en : featuredFigure.zh}
+              aria-label={en ? featuredFigure.en : featuredFigure.zh}
+            >
+              <img
+                src={featuredFigure.src}
+                alt={en ? featuredFigure.en : featuredFigure.zh}
+                loading="lazy"
+                class="h-full w-full object-contain transition group-hover:opacity-90"
+              />
+            </button>
+            <figcaption class="p-4">
+              <p class="text-xs uppercase tracking-widest text-brand-500">{L.data}</p>
+              <p class="mt-1 text-sm text-gray-700">{en ? featuredFigure.en : featuredFigure.zh}</p>
+            </figcaption>
+          </figure>
+        </div>
+        {featuredPub && (
+          <p class="mt-4 text-sm">
+            <span class="text-brand-600">{L.paper}：</span>
+            {featuredUrl ? (
+              <a href={featuredUrl} target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">
+                {featuredVenue} ({featuredPub.data.year}) <span class="text-xs">↗</span>
+              </a>
+            ) : (
+              <span class="text-gray-700">{featuredVenue} ({featuredPub.data.year})</span>
+            )}
+          </p>
+        )}
+      </section>
+    )
+  }
+  {
+    gridVideos.length > 0 && (
       <section>
         <h2 class="text-2xl font-semibold text-brand-900">{L.videos}</h2>
         <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {videos.map((v) => {
+          {gridVideos.map((v) => {
             const pub = v.data.related_pub ? pubBySlug.get(v.data.related_pub) : null;
             const url = pub
               ? pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
