@@ -18,6 +18,73 @@ const groups = CATEGORIES.map((c) => ({
       (b.data.period_start || "").localeCompare(a.data.period_start || ""),
     ),
 })).filter((g) => g.items.length > 0);
+
+// 計畫統計（以主持人計畫紀錄計算；科技部併入國科會）
+const nfmt = (twd: number) => `NT$ ${twd.toLocaleString()}K`;
+const pct = (n: number, max: number) => Math.max(4, Math.round((n / max) * 100));
+const budgetOf = (p: (typeof all)[number]) => p.data.budget_twd ?? 0;
+
+const count = all.length;
+const activeCount = all.filter((p) => p.data.active).length;
+const totalBudget = all.reduce((s, p) => s + budgetOf(p), 0);
+
+const startYears = all
+  .map((p) => (p.data.period_start || "").slice(0, 4))
+  .filter(Boolean)
+  .sort();
+const endYears = all
+  .map((p) => (p.data.period_end || "").slice(0, 4))
+  .filter(Boolean)
+  .sort();
+const spanStart = startYears[0];
+const spanEnd = endYears[endYears.length - 1];
+
+// 依補助單位（科技部＝國科會前身，合併）
+const funderNorm = (f: string) =>
+  f === "科技部" || f === "國科會" ? "國科會（含科技部）" : f;
+const funderMap = new Map<string, { count: number; budget: number }>();
+for (const p of all) {
+  const k = funderNorm(p.data.funder);
+  const e = funderMap.get(k) ?? { count: 0, budget: 0 };
+  e.count += 1;
+  e.budget += budgetOf(p);
+  funderMap.set(k, e);
+}
+const funderStats = [...funderMap.entries()]
+  .map(([label, v]) => ({ label, ...v }))
+  .sort((a, b) => b.budget - a.budget);
+const maxFunderBudget = Math.max(...funderStats.map((f) => f.budget), 1);
+
+// 逐年核定經費（依計畫起始年歸屬）
+const yearMap = new Map<string, number>();
+for (const p of all) {
+  const y = (p.data.period_start || "").slice(0, 4);
+  if (!y) continue;
+  yearMap.set(y, (yearMap.get(y) ?? 0) + budgetOf(p));
+}
+const yearStats = [...yearMap.entries()]
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([year, budget]) => ({ year, budget }));
+const maxYearBudget = Math.max(...yearStats.map((y) => y.budget), 1);
+
+// 依類別
+const catLabelMap: Record<string, string> = {
+  research: "研究計畫",
+  teaching: "教學計畫",
+  industry: "產學計畫",
+};
+const catMap = new Map<string, { count: number; budget: number }>();
+for (const p of all) {
+  const k = p.data.category ?? "research";
+  const e = catMap.get(k) ?? { count: 0, budget: 0 };
+  e.count += 1;
+  e.budget += budgetOf(p);
+  catMap.set(k, e);
+}
+const catStats = CATEGORIES.filter((c) => catMap.has(c.key)).map((c) => ({
+  label: catLabelMap[c.key] ?? c.key,
+  ...catMap.get(c.key)!,
+}));
 ---
 
 <BaseLayout
@@ -37,6 +104,80 @@ const groups = CATEGORIES.map((c) => ({
         rel="noopener"
         >talent search 頁面</a
       >。
+    </p>
+  </section>
+
+  <section class="mt-4 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-brand-900">計畫統計</h2>
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{count}</p>
+        <p class="mt-1 text-xs text-brand-500">計畫件數（執行中 {activeCount}）</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{nfmt(totalBudget)}</p>
+        <p class="mt-1 text-xs text-brand-500">累計核定經費</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{funderStats.length}</p>
+        <p class="mt-1 text-xs text-brand-500">補助單位</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{spanStart}–{spanEnd}</p>
+        <p class="mt-1 text-xs text-brand-500">計畫期間</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div>
+        <h3 class="text-sm font-semibold text-brand-700">
+          核定經費（依計畫起始年）
+        </h3>
+        <div class="mt-3 space-y-2">
+          {yearStats.map((y) => (
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-12 shrink-0 font-mono text-brand-500">{y.year}</span>
+              <span
+                class="h-3.5 rounded bg-accent-500"
+                style={`width:${pct(y.budget, maxYearBudget)}%`}
+              />
+              <span class="whitespace-nowrap text-brand-600">{nfmt(y.budget)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold text-brand-700">依補助單位</h3>
+        <div class="mt-3 space-y-2">
+          {funderStats.map((f) => (
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-28 shrink-0 text-brand-700">{f.label}</span>
+              <span
+                class="h-3.5 rounded bg-brand-700"
+                style={`width:${pct(f.budget, maxFunderBudget)}%`}
+              />
+              <span class="whitespace-nowrap text-brand-600">
+                {f.count} 件 · {nfmt(f.budget)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="text-sm font-semibold text-brand-700">依類別</h3>
+      <div class="mt-2 flex flex-wrap gap-2">
+        {catStats.map((c) => (
+          <span class="rounded-md border border-brand-100 bg-white px-2.5 py-1 text-sm text-brand-800">
+            {c.label} {c.count} 件 · {nfmt(c.budget)}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <p class="mt-5 text-xs text-brand-400">
+      資料來源：主持人計畫紀錄（對應 NSTC／GRB）；科技部計畫併入國科會統計。核定經費依計畫起始年度歸屬。
     </p>
   </section>
 

@@ -18,6 +18,72 @@ const groups = CATEGORIES.map((c) => ({
       (b.data.period_start || "").localeCompare(a.data.period_start || ""),
     ),
 })).filter((g) => g.items.length > 0);
+
+// Project statistics (from the PI's project records; MOST merged into NSTC)
+const nfmt = (twd: number) => `NT$ ${twd.toLocaleString()}K`;
+const pct = (n: number, max: number) => Math.max(4, Math.round((n / max) * 100));
+const budgetOf = (p: (typeof all)[number]) => p.data.budget_twd ?? 0;
+
+const count = all.length;
+const activeCount = all.filter((p) => p.data.active).length;
+const totalBudget = all.reduce((s, p) => s + budgetOf(p), 0);
+
+const startYears = all
+  .map((p) => (p.data.period_start || "").slice(0, 4))
+  .filter(Boolean)
+  .sort();
+const endYears = all
+  .map((p) => (p.data.period_end || "").slice(0, 4))
+  .filter(Boolean)
+  .sort();
+const spanStart = startYears[0];
+const spanEnd = endYears[endYears.length - 1];
+
+// By funding agency (MOST is the former name of NSTC — merge)
+const funderEn: Record<string, string> = {
+  國科會: "NSTC (incl. MOST)",
+  科技部: "NSTC (incl. MOST)",
+  教育部: "MOE",
+};
+const funderNorm = (f: string) => funderEn[f] ?? f;
+const funderMap = new Map<string, { count: number; budget: number }>();
+for (const p of all) {
+  const k = funderNorm(p.data.funder);
+  const e = funderMap.get(k) ?? { count: 0, budget: 0 };
+  e.count += 1;
+  e.budget += budgetOf(p);
+  funderMap.set(k, e);
+}
+const funderStats = [...funderMap.entries()]
+  .map(([label, v]) => ({ label, ...v }))
+  .sort((a, b) => b.budget - a.budget);
+const maxFunderBudget = Math.max(...funderStats.map((f) => f.budget), 1);
+
+// Funding awarded by project start year
+const yearMap = new Map<string, number>();
+for (const p of all) {
+  const y = (p.data.period_start || "").slice(0, 4);
+  if (!y) continue;
+  yearMap.set(y, (yearMap.get(y) ?? 0) + budgetOf(p));
+}
+const yearStats = [...yearMap.entries()]
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([year, budget]) => ({ year, budget }));
+const maxYearBudget = Math.max(...yearStats.map((y) => y.budget), 1);
+
+// By category
+const catMap = new Map<string, { count: number; budget: number }>();
+for (const p of all) {
+  const k = p.data.category ?? "research";
+  const e = catMap.get(k) ?? { count: 0, budget: 0 };
+  e.count += 1;
+  e.budget += budgetOf(p);
+  catMap.set(k, e);
+}
+const catStats = CATEGORIES.filter((c) => catMap.has(c.key)).map((c) => ({
+  label: c.label,
+  ...catMap.get(c.key)!,
+}));
 ---
 
 <BaseLayout
@@ -38,6 +104,82 @@ const groups = CATEGORIES.map((c) => ({
         rel="noopener"
         >NSTC talent search profile</a
       >.
+    </p>
+  </section>
+
+  <section class="mt-4 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-brand-900">Project statistics</h2>
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{count}</p>
+        <p class="mt-1 text-xs text-brand-500">Projects ({activeCount} active)</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{nfmt(totalBudget)}</p>
+        <p class="mt-1 text-xs text-brand-500">Total funding awarded</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{funderStats.length}</p>
+        <p class="mt-1 text-xs text-brand-500">Funding agencies</p>
+      </div>
+      <div class="rounded-lg border border-brand-100 bg-white p-4">
+        <p class="text-2xl font-bold text-brand-900">{spanStart}–{spanEnd}</p>
+        <p class="mt-1 text-xs text-brand-500">Project span</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div>
+        <h3 class="text-sm font-semibold text-brand-700">
+          Funding awarded (by start year)
+        </h3>
+        <div class="mt-3 space-y-2">
+          {yearStats.map((y) => (
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-12 shrink-0 font-mono text-brand-500">{y.year}</span>
+              <span
+                class="h-3.5 rounded bg-accent-500"
+                style={`width:${pct(y.budget, maxYearBudget)}%`}
+              />
+              <span class="whitespace-nowrap text-brand-600">{nfmt(y.budget)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold text-brand-700">By funding agency</h3>
+        <div class="mt-3 space-y-2">
+          {funderStats.map((f) => (
+            <div class="flex items-center gap-3 text-sm">
+              <span class="w-32 shrink-0 text-brand-700">{f.label}</span>
+              <span
+                class="h-3.5 rounded bg-brand-700"
+                style={`width:${pct(f.budget, maxFunderBudget)}%`}
+              />
+              <span class="whitespace-nowrap text-brand-600">
+                {f.count} · {nfmt(f.budget)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="text-sm font-semibold text-brand-700">By category</h3>
+      <div class="mt-2 flex flex-wrap gap-2">
+        {catStats.map((c) => (
+          <span class="rounded-md border border-brand-100 bg-white px-2.5 py-1 text-sm text-brand-800">
+            {c.label} · {c.count} · {nfmt(c.budget)}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <p class="mt-5 text-xs text-brand-400">
+      Source: the PI's own project records (cross-referenced with NSTC / GRB);
+      MOST projects are counted under NSTC. Funding is attributed to each
+      project's start year.
     </p>
   </section>
 
