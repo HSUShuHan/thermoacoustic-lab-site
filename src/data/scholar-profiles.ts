@@ -25,6 +25,10 @@ export const scholarProfiles: ScholarProfile[] = [
     url: "https://www.webofscience.com/wos/author/record/GLU-9976-2022",
   },
   {
+    label: "ResearchGate",
+    url: "https://www.researchgate.net/profile/Shu-Han-Hsu-4",
+  },
+  {
     label: "NSTC",
     url: "https://wrs.nstc.gov.tw/modules/talentSearch/talentSearch.do?action=initRsm17new&rsNo=54dd1397f8ea4f919455e0fa4b43f2c6&LANG=chi",
     urlEn:
