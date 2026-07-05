@@ -33,6 +33,10 @@ export const scholarProfiles: ScholarProfile[] = [
     url: "https://sciprofiles.com/profile/3114312",
   },
   {
+    label: "Kudos",
+    url: "https://www.growkudos.com/profile/shu-han_hsu",
+  },
+  {
     label: "NSTC",
     url: "https://wrs.nstc.gov.tw/modules/talentSearch/talentSearch.do?action=initRsm17new&rsNo=54dd1397f8ea4f919455e0fa4b43f2c6&LANG=chi",
     urlEn:
