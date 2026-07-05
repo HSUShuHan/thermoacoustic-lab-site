@@ -21,12 +21,16 @@ export const scholarProfiles: ScholarProfile[] = [
     url: "https://www.scopus.com/authid/detail.uri?authorId=57192693236",
   },
   {
+    label: "Web of Science",
+    url: "https://www.webofscience.com/wos/author/record/GLU-9976-2022",
+  },
+  {
     label: "NSTC",
     url: "https://wrs.nstc.gov.tw/modules/talentSearch/talentSearch.do?action=initRsm17new&rsNo=54dd1397f8ea4f919455e0fa4b43f2c6&LANG=chi",
     urlEn:
       "https://wrs.nstc.gov.tw/modules/talentSearch/talentSearch.do?action=initRsm17new&rsNo=54dd1397f8ea4f919455e0fa4b43f2c6&LANG=eng",
   },
   // 待補（提供 ID/URL 後加入）：
-  // { label: "Web of Science", url: "https://www.webofscience.com/wos/author/record/XXXX" },
   // { label: "ResearchGate", url: "https://www.researchgate.net/profile/XXXX" },
+  // { label: "Semantic Scholar", url: "https://www.semanticscholar.org/author/XXXX" },
 ];
