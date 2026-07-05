@@ -28,8 +28,10 @@ const publications = defineCollection({
     venue_en: z.string().optional(),
     venue_short: z.string().optional(),
     year: z.number(),
-    type: z.enum(["journal", "conference", "thesis", "preprint"]),
+    type: z.enum(["journal", "conference", "thesis", "preprint", "dataset"]),
     doi: z.string().optional(),
+    // DOI of an associated open dataset (e.g., Mendeley Data) for this paper.
+    data_doi: z.string().optional(),
     url: z.string().url().optional(),
     pdf: z.string().optional(),
     bibtex: z.string().optional(),
