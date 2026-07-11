@@ -292,6 +292,13 @@ for (const pr of projects) {
     lines.push("**研究產出 Output:**");
     for (const slug of rp) lines.push(`- ${linkPub(slug)}`);
   }
+  // vault_notes：源頭 frontmatter 宣告的 vault 筆記，匯出時生成反向連結
+  // （網站 schema 不含此欄位，Astro 會忽略；僅供 Obsidian 雙向整合用）
+  const vn = d.vault_notes || [];
+  if (vn.length) {
+    lines.push("", "## 研究筆記");
+    for (const n of vn) lines.push(`- [[${n}]]`);
+  }
   lines.push(FOOTER);
   write("計畫", pr.slug, lines.join("\n"));
   nProj++;
