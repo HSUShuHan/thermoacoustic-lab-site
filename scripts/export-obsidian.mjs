@@ -281,6 +281,7 @@ for (const pr of projects) {
   if (d.title_en) lines.push(`*${d.title_en}*`, "");
   const info = [];
   if (d.funder) info.push(`**補助單位:** ${d.funder}`);
+  if (d.grant_id) info.push(`**計畫編號:** ${d.grant_id}`);
   if (d.period_start) info.push(`**期間:** ${d.period_start} ~ ${d.period_end || ""}`);
   if (d.budget_twd !== undefined) info.push(`**經費:** NT$ ${d.budget_twd.toLocaleString()}K`);
   if (d.pi) info.push(`**主持人:** ${linkAuthor(d.pi)}`);
