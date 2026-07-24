@@ -67,6 +67,9 @@ const members = defineCollection({
     ]),
     email: z.string().email().optional(),
     photo: z.string().optional(),
+    // 照片放大檢視時的說明（如口試合影感謝委員），中英各一
+    photo_caption: z.string().optional(),
+    photo_caption_en: z.string().optional(),
     affiliation: z.string().optional(),
     interests: z.array(z.string()).default([]),
     interests_en: z.array(z.string()).default([]),

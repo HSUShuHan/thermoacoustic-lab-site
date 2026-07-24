@@ -374,6 +374,22 @@ const teamTopic = (team: typeof undergrad) =>
                     data-year={year}
                     data-degree={m.data.degree ?? ""}
                   >
+                    {m.data.photo && (
+                      <button
+                        type="button"
+                        class="lightbox-trigger group mb-2 block w-40 overflow-hidden rounded border border-brand-100"
+                        data-lightbox-src={m.data.photo}
+                        data-lightbox-caption={m.data.photo_caption_en ?? m.data.photo_caption ?? ""}
+                        aria-label={`Enlarge photo of ${m.data.name_en}'s thesis defense`}
+                      >
+                        <img
+                          src={m.data.photo}
+                          alt={`${m.data.name_en}'s thesis defense`}
+                          loading="lazy"
+                          class="w-full cursor-zoom-in object-cover transition group-hover:opacity-90"
+                        />
+                      </button>
+                    )}
                     <p class="font-medium text-brand-900">
                       {m.data.name_en}{" "}
                       <span class="text-sm text-brand-500">{m.data.name_zh}</span>
@@ -593,7 +609,80 @@ const teamTopic = (team: typeof undergrad) =>
   }
 </BaseLayout>
 
+<div
+  id="lightbox"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4"
+  role="dialog"
+  aria-modal="true"
+>
+  <button
+    type="button"
+    id="lightbox-close"
+    class="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1.5 text-lg text-white transition hover:bg-white/20"
+    aria-label="Close"
+  >
+    ✕
+  </button>
+  <figure class="max-h-full max-w-3xl">
+    <img
+      id="lightbox-img"
+      src=""
+      alt=""
+      class="mx-auto max-h-[80vh] w-auto rounded-lg"
+    />
+    <figcaption
+      id="lightbox-caption"
+      class="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-white/90"
+    >
+    </figcaption>
+  </figure>
+</div>
+
 <script>
+  // Photo enlarge lightbox
+  const lightbox = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lightbox-img") as HTMLImageElement | null;
+  const lbCap = document.getElementById("lightbox-caption");
+
+  function openLightbox(src: string, caption: string, alt: string) {
+    if (!lightbox || !lbImg) return;
+    lbImg.src = src;
+    lbImg.alt = alt;
+    if (lbCap) {
+      lbCap.textContent = caption;
+      lbCap.hidden = !caption;
+    }
+    lightbox.classList.remove("hidden");
+    lightbox.classList.add("flex");
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.classList.add("hidden");
+    lightbox.classList.remove("flex");
+    if (lbImg) lbImg.src = "";
+  }
+
+  document.querySelectorAll<HTMLElement>(".lightbox-trigger").forEach((t) => {
+    t.addEventListener("click", () => {
+      const img = t.querySelector("img");
+      openLightbox(
+        t.dataset.lightboxSrc ?? "",
+        t.dataset.lightboxCaption ?? "",
+        img?.alt ?? "",
+      );
+    });
+  });
+
+  lightbox?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target === lightbox || target.closest("#lightbox-close")) closeLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLightbox();
+  });
+
   const groups = document.querySelectorAll<HTMLElement>("[data-alumni-filter]");
   const cards = document.querySelectorAll<HTMLElement>(
     "#alumni-list [data-year][data-degree]",
