@@ -346,6 +346,14 @@ const undergradTeams = (() => {
                     data-year={year}
                     data-degree={m.data.degree ?? ""}
                   >
+                    {m.data.photo && (
+                      <img
+                        src={m.data.photo}
+                        alt={`${m.data.name_zh} 學位論文口試合影`}
+                        loading="lazy"
+                        class="mb-2 w-40 rounded border border-brand-100 object-cover"
+                      />
+                    )}
                     <p class="font-medium text-brand-900">
                       {m.data.name_zh}{" "}
                       <span class="text-sm text-brand-500">{m.data.name_en}</span>
