@@ -92,14 +92,24 @@ const heroNews = (await getCollection("news"))
                 <li class="border-l-2 border-accent-500 pl-3">
                   <a
                     href={`/news#${n.slug}`}
-                    class="group block transition"
+                    class="group flex gap-3 transition"
                   >
-                    <p class="text-xs text-brand-500">
-                      {n.data.date.toISOString().slice(0, 10)}
-                    </p>
-                    <p class="mt-0.5 text-sm leading-snug text-brand-900 group-hover:text-accent-700">
-                      {n.data.title}
-                    </p>
+                    {n.data.cover && (
+                      <img
+                        src={n.data.cover}
+                        alt=""
+                        loading="lazy"
+                        class="mt-0.5 h-12 w-16 shrink-0 rounded object-cover"
+                      />
+                    )}
+                    <div class="min-w-0">
+                      <p class="text-xs text-brand-500">
+                        {n.data.date.toISOString().slice(0, 10)}
+                      </p>
+                      <p class="mt-0.5 text-sm leading-snug text-brand-900 group-hover:text-accent-700">
+                        {n.data.title}
+                      </p>
+                    </div>
                   </a>
                 </li>
               ))}
