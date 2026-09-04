@@ -114,6 +114,14 @@ const heroNews = allNews
                     href={`/en/news#${n.slug}`}
                     class="group block transition"
                   >
+                    {n.data.cover && (
+                      <img
+                        src={n.data.cover}
+                        alt=""
+                        loading="lazy"
+                        class="mb-2 aspect-video w-full rounded object-cover"
+                      />
+                    )}
                     <p class="text-xs text-brand-500">
                       {n.data.date.toISOString().slice(0, 10)}
                     </p>
