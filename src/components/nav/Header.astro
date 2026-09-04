@@ -13,12 +13,19 @@ interface Props {
 const { lang = "zh" } = Astro.props;
 const t = useTranslations(lang);
 
-type NavItem = { href: string; key: UIKey };
-const navItems: NavItem[] = [
+type NavLink = { href: string; key: UIKey };
+type NavEntry = NavLink | { key: UIKey; children: NavLink[] };
+const navItems: NavEntry[] = [
   { href: "/", key: "nav.home" },
   { href: "/research", key: "nav.research" },
-  { href: "/publications", key: "nav.publications" },
-  { href: "/media", key: "nav.media" },
+  {
+    key: "nav.output",
+    children: [
+      { href: "/publications", key: "nav.publications" },
+      { href: "/talks", key: "nav.talks" },
+      { href: "/media", key: "nav.media" },
+    ],
+  },
   { href: "/projects", key: "nav.projects" },
   { href: "/people", key: "nav.people" },
   { href: "/join-us", key: "nav.join" },
@@ -59,21 +66,57 @@ const titleEn = "Thermoacoustic Lab";
     <nav class="flex items-center gap-6">
       <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
         {
-          navItems.map((item) => (
-            <li>
-              <a
-                href={item.href === "/" ? homeHref : `${prefix}${item.href}`}
-                class:list={[
-                  "transition",
-                  isActive(item.href)
-                    ? "border-b-2 border-accent-500 pb-0.5 font-medium text-brand-800"
-                    : "text-gray-700 hover:text-brand-700",
-                ]}
-              >
-                {t(item.key)}
-              </a>
-            </li>
-          ))
+          navItems.map((item) =>
+            "children" in item ? (
+              <li class="group relative">
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  class:list={[
+                    "inline-flex items-center gap-1 transition",
+                    item.children.some((c) => isActive(c.href))
+                      ? "border-b-2 border-accent-500 pb-0.5 font-medium text-brand-800"
+                      : "text-gray-700 hover:text-brand-700",
+                  ]}
+                >
+                  {t(item.key)}<span class="text-[0.65em] text-brand-400" aria-hidden="true">▼</span>
+                </button>
+                <div class="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                  <ul class="min-w-[8.5rem] rounded-md border border-brand-100 bg-white py-1.5 shadow-lg">
+                    {item.children.map((c) => (
+                      <li>
+                        <a
+                          href={`${prefix}${c.href}`}
+                          class:list={[
+                            "block px-4 py-1.5 transition",
+                            isActive(c.href)
+                              ? "font-medium text-brand-800"
+                              : "text-gray-700 hover:bg-brand-50 hover:text-brand-800",
+                          ]}
+                        >
+                          {t(c.key)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ) : (
+              <li>
+                <a
+                  href={item.href === "/" ? homeHref : `${prefix}${item.href}`}
+                  class:list={[
+                    "transition",
+                    isActive(item.href)
+                      ? "border-b-2 border-accent-500 pb-0.5 font-medium text-brand-800"
+                      : "text-gray-700 hover:text-brand-700",
+                  ]}
+                >
+                  {t(item.key)}
+                </a>
+              </li>
+            ),
+          )
         }
       </ul>
       <a

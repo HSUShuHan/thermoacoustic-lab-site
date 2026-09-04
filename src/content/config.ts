@@ -214,9 +214,34 @@ const awards = defineCollection({
   }),
 });
 
+// Conference presentations, invited talks, and seminars. One entry per talk;
+// the deck itself lives under public/slides/<id>/ and `slides` points at it.
+const talks = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    title_zh: z.string().optional(),
+    authors: z.array(z.string()).default([]),
+    date: z.date(),
+    venue: z.string(),
+    venue_en: z.string().optional(),
+    talk_type: z.enum(["oral", "invited", "poster", "seminar"]).default("oral"),
+    // Site-relative path to the browsable deck (e.g. /slides/isec2026/).
+    slides: z.string().optional(),
+    pdf: z.string().optional(),
+    // Archived-slides DOI (e.g. Zenodo), without the https://doi.org/ prefix.
+    doi: z.string().optional(),
+    cover: z.string().optional(),
+    // Slug of the associated publication, if any.
+    related_pub: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
 export const collections = {
   videos,
   publications,
+  talks,
   members,
   awards,
   research,
