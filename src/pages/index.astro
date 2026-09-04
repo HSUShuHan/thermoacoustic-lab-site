@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
-import NarukamaHero from "~/components/NarukamaHero.astro";
 
 const research = (await getCollection("research"))
   .filter((r) => !r.slug.endsWith("-en"))
@@ -72,10 +71,13 @@ const heroNews = (await getCollection("news"))
             class="group flex min-h-56 flex-1 flex-col overflow-hidden rounded border border-brand-200 bg-white transition hover:border-brand-800"
           >
             <div class="relative flex-1">
-              <div class="absolute inset-0 flex items-center justify-center py-3 [&>svg]:h-full [&>svg]:w-auto">
-                <NarukamaHero />
-              </div>
-              <p class="absolute left-4 top-3 text-xs text-gray-500">鳴釜：熱聲振盪最早的紀錄之一</p>
+              <img
+                src="/images/research/gasparcelcycle.svg"
+                alt="熱聲效應：振盪氣塊於軸向溫度梯度下的微觀循環示意"
+                class="absolute inset-0 h-full w-full object-contain px-4 pb-2 pt-8"
+                loading="lazy"
+              />
+              <p class="absolute left-4 top-3 text-xs text-gray-500">熱聲效應：振盪氣塊的微觀循環</p>
             </div>
             <span
               class="flex items-center justify-center bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition group-hover:bg-brand-900"
