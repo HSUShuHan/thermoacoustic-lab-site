@@ -89,40 +89,40 @@ const heroNews = allNews
         <div class="mt-10 flex max-w-2xl flex-1 flex-col gap-4">
           <a
             href="/en/research"
-            class="group flex min-h-52 flex-1 items-stretch gap-5 rounded border border-brand-200 bg-white p-4 transition hover:border-brand-800"
+            class="group flex min-h-56 flex-1 flex-col overflow-hidden rounded border border-brand-200 bg-white transition hover:border-brand-800"
           >
-            <div class="flex w-40 shrink-0 items-center justify-center sm:w-44 [&>svg]:max-h-full [&>svg]:w-auto">
-              <NarukamaHero />
+            <div class="relative flex-1">
+              <div class="absolute inset-0 flex items-center justify-center py-3 [&>svg]:h-full [&>svg]:w-auto">
+                <NarukamaHero />
+              </div>
+              <p class="absolute left-4 top-3 text-xs text-gray-500">Narukama: one of the earliest records of thermoacoustic oscillation</p>
             </div>
-            <div class="flex flex-1 flex-col justify-center gap-3">
-              <p class="text-sm leading-relaxed text-gray-500">Narukama: one of the earliest records of thermoacoustic oscillation</p>
-              <span
-                class="inline-flex w-fit items-center rounded-sm bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition group-hover:bg-brand-900"
-                >Explore our research →</span
-              >
-            </div>
+            <span
+              class="flex items-center justify-center bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition group-hover:bg-brand-900"
+              >Explore our research →</span
+            >
           </a>
           <a
             href="/en/join-us"
-            class="group flex min-h-52 flex-1 items-stretch gap-5 rounded border border-brand-200 bg-white p-4 transition hover:border-brand-800"
+            class="group flex min-h-56 flex-1 flex-col overflow-hidden rounded border border-brand-200 bg-white transition hover:border-brand-800"
           >
-            <div class="grid w-40 shrink-0 grid-cols-2 content-center items-center gap-x-4 gap-y-6 sm:w-44">
-              <img src="/images/logos/ntu.svg" alt="National Taiwan University" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/ist.svg" alt="Institute of Science Tokyo" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/ubc.svg" alt="University of British Columbia" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/tsmc.svg" alt="TSMC" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/applied-materials.svg" alt="Applied Materials" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/tokyo-electron.svg" alt="Tokyo Electron" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/delta.svg" alt="Delta Electronics" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/supermicro.svg" alt="Supermicro" class="max-h-9 w-full object-contain" loading="lazy" />
+            <div class="relative flex-1">
+              <div class="absolute inset-0 grid grid-cols-4 content-center items-center gap-x-8 gap-y-6 px-8 pb-2 pt-6">
+                <img src="/images/logos/ntu.svg" alt="National Taiwan University" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/ist.svg" alt="Institute of Science Tokyo" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/ubc.svg" alt="University of British Columbia" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/tsmc.svg" alt="TSMC" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/applied-materials.svg" alt="Applied Materials" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/tokyo-electron.svg" alt="Tokyo Electron" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/delta.svg" alt="Delta Electronics" class="max-h-10 w-full object-contain" loading="lazy" />
+                <img src="/images/logos/supermicro.svg" alt="Supermicro" class="max-h-10 w-full object-contain" loading="lazy" />
+              </div>
+              <p class="absolute left-4 top-3 text-xs text-gray-500">Where our alumni study and work</p>
             </div>
-            <div class="flex flex-1 flex-col justify-center gap-3">
-              <p class="text-sm leading-relaxed text-gray-500">Where our alumni study and work</p>
-              <span
-                class="inline-flex w-fit items-center rounded-sm border border-brand-300 px-5 py-2.5 text-sm font-medium text-brand-800 transition group-hover:bg-brand-50"
-                >Join us</span
-              >
-            </div>
+            <span
+              class="flex items-center justify-center border-t border-brand-200 bg-white px-5 py-2.5 text-sm font-medium text-brand-800 transition group-hover:bg-brand-50"
+              >Join us →</span
+            >
           </a>
         </div>
       </div>
