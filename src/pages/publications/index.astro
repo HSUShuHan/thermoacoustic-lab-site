@@ -167,7 +167,7 @@ const LAB_AUTHORS = new Set([
                 )}
               </div>
             )}
-            {(p.data.doi || p.data.data_doi || videoBySlug.get(p.slug)) && (
+            {(p.data.doi || p.data.data_doi || p.data.slides || videoBySlug.get(p.slug)) && (
               <div class="mt-1.5 flex flex-wrap gap-3 text-xs">
                 {p.data.doi && (
                   <a
@@ -177,6 +177,14 @@ const LAB_AUTHORS = new Set([
                     class="text-accent-600 underline hover:text-accent-700"
                   >
                     DOI: {p.data.doi}
+                  </a>
+                )}
+                {p.data.slides && (
+                  <a
+                    href={p.data.slides}
+                    class="rounded bg-brand-50 px-2 py-0.5 font-medium text-brand-700 hover:bg-brand-100"
+                  >
+                    投影片 Slides ↗
                   </a>
                 )}
                 {p.data.data_doi && (

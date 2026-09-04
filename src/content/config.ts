@@ -34,6 +34,9 @@ const publications = defineCollection({
     data_doi: z.string().optional(),
     url: z.string().url().optional(),
     pdf: z.string().optional(),
+    // Site-relative path or URL to the presentation slides for this entry
+    // (e.g. /slides/isec2026/). Shown as a chip on the publications pages.
+    slides: z.string().optional(),
     bibtex: z.string().optional(),
     abstract: z.string().optional(),
     featured: z.boolean().default(false),
