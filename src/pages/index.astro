@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
+import NarukamaHero from "~/components/NarukamaHero.astro";
 
 const research = (await getCollection("research"))
   .filter((r) => !r.slug.endsWith("-en"))
@@ -52,7 +53,7 @@ const heroNews = (await getCollection("news"))
     >
     </div>
     <div class="grid gap-10 md:grid-cols-2 md:gap-12">
-      <div>
+      <div class="flex flex-col">
         <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
           National Taipei University of Technology
         </p>
@@ -65,18 +66,15 @@ const heroNews = (await getCollection("news"))
         <p class="mt-8 max-w-2xl text-lg leading-relaxed text-gray-700">
           本實驗室探索熱與聲的能量轉換，專注於研究熱聲引擎與熱聲製冷、熱聲非線性現象應用與探索，與熱聲能源系統機電整合控制。
         </p>
-        <div class="mt-10 grid max-w-2xl gap-4 sm:grid-cols-2">
+        <div class="mt-10 grid max-w-2xl flex-1 gap-4 sm:grid-cols-2">
           <a
             href="/research"
             class="group flex flex-col rounded-lg border border-brand-200 bg-white/80 p-4 transition hover:border-brand-800"
           >
-            <img
-              src="/images/research/gasparcelcycle.svg"
-              alt="熱聲效應：振盪氣塊於軸向溫度梯度下的微觀循環示意"
-              class="h-28 w-full object-contain"
-              loading="lazy"
-            />
-            <p class="mt-2 text-xs text-gray-500">熱聲效應：振盪氣塊的微觀循環</p>
+            <div class="flex min-h-56 flex-1 items-center justify-center py-2 [&>svg]:h-full [&>svg]:w-auto">
+              <NarukamaHero />
+            </div>
+            <p class="mt-2 text-xs text-gray-500">鳴釜：熱聲振盪最早的紀錄之一</p>
             <span
               class="mt-3 inline-flex w-fit items-center rounded bg-brand-800 px-5 py-2.5 text-sm font-medium text-white transition group-hover:bg-brand-700"
               >了解我們的研究 →</span
@@ -86,17 +84,17 @@ const heroNews = (await getCollection("news"))
             href="/join-us"
             class="group flex flex-col rounded-lg border border-brand-200 bg-white/80 p-4 transition hover:border-brand-800"
           >
-            <div class="grid h-28 grid-cols-4 content-center items-center gap-x-4 gap-y-3 px-1">
-              <img src="/images/logos/ntu.svg" alt="國立臺灣大學" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/ist.svg" alt="東京科學大學" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/ubc.svg" alt="University of British Columbia" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/tsmc.svg" alt="台積電" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/applied-materials.svg" alt="台灣應用材料" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/tokyo-electron.svg" alt="東京威力科創" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/delta.svg" alt="台達電子" class="max-h-9 w-full object-contain" loading="lazy" />
-              <img src="/images/logos/supermicro.svg" alt="美超微" class="max-h-9 w-full object-contain" loading="lazy" />
+            <div class="grid min-h-56 flex-1 grid-cols-3 content-evenly items-center gap-x-5 gap-y-4 px-2">
+              <img src="/images/logos/ntu.svg" alt="國立臺灣大學" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/ist.svg" alt="東京科學大學" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/ubc.svg" alt="University of British Columbia" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/tsmc.svg" alt="台積電" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/applied-materials.svg" alt="台灣應用材料" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/tokyo-electron.svg" alt="東京威力科創" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/delta.svg" alt="台達電子" class="max-h-11 w-full object-contain" loading="lazy" />
+              <img src="/images/logos/supermicro.svg" alt="美超微" class="max-h-11 w-full object-contain" loading="lazy" />
             </div>
-            <p class="mt-2 text-xs text-gray-500">畢業生升學與就業去向（部分）</p>
+            <p class="mt-2 text-xs text-gray-500">畢業生升學與就業去向</p>
             <span
               class="mt-3 inline-flex w-fit items-center rounded border border-brand-300 px-5 py-2.5 text-sm font-medium text-brand-800 transition group-hover:border-brand-800"
               >加入我們</span
