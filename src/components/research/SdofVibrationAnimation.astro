@@ -880,8 +880,10 @@ const L = isEn
       rctx.textAlign = "left";
       rctx.fillStyle = COL.disp;
       // |X| — upright bars, italic X
-      const wbar = (rctx.font = MFR(15)) && rctx.measureText("|").width;
-      const wX = (rctx.font = MF(15)) && rctx.measureText("X").width;
+      rctx.font = MFR(15);
+      const wbar = rctx.measureText("|").width;
+      rctx.font = MF(15);
+      const wX = rctx.measureText("X").width;
       let lx = -(wbar * 2 + wX) / 2;
       rctx.font = MFR(15);
       rctx.fillText("|", lx, 0);
