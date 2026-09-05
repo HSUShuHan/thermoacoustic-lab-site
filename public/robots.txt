@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /slides/115-1/
 
 Sitemap: https://thermoacoustictw.org/sitemap-index.xml
