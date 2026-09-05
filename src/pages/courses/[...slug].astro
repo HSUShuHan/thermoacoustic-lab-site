@@ -36,7 +36,7 @@ const { Content } = await item.render();
       <span>授課教師：{item.data.instructor}</span>
     </p>
     <p class="mt-1 text-xs text-gray-500">
-      {item.data.active ? `本頁為 ${item.data.semester} 學期版；` : "本學期未開課；"}已開授學期：
+      {item.data.active && `本頁為 ${item.data.semester} 學期版；`}已開授學期：
       {[...item.data.past_semesters, item.data.semester].join(" · ")}
     </p>
 
