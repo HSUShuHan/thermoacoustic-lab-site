@@ -49,6 +49,12 @@ const funderEn: Record<string, string> = {
   教育部: "MOE",
 };
 const funderNorm = (f: string) => funderEn[f] ?? f;
+// Per-project badge keeps the historically accurate agency name.
+const funderBadge: Record<string, string> = {
+  國科會: "NSTC",
+  科技部: "MOST",
+  教育部: "MOE",
+};
 const funderMap = new Map<string, { count: number; budget: number }>();
 for (const p of all) {
   const k = funderNorm(p.data.funder);
@@ -197,7 +203,7 @@ const catStats = CATEGORIES.filter((c) => catMap.has(c.key)).map((c) => ({
                 <span
                   class={`rounded px-2 py-0.5 text-xs font-medium ${p.data.active ? "bg-accent-50 text-accent-700" : "bg-brand-100 text-brand-800"}`}
                 >
-                  {p.data.funder}
+                  {funderBadge[p.data.funder] ?? p.data.funder}
                 </span>
                 <span class="ml-2 text-brand-500">
                   {p.data.period_start} ~ {p.data.period_end}
