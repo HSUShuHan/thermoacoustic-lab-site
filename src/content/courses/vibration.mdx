@@ -1,0 +1,27 @@
+---
+title_zh: "振動學"
+title_en: "Mechanical Vibrations"
+semester: "113-1"
+active: false
+past_semesters: ["107-1", "111-1"]
+instructor: "許書涵"
+level: "undergrad"
+order: 5
+summary: "大學部振動學。本頁提供歷年成績統計。"
+---
+
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+## 歷年成績統計
+
+| 學期 | 修課人數 | 學期總成績（平均 ± 標準差） | 不及格人數 |
+|---|---|---|---|
+| 107-1 | 25 | 71.2 ± 15.1 | 2（8%） |
+| 111-1 | 25 | 73.6 ± 7.2 | 1（4%） |
+
+<GradeHistograms
+  data={[
+    { sem: "107-1", n: 25, mean: 71.2, sd: 15.1, fail: 2, bins: [0, 0, 1, 1, 0, 0, 8, 7, 7, 1] },
+    { sem: "111-1", n: 25, mean: 73.6, sd: 7.2, fail: 1, bins: [0, 0, 0, 0, 0, 1, 5, 15, 3, 1] },
+  ]}
+/>

@@ -1,0 +1,27 @@
+---
+title_zh: "熱機學"
+title_en: "Heat Engines"
+semester: "114-2"
+active: false
+past_semesters: ["113-2"]
+instructor: "許書涵"
+level: "undergrad"
+order: 6
+summary: "大學部熱機學。本頁提供歷年成績統計。"
+---
+
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+## 歷年成績統計
+
+| 學期 | 修課人數 | 學期總成績（平均 ± 標準差） | 不及格人數 |
+|---|---|---|---|
+| 113-2 | 9 | 61.6 ± 38.7 | 3（33%） |
+| 114-2 | 7 | 78.6 ± 8.8 | 0（0%） |
+
+<GradeHistograms
+  data={[
+    { sem: "113-2", n: 9, mean: 61.6, sd: 38.7, fail: 3, bins: [2, 0, 1, 0, 0, 0, 0, 1, 2, 3] },
+    { sem: "114-2", n: 7, mean: 78.6, sd: 8.8, fail: 0, bins: [0, 0, 0, 0, 0, 0, 2, 1, 3, 1] },
+  ]}
+/>
