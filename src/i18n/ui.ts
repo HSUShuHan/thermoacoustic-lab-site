@@ -15,6 +15,7 @@ export const ui = {
 
     "nav.home": "首頁",
     "nav.research": "研究",
+    "nav.courses": "課程",
     "nav.publications": "論文發表",
     "nav.output": "成果",
     "nav.talks": "演講",
@@ -118,6 +119,7 @@ export const ui = {
 
     "nav.home": "Home",
     "nav.research": "Research",
+    "nav.courses": "Courses",
     "nav.publications": "Publications",
     "nav.output": "Output",
     "nav.talks": "Talks",

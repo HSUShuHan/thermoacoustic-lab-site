@@ -93,7 +93,7 @@ npm run import:bib       # 從 publications.bib 重新產生論文 mdx（見下�
 - 必填：`title`、`date`
 - 簡單貼文格式
 
-未來會啟用但**目前不建立內容**的 collections：`courses`（教學）、`software`（求解器）。schema 已預先定義在 config.ts。
+`courses` 已啟用（2026-09）：每門課一個 mdx（`src/content/courses/`），內容為課程規則與規劃＋實驗作業說明；列表頁 `/courses`、內頁 `/courses/<slug>`。實驗作業僅列題目大綱，題卡細節不上網；全文避免「補救」字眼。未來會啟用但**目前不建立內容**的 collections：`software`（求解器）。
 
 ---
 

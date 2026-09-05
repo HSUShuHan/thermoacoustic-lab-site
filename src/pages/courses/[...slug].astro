@@ -1,0 +1,53 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
+
+export async function getStaticPaths() {
+  const items = await getCollection("courses");
+  return items
+    .filter((item) => !item.slug.endsWith("-en"))
+    .map((item) => ({
+      params: { slug: item.slug },
+      props: { item },
+    }));
+}
+
+const { item } = Astro.props;
+const { Content } = await item.render();
+---
+
+<BaseLayout
+  title={`${item.data.title_zh}（${item.data.semester}）`}
+  description={item.data.summary}
+>
+  <article class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      {item.data.title_en ?? "Course"}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      {item.data.title_zh}
+    </h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+      <span class="font-mono">{item.data.semester}</span>
+      {item.data.class_zh && <span>{item.data.class_zh}</span>}
+      {item.data.time_zh && <span>{item.data.time_zh}</span>}
+      <span>授課教師：{item.data.instructor}</span>
+    </p>
+
+    <div class="mt-10">
+      <Prose>
+        <Content />
+      </Prose>
+    </div>
+
+    <p class="mt-16">
+      <a
+        href="/courses"
+        class="text-sm text-brand-700 underline transition hover:text-accent-600"
+        >← 回課程列表</a
+      >
+    </p>
+  </article>
+</BaseLayout>

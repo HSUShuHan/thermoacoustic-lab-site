@@ -122,10 +122,15 @@ const research = defineCollection({
 const courses = defineCollection({
   type: "content",
   schema: z.object({
-    code: z.string(),
+    code: z.string().optional(),
     title_zh: z.string(),
     title_en: z.string().optional(),
     semester: z.string(),
+    // 授課班級與上課時間（如「機械二乙」「星期一 第 7、8 節」）
+    class_zh: z.string().optional(),
+    time_zh: z.string().optional(),
+    summary: z.string().optional(),
+    order: z.number().default(100),
     instructor: z.string(),
     level: z.enum(["undergrad", "grad", "both"]),
     credits: z.number().optional(),
