@@ -11,6 +11,8 @@ order: 2
 summary: "115 學年度第一學期大學部動力學：課程規則與規劃、成績評量方式，以及自主學習週實驗作業（18 題）的說明。"
 ---
 
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
 > **課程投影片（需密碼）**：[課程規則與規劃](/slides/115-1/dynamics-intro.html) · [實驗作業說明](/slides/115-1/dynamics-lab.html)
 > 密碼於課堂與課程 LINE 群組公布，勾選「記住我」本學期免重複輸入。
 
@@ -72,6 +74,12 @@ Russell C. Hibbeler, *Engineering Mechanics: Dynamics in SI Units*, 14th edition
 |---|---|---|---|
 | 114-1 | 43 | 54.6 ± 18.1 | 24（56%） |
 | 115-1 | 本學期 | 期末後更新 | |
+
+<GradeHistograms
+  data={[
+    { sem: "114-1", n: 43, mean: 54.6, sd: 18.1, fail: 24, bins: [0, 2, 1, 5, 6, 10, 11, 4, 3, 1] },
+  ]}
+/>
 
 ### 諮詢與聯絡
 
