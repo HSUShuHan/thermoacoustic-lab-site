@@ -68,10 +68,11 @@ const titleEn = "Thermoacoustic Lab";
         {
           navItems.map((item) =>
             "children" in item ? (
-              <li class="group relative">
+              <li class="group relative" data-nav-group>
                 <button
                   type="button"
                   aria-haspopup="true"
+                  aria-expanded="false"
                   class:list={[
                     "inline-flex items-center gap-1 transition",
                     item.children.some((c) => isActive(c.href))
@@ -81,7 +82,7 @@ const titleEn = "Thermoacoustic Lab";
                 >
                   {t(item.key)}<span class="text-[0.65em] text-brand-400" aria-hidden="true">▼</span>
                 </button>
-                <div class="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                <div class="nav-dropdown invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
                   <ul class="min-w-[8.5rem] rounded-md border border-brand-100 bg-white py-1.5 shadow-lg">
                     {item.children.map((c) => (
                       <li>
@@ -129,3 +130,31 @@ const titleEn = "Thermoacoustic Lab";
     </nav>
   </div>
 </header>
+
+<style>
+  [data-nav-group].nav-open .nav-dropdown {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+
+<script>
+  // 觸控裝置（iOS Safari 點按 button 不會取得 focus）需要點按切換下拉。
+  document.querySelectorAll("[data-nav-group]").forEach((group) => {
+    const btn = group.querySelector("button");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const open = group.classList.toggle("nav-open");
+      btn.setAttribute("aria-expanded", String(open));
+    });
+  });
+  document.addEventListener("click", (e) => {
+    const target = e.target instanceof Node ? e.target : null;
+    document.querySelectorAll("[data-nav-group].nav-open").forEach((group) => {
+      if (!target || !group.contains(target)) {
+        group.classList.remove("nav-open");
+        group.querySelector("button")?.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
+</script>
