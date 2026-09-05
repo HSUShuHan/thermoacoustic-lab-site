@@ -128,6 +128,8 @@ const courses = defineCollection({
     semester: z.string(),
     // 授課班級與上課時間（如「機械二乙」「星期一 第 7、8 節」）
     class_zh: z.string().optional(),
+    // 過去開授的學期（不含本學期，如 ["114-1"]）；頁面與卡片顯示「已開授學期」
+    past_semesters: z.array(z.string()).default([]),
     time_zh: z.string().optional(),
     summary: z.string().optional(),
     order: z.number().default(100),

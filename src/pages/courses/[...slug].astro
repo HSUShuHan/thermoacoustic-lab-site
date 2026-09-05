@@ -35,6 +35,10 @@ const { Content } = await item.render();
       {item.data.time_zh && <span>{item.data.time_zh}</span>}
       <span>授課教師：{item.data.instructor}</span>
     </p>
+    <p class="mt-1 text-xs text-gray-500">
+      本頁為 {item.data.semester} 學期版；已開授學期：
+      {[...item.data.past_semesters, item.data.semester].join(" · ")}
+    </p>
 
     <div class="mt-10">
       <Prose>

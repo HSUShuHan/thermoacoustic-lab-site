@@ -51,6 +51,9 @@ const levelLabel: Record<string, string> = {
             {c.data.time_zh && (
               <p class="mt-2 text-sm text-gray-500">{c.data.time_zh}</p>
             )}
+            <p class="mt-2 text-xs text-gray-500">
+              Offered: {[...c.data.past_semesters, `${c.data.semester} (current)`].join(" · ")}
+            </p>
             <p class="mt-3 text-xs text-gray-500">Course page in Chinese →</p>
           </a>
         </li>
