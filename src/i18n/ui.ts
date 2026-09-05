@@ -47,7 +47,7 @@ export const ui = {
     "section.selected_pubs": "精選發表",
     "section.selected_pubs_label": "Selected Publications",
     "section.recent_projects": "近期計畫",
-    "section.projects_label": "Projects",
+    "section.projects_label": "Grants",
     "section.research_directions": "研究方向",
     "section.contact": "聯絡",
     "section.address": "地址",
@@ -86,7 +86,7 @@ export const ui = {
     "page.pubs.subtitle": "Publications",
 
     "page.projects.title": "研究計畫",
-    "page.projects.subtitle": "Funded Projects",
+    "page.projects.subtitle": "Grants",
 
     "page.people.title": "成員",
     "page.people.subtitle": "People",
@@ -124,7 +124,7 @@ export const ui = {
     "nav.output": "Output",
     "nav.talks": "Talks",
     "nav.media": "Media",
-    "nav.projects": "Projects",
+    "nav.projects": "Grants",
     "nav.people": "People",
     "nav.join": "Join Us",
     "nav.news": "News",
@@ -150,8 +150,8 @@ export const ui = {
     "section.media_label": "Media",
     "section.selected_pubs": "Selected Publications",
     "section.selected_pubs_label": "Selected Publications",
-    "section.recent_projects": "Recent Projects",
-    "section.projects_label": "Projects",
+    "section.recent_projects": "Recent grants",
+    "section.projects_label": "Grants",
     "section.research_directions": "Research Interests",
     "section.contact": "Contact",
     "section.address": "Address",
@@ -192,8 +192,8 @@ export const ui = {
     "page.pubs.title": "Publications",
     "page.pubs.subtitle": "Publications",
 
-    "page.projects.title": "Funded Projects",
-    "page.projects.subtitle": "Funded Projects",
+    "page.projects.title": "Grants",
+    "page.projects.subtitle": "Grants",
 
     "page.people.title": "People",
     "page.people.subtitle": "People",

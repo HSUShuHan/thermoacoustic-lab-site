@@ -91,12 +91,12 @@ const catStats = CATEGORIES.filter((c) => catMap.has(c.key)).map((c) => ({
 
 <BaseLayout
   lang="en"
-  title="Funded Projects"
-  description="Projects led by or involving the Thermoacoustic Lab: research (NSTC and others), teaching, and industry collaboration."
+  title="Grants"
+  description="Grants held by or involving the Thermoacoustic Lab: research (NSTC and others), teaching, and industry collaboration."
 >
   <section class="py-8">
-    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Projects</p>
-    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">Funded Projects</h1>
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">Grants</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">Grants</h1>
     <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
     <p class="mt-4 text-sm text-gray-500">
       For the most up-to-date research list, see the PI's
@@ -115,7 +115,7 @@ const catStats = CATEGORIES.filter((c) => catMap.has(c.key)).map((c) => ({
     <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
       <div class="rounded-lg border border-brand-100 bg-white p-4">
         <p class="text-2xl font-bold text-brand-900">{count}</p>
-        <p class="mt-1 text-xs text-brand-500">Projects ({activeCount} active)</p>
+        <p class="mt-1 text-xs text-brand-500">Grants ({activeCount} active)</p>
       </div>
       <div class="rounded-lg border border-brand-100 bg-white p-4">
         <p class="text-2xl font-bold text-brand-900">{nfmt(totalBudget)}</p>
