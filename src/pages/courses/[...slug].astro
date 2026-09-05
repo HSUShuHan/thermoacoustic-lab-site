@@ -33,6 +33,9 @@ const { Content } = await item.render();
       <span class="font-mono">{item.data.semester}</span>
       {item.data.class_zh && <span>{item.data.class_zh}</span>}
       {item.data.time_zh && <span>{item.data.time_zh}</span>}
+      {item.data.requirement && (
+        <span>{item.data.requirement === "required" ? "必修" : "選修"}</span>
+      )}
       <span>授課教師：{item.data.instructor}</span>
     </p>
     <p class="mt-1 text-xs text-gray-500">

@@ -41,6 +41,18 @@ const levelLabel: Record<string, string> = {
               <span class="rounded bg-brand-50 px-2 py-0.5 font-medium text-brand-700">
                 {levelLabel[c.data.level]}
               </span>
+              {c.data.requirement && (
+                <span
+                  class:list={[
+                    "rounded px-2 py-0.5 font-medium",
+                    c.data.requirement === "required"
+                      ? "bg-brand-100 text-brand-800"
+                      : "bg-gray-100 text-gray-600",
+                  ]}
+                >
+                  {c.data.requirement === "required" ? "必修" : "選修"}
+                </span>
+              )}
               {c.data.class_zh && (
                 <span class="text-gray-500">{c.data.class_zh}</span>
               )}

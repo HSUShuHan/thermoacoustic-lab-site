@@ -137,6 +137,8 @@ const courses = defineCollection({
     order: z.number().default(100),
     instructor: z.string(),
     level: z.enum(["undergrad", "grad", "both"]),
+    // 必修或選修（依課程系統時間表的 ▲／★ 標記）
+    requirement: z.enum(["required", "elective"]).optional(),
     credits: z.number().optional(),
     syllabus: z.string().optional(),
     materials: z
