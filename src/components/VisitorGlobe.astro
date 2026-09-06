@@ -126,7 +126,7 @@
       visibleDots.push({ d, x: pt[0], y: pt[1], rad });
       ctx.beginPath();
       ctx.arc(pt[0], pt[1], rad, 0, 2 * Math.PI);
-      ctx.fillStyle = d === hoveredDot?.d ? "rgba(220,38,38,0.9)" : "rgba(220,38,38,0.55)";
+      ctx.fillStyle = d === hoveredDot ? "rgba(220,38,38,0.9)" : "rgba(220,38,38,0.55)";
       ctx.fill();
       ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
     }
@@ -152,10 +152,41 @@
   document.getElementById("globe-zin").addEventListener("click", () => setZoom(zoom * 1.25));
   document.getElementById("globe-zout").addEventListener("click", () => setZoom(zoom / 1.25));
 
-  // 拖曳旋轉＋雙指捏合
+  // tooltip 與命中測試（hover 與手機輕點共用）
+  const showTipAt = (clientX, clientY, text) => {
+    tipEl.textContent = text;
+    const cardRect = card.getBoundingClientRect();
+    tipEl.style.left = Math.min(clientX - cardRect.left + 14, cardRect.width - 130) + "px";
+    tipEl.style.top = clientY - cardRect.top + 14 + "px";
+    tipEl.classList.remove("hidden");
+  };
+  const fmt = (name, n) => (isEn ? `${name}: ${n.toLocaleString("en-US")}` : `${name}：${n.toLocaleString("en-US")}`);
+  function pick(x, y) {
+    // 圓點優先命中（省州／縣市統計）
+    for (const v of visibleDots)
+      if ((x - v.x) ** 2 + (y - v.y) ** 2 <= (v.rad + 3) ** 2)
+        return { dot: v.d, text: fmt(v.d.name, v.d.n) };
+    const p = proj.invert([x, y]);
+    if (p && !isNaN(p[0])) {
+      const rad = proj.scale();
+      if ((x - W / 2) ** 2 + (y - W / 2) ** 2 <= rad * rad) {
+        const hit = countries.find((f) => d3.geoContains(f, p));
+        if (hit) {
+          const c = a2(hit);
+          const dict = (isEn ? data.names_en : data.names) || data.names;
+          const name = (c && dict[c]) || hit.properties.name;
+          const n = c ? data.counts[c] : null;
+          return { country: hit, text: n ? fmt(name, n) : name };
+        }
+      }
+    }
+    return null;
+  }
+
+  // 拖曳旋轉＋雙指捏合；輕點（手機）＝顯示統計
   const pointers = new Map();
   let pinchDist = 0;
-  let px = 0, py = 0;
+  let px = 0, py = 0, downX = 0, downY = 0, tapTimer = 0;
   canvas.addEventListener("pointerdown", (e) => {
     pointers.set(e.pointerId, [e.clientX, e.clientY]);
     if (pointers.size === 2) {
@@ -164,15 +195,31 @@
       dragging = false;
       return;
     }
-    dragging = true; px = e.clientX; py = e.clientY;
+    dragging = true; px = e.clientX; py = e.clientY; downX = e.clientX; downY = e.clientY;
     canvas.setPointerCapture(e.pointerId);
     canvas.style.cursor = "grabbing";
   });
   const endPointer = (e) => {
+    const wasPinch = pointers.size >= 2;
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinchDist = 0;
     dragging = false; canvas.style.cursor = "grab";
     try { canvas.releasePointerCapture(e.pointerId); } catch {}
+    // 輕點：按下到放開幾乎沒移動 → 顯示該處統計（觸控裝置沒有 hover）
+    if (!wasPinch && e.type === "pointerup" && Math.hypot(e.clientX - downX, e.clientY - downY) < 8) {
+      const rect = canvas.getBoundingClientRect();
+      const res = pick(e.clientX - rect.left, e.clientY - rect.top);
+      hoveredDot = res?.dot ?? null;
+      hovered = res?.country ?? null;
+      render();
+      clearTimeout(tapTimer);
+      if (res) {
+        showTipAt(e.clientX, e.clientY, res.text);
+        tapTimer = setTimeout(() => {
+          hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
+        }, 2600);
+      } else tipEl.classList.add("hidden");
+    }
   };
   canvas.addEventListener("pointerup", endPointer);
   canvas.addEventListener("pointercancel", endPointer);
@@ -199,39 +246,12 @@
     }
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    const showTip = (text) => {
-      tipEl.textContent = text;
-      const cardRect = card.getBoundingClientRect();
-      tipEl.style.left = Math.min(e.clientX - cardRect.left + 14, cardRect.width - 130) + "px";
-      tipEl.style.top = e.clientY - cardRect.top + 14 + "px";
-      tipEl.classList.remove("hidden");
-    };
-    // 圓點優先命中（省州／縣市統計）
-    let dotHit = null;
-    for (const v of visibleDots) {
-      if ((x - v.x) ** 2 + (y - v.y) ** 2 <= (v.rad + 3) ** 2) dotHit = v;
-    }
-    if (dotHit !== hoveredDot) { hoveredDot = dotHit; hovered = null; render(); }
-    if (dotHit) {
-      const nm = dotHit.d.name + (isEn ? ": " : "：") + dotHit.d.n.toLocaleString("en-US");
-      showTip(nm);
-      return;
-    }
-    const p = proj.invert([x, y]);
-    let hit = null;
-    if (p && !isNaN(p[0])) {
-      const rad = proj.scale();
-      if ((x - W / 2) ** 2 + (y - W / 2) ** 2 <= rad * rad)
-        hit = countries.find((f) => d3.geoContains(f, p)) ?? null;
-    }
-    if (hit !== hovered) { hovered = hit; render(); }
-    if (hit) {
-      const c = a2(hit);
-      const dict = (isEn ? data.names_en : data.names) || data.names;
-      const name = (c && dict[c]) || hit.properties.name;
-      const n = c ? data.counts[c] : null;
-      showTip(n ? (isEn ? `${name}: ${n.toLocaleString("en-US")}` : `${name}：${n.toLocaleString("en-US")}`) : name);
-    } else tipEl.classList.add("hidden");
+    const res = pick(x, y);
+    const dotHit = res?.dot ?? null;
+    const hit = res?.country ?? null;
+    if (dotHit !== hoveredDot || hit !== hovered) { hoveredDot = dotHit; hovered = hit; render(); }
+    if (res) showTipAt(e.clientX, e.clientY, res.text);
+    else tipEl.classList.add("hidden");
   });
   canvas.addEventListener("pointerleave", () => {
     mouseOver = false; hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
