@@ -10,6 +10,9 @@
     "Inter", "Noto Sans TC", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang TC",
     "Microsoft JhengHei", sans-serif;
+  --font-serif:
+    "Noto Serif TC", "Noto Serif", Georgia, "Times New Roman",
+    "PingFang TC", serif;
   --font-mono:
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -177,6 +180,11 @@ body {
   vertical-align: middle;
   margin-right: 0.75rem;
   transform: translateY(-2px);
+}
+
+/* 標題採思源宋體（Noto Serif TC）；內文維持 Noto Sans TC。 */
+h1, h2, h3 {
+  font-family: var(--font-serif);
 }
 
 /* =============================================================================
