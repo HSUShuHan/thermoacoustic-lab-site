@@ -10,8 +10,8 @@
   style="aspect-ratio: 1 / 1.06;"
 >
   <img src="/images/home/tiger-flame.png" alt="" class="pointer-events-none absolute right-[1%] top-[0%] z-[6] w-[18%]" loading="lazy" />
-  <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute left-[-2%] top-[44%] z-[6] w-[18%]" loading="lazy" />
-  <img src="/images/home/tiger-cloud-right.png" alt="" class="pointer-events-none absolute right-[-2%] top-[36%] z-[6] w-[18%]" loading="lazy" />
+  <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute left-[1%] top-[13%] z-[8] w-[12%]" loading="lazy" />
+  <img src="/images/home/tiger-cloud-right.png" alt="" class="pointer-events-none absolute right-[1%] top-[14%] z-[8] w-[12%]" loading="lazy" />
 
   <div
     id="globe-wrap"
@@ -24,8 +24,8 @@
   <img
     src="/images/home/tiger.png"
     alt="藍地黃虎旗之黃虎"
-    class="pointer-events-none absolute bottom-[-24%] left-1/2 z-10 w-[118%]"
-    style="transform: translateX(-50%) scaleY(0.68); transform-origin: bottom center;"
+    class="pointer-events-none absolute bottom-[-18%] left-1/2 z-10 w-[118%]"
+    style="transform: translateX(-50%) rotate(10deg) scaleY(0.68); transform-origin: bottom center;"
     loading="lazy"
   />
 
@@ -113,7 +113,7 @@
     if (reduced || dragging || hovered) { last = t; return; }
     const dt = t - last; last = t;
     const r = proj.rotate();
-    proj.rotate([r[0] + dt * 0.006, r[1], r[2]]);
+    proj.rotate([r[0] + dt * 0.003, r[1], r[2]]);
     render();
   });
 
