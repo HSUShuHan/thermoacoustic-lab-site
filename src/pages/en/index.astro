@@ -55,7 +55,7 @@ const heroNews = allNews
   .slice(0, 3);
 
 // 訪客足跡（scripts/update-visitors.mjs 產生；樣本資料不顯示）
-const visitorFiles = import.meta.glob("~/data/visitors.json", { eager: true });
+const visitorFiles = import.meta.glob("../../data/visitors.json", { eager: true });
 const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
 ---
 

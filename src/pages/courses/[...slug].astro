@@ -5,7 +5,7 @@ import Prose from "~/components/Prose.astro";
 import GradeHistograms from "~/components/GradeHistograms.astro";
 
 // 本學期成績統計（由 npm run import:grades 產生；僅聚合數字）
-const gradeFiles = import.meta.glob("~/data/grades/*.json", { eager: true });
+const gradeFiles = import.meta.glob("../../data/grades/*.json", { eager: true });
 
 export async function getStaticPaths() {
   const items = await getCollection("courses");
