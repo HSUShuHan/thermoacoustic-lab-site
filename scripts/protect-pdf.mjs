@@ -22,7 +22,24 @@ if (!pdfPath || !title || !out || !semester || !password) {
   console.error('用法：node scripts/protect-pdf.mjs <pdf> --title "…" --out <檔名不含副檔名> --semester 115-1 --password <密碼>');
   process.exit(1);
 }
-const pdf = readFileSync(pdfPath);
+// 先用 Ghostscript 壓縮（150 dpi 降採樣，向量文字不變），取較小者；--no-compress 可略過
+let usePath = pdfPath;
+if (!args.includes("--no-compress")) {
+  try {
+    const tmpPdf = resolve(root, ".pdf-tmp-compress.pdf");
+    execFileSync("gs", ["-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+      "-dPDFSETTINGS=/ebook", "-dCompatibilityLevel=1.5",
+      `-sOutputFile=${tmpPdf}`, pdfPath]);
+    const orig = readFileSync(pdfPath).length;
+    const comp = readFileSync(tmpPdf).length;
+    if (comp < orig * 0.9) {
+      usePath = tmpPdf;
+      console.log(`（已壓縮 ${(orig / 1e6).toFixed(1)} MB → ${(comp / 1e6).toFixed(1)} MB）`);
+    } else rmSync(tmpPdf, { force: true });
+  } catch { console.log("（找不到 gs，略過壓縮）"); }
+}
+const pdf = readFileSync(usePath);
+if (usePath !== pdfPath) rmSync(usePath, { force: true });
 const b64 = pdf.toString("base64");
 const fname = `${out}.pdf`;
 const html = `<!DOCTYPE html>
