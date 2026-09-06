@@ -1,0 +1,135 @@
+---
+// 訪客足跡 3D 地球儀：正射投影、自動緩轉、拖曳旋轉、hover 顯示國名與 30 天造訪次數。
+// 資料：/data/visitor-globe.json（scripts/update-visitors.mjs 產生）；
+// 圖資：/vendor/countries-50m.json（world-atlas，ISO N3 id）；d3 與 topojson-client 皆站內 vendor。
+---
+
+<div id="globe-wrap" class="relative mx-auto mt-6 w-full max-w-2xl select-none">
+  <canvas id="globe" class="block w-full cursor-grab" aria-label="訪客來源地球儀（可拖曳旋轉）"></canvas>
+  <div id="globe-tip" class="pointer-events-none absolute z-10 hidden rounded bg-brand-800 px-2.5 py-1 text-sm text-white shadow"></div>
+</div>
+
+<script is:inline src="/vendor/d3.v7.min.js"></script>
+<script is:inline src="/vendor/topojson-client.min.js"></script>
+<script is:inline>
+(async function () {
+  const canvas = document.getElementById("globe");
+  if (!canvas || !window.d3 || !window.topojson) return;
+  const wrap = document.getElementById("globe-wrap");
+  const tipEl = document.getElementById("globe-tip");
+  let world, data;
+  try {
+    [world, data] = await Promise.all([
+      fetch("/vendor/countries-50m.json").then((r) => r.json()),
+      fetch("/data/visitor-globe.json").then((r) => r.json()),
+    ]);
+  } catch { return; }
+  const countries = topojson.feature(world, world.objects.countries).features;
+  const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+  const a2 = (f) => data.n3[String(f.id).padStart(3, "0")] ?? null;
+  const bucket = (n) => (n >= 10000 ? "#1e3a5f" : n >= 1000 ? "#41608c" : n >= 100 ? "#7d97b8" : "#b9c8db");
+  const fillOf = {};
+  for (const f of countries) {
+    const c = a2(f);
+    const n = c ? data.counts[c] : null;
+    fillOf[f.id] = n ? bucket(n) : "#e8edf3";
+  }
+
+  const ctx = canvas.getContext("2d");
+  const proj = d3.geoOrthographic().clipAngle(90).rotate([-121, -23.5]);
+  const path = d3.geoPath(proj, ctx);
+  const sphere = { type: "Sphere" };
+  const graticule = d3.geoGraticule10();
+  let W = 0, H = 0, dpr = 1;
+
+  function resize() {
+    W = wrap.clientWidth;
+    H = Math.round(W * 0.92);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.height = H + "px";
+    // 放大 1.35 倍：預設鏡頭拉近，台灣居中
+    proj.translate([W / 2, H / 2]).scale((Math.min(W, H) / 2 - 4) * 1.35);
+    render();
+  }
+
+  function render() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.beginPath(); path(sphere); ctx.fillStyle = "#f3f7fb"; ctx.fill();
+    ctx.beginPath(); path(graticule); ctx.strokeStyle = "#dde7f0"; ctx.lineWidth = 0.5; ctx.stroke();
+    for (const f of countries) {
+      ctx.beginPath(); path(f);
+      ctx.fillStyle = f === hovered ? "#dc2626" : fillOf[f.id];
+      ctx.fill();
+    }
+    ctx.beginPath(); path(borders); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.6; ctx.stroke();
+    ctx.beginPath(); path(sphere); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  // 自動緩轉（拖曳或 hover 時暫停；尊重減少動態偏好）
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let dragging = false, hovered = null, last = 0;
+  d3.timer((t) => {
+    if (reduced || dragging || hovered) { last = t; return; }
+    const dt = t - last; last = t;
+    const r = proj.rotate();
+    proj.rotate([r[0] + dt * 0.006, r[1], r[2]]);
+    render();
+  });
+
+  // 拖曳旋轉
+  let px = 0, py = 0;
+  canvas.addEventListener("pointerdown", (e) => {
+    dragging = true; px = e.clientX; py = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = "grabbing";
+  });
+  canvas.addEventListener("pointerup", (e) => {
+    dragging = false; canvas.style.cursor = "grab";
+    canvas.releasePointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (dragging) {
+      const r = proj.rotate();
+      proj.rotate([
+        r[0] + (e.clientX - px) * 0.25,
+        Math.max(-75, Math.min(75, r[1] - (e.clientY - py) * 0.25)),
+        r[2],
+      ]);
+      px = e.clientX; py = e.clientY;
+      hovered = null; tipEl.classList.add("hidden");
+      render();
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const p = proj.invert([x, y]);
+    let hit = null;
+    if (p && !isNaN(p[0])) {
+      // 只在球面內找（invert 在球外會回傳背面座標）
+      const [cx, cy] = [W / 2, H / 2];
+      const rad = proj.scale();
+      if ((x - cx) ** 2 + (y - cy) ** 2 <= rad * rad)
+        hit = countries.find((f) => d3.geoContains(f, p)) ?? null;
+    }
+    if (hit !== hovered) { hovered = hit; render(); }
+    if (hit) {
+      const c = a2(hit);
+      const name = (c && data.names[c]) || hit.properties.name;
+      const n = c ? data.counts[c] : null;
+      tipEl.textContent = n ? `${name}：${n.toLocaleString("en-US")}` : name;
+      tipEl.style.left = Math.min(x + 14, W - 120) + "px";
+      tipEl.style.top = y + 14 + "px";
+      tipEl.classList.remove("hidden");
+    } else tipEl.classList.add("hidden");
+  });
+  canvas.addEventListener("pointerleave", () => {
+    hovered = null; tipEl.classList.add("hidden"); render();
+  });
+
+  new ResizeObserver(resize).observe(wrap);
+  resize();
+})();
+</script>

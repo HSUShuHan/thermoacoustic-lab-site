@@ -54,38 +54,16 @@ const SAMPLE = { TW: 18500, JP: 2100, US: 1400, DE: 320, FR: 250, GB: 180, CN: 9
 const sample = process.argv.includes("--sample");
 const counts = sample ? SAMPLE : await fetchCounts();
 
-// 色階（藏青系，依請求數級距）
-const bucket = (n) => (n >= 10000 ? "#1e3a5f" : n >= 1000 ? "#41608c" : n >= 100 ? "#7d97b8" : "#b9c8db");
-let css = `
-#sphere { fill: #ffffff; }
-.cty { fill: #eceff3; stroke: #ffffff; stroke-width: 0.5; }
-.cty:hover { filter: brightness(0.82); }
-`;
-for (const [code, n] of Object.entries(counts)) {
-  if (!/^[A-Z]{2}$/.test(code)) continue;
-  css += `#${code.toLowerCase()} { fill: ${bucket(n)}; }\n`;
-}
-let svg = readFileSync(resolve(root, "scripts/assets/world-map-equalearth.svg"), "utf-8");
-svg = svg.replace("<style>\n</style>", `<style>${css}</style>`);
-
-// 各國 <title>（中文短名＋次數；瀏覽器原生 tooltip）
+// 產出地球儀資料：counts（A2→次數）、names（A2→中文短名）、n3 對照
+const n3map = JSON.parse(readFileSync(resolve(root, "scripts/assets/iso-n3-to-a2.json"), "utf-8"));
 const zhName = new Intl.DisplayNames(["zh-Hant"], { type: "region" });
-const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-for (const [code, n] of Object.entries(counts)) {
-  if (!/^[A-Z]{2}$/.test(code)) continue;
-  const id = code.toLowerCase();
-  let zh = code;
-  try { zh = zhName.of(code) ?? code; } catch {}
-  const tip = `<title>${esc(zh)}：${n.toLocaleString("en-US")}</title>`;
-  const marker = `<path id="${id}" class="cty" `;
-  const i = svg.indexOf(marker);
-  if (i < 0) continue;
-  const close = svg.indexOf("/>", i);
-  svg = svg.slice(0, close) + `>${tip}</path>` + svg.slice(close + 2);
+const names = {};
+for (const a2 of new Set(Object.values(n3map))) {
+  try { names[a2] = zhName.of(a2) ?? a2; } catch { names[a2] = a2; }
 }
-
-mkdirSync(resolve(root, "public/images/home"), { recursive: true });
-writeFileSync(resolve(root, "public/images/home/visitor-map.svg"), svg);
+const cleanCounts = {};
+for (const [code, n] of Object.entries(counts))
+  if (/^[A-Z]{2}$/.test(code)) cleanCounts[code] = n;
 
 const codes = Object.entries(counts).filter(([c, n]) => /^[A-Z]{2}$/.test(c) && n >= 10).map(([c]) => c);
 const meta = {
@@ -96,5 +74,10 @@ const meta = {
 };
 mkdirSync(resolve(root, "src/data"), { recursive: true });
 writeFileSync(resolve(root, "src/data/visitors.json"), JSON.stringify(meta, null, 2));
-console.log(`✓ visitor-map.svg（${codes.length} 個國家／地區${sample ? "，樣本資料" : ""}）`);
+mkdirSync(resolve(root, "public/data"), { recursive: true });
+writeFileSync(
+  resolve(root, "public/data/visitor-globe.json"),
+  JSON.stringify({ ...meta, counts: cleanCounts, names, n3: n3map }),
+);
+console.log(`✓ public/data/visitor-globe.json（${codes.length} 個國家／地區${sample ? "，樣本資料" : ""}）`);
 console.log("✓ src/data/visitors.json");
