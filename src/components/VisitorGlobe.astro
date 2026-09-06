@@ -1,17 +1,39 @@
 ---
-// 訪客足跡 3D 地球儀：正射投影、自動緩轉、拖曳旋轉、hover 顯示國名與 30 天造訪次數。
-// 資料：/data/visitor-globe.json（scripts/update-visitors.mjs 產生）；
-// 圖資：/vendor/countries-50m.json（world-atlas，ISO N3 id）；d3 與 topojson-client 皆站內 vendor。
+// 訪客足跡地球儀：藍地黃虎旗（1895 臺灣民主國，公有領域）意象——虎馱地球。
+// 圓形視窗、自動緩轉、拖曳旋轉、縮放（滾輪／按鈕／捏合）、hover 顯示國名與 30 天造訪次數。
+// 資料：/data/visitor-globe.json；圖資：/vendor/countries-50m.json；d3、topojson-client 站內 vendor。
 ---
 
-<div id="globe-wrap" class="relative mx-auto mt-6 w-full max-w-2xl select-none">
-  <canvas id="globe" class="block w-full cursor-grab touch-none" aria-label="訪客來源地球儀（可拖曳旋轉）"></canvas>
-  <div id="globe-tip" class="pointer-events-none absolute z-10 hidden rounded bg-brand-800 px-2.5 py-1 text-sm text-white shadow"></div>
-  <div class="absolute bottom-3 right-3 flex flex-col gap-1.5">
+<div
+  id="globe-card"
+  class="relative mx-auto mt-6 w-full max-w-2xl overflow-hidden rounded-lg"
+  style="aspect-ratio: 1 / 0.98; background: #275c72;"
+>
+  <img src="/images/home/tiger-flame.png" alt="" class="pointer-events-none absolute left-[4%] top-[3%] w-[26%]" loading="lazy" />
+  <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute bottom-[6%] left-[2%] w-[20%]" loading="lazy" />
+  <img src="/images/home/tiger-cloud-right.png" alt="" class="pointer-events-none absolute bottom-[4%] right-[3%] w-[20%]" loading="lazy" />
+
+  <div
+    id="globe-wrap"
+    class="absolute left-1/2 top-[41%] w-[56%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full shadow-xl ring-4 ring-[#f3ead3]"
+    style="aspect-ratio: 1;"
+  >
+    <canvas id="globe" class="block h-full w-full cursor-grab touch-none" aria-label="訪客來源地球儀（可拖曳旋轉、縮放）"></canvas>
+  </div>
+
+  <img
+    src="/images/home/tiger.png"
+    alt="藍地黃虎旗之黃虎"
+    class="pointer-events-none absolute bottom-[-3%] left-1/2 z-10 w-[58%] -translate-x-1/2"
+    loading="lazy"
+  />
+
+  <div id="globe-tip" class="pointer-events-none absolute z-20 hidden rounded bg-brand-800 px-2.5 py-1 text-sm text-white shadow"></div>
+  <div class="absolute right-3 top-3 z-20 flex flex-col gap-1.5">
     <button id="globe-zin" type="button" aria-label="放大"
-      class="h-8 w-8 rounded-sm border border-brand-200 bg-white text-lg leading-none text-brand-800 shadow-sm transition hover:border-brand-800">＋</button>
+      class="h-8 w-8 rounded-sm border border-[#f3ead3]/60 bg-white/90 text-lg leading-none text-brand-800 shadow-sm transition hover:bg-white">＋</button>
     <button id="globe-zout" type="button" aria-label="縮小"
-      class="h-8 w-8 rounded-sm border border-brand-200 bg-white text-lg leading-none text-brand-800 shadow-sm transition hover:border-brand-800">－</button>
+      class="h-8 w-8 rounded-sm border border-[#f3ead3]/60 bg-white/90 text-lg leading-none text-brand-800 shadow-sm transition hover:bg-white">－</button>
   </div>
 </div>
 
@@ -21,6 +43,7 @@
 (async function () {
   const canvas = document.getElementById("globe");
   if (!canvas || !window.d3 || !window.topojson) return;
+  const card = document.getElementById("globe-card");
   const wrap = document.getElementById("globe-wrap");
   const tipEl = document.getElementById("globe-tip");
   let world, data;
@@ -46,19 +69,17 @@
   const path = d3.geoPath(proj, ctx);
   const sphere = { type: "Sphere" };
   const graticule = d3.geoGraticule10();
-  let W = 0, H = 0, dpr = 1;
+  let W = 0, dpr = 1;
   let zoom = 1.35; // 預設拉近，台灣居中
-  const ZMIN = 0.9, ZMAX = 5;
-  const applyScale = () => proj.scale((Math.min(W, H) / 2 - 4) * zoom);
+  const ZMIN = 0.95, ZMAX = 5;
+  const applyScale = () => proj.scale((W / 2) * zoom);
 
   function resize() {
     W = wrap.clientWidth;
-    H = Math.round(W * 0.92);
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.height = H + "px";
-    proj.translate([W / 2, H / 2]);
+    canvas.height = W * dpr;
+    proj.translate([W / 2, W / 2]);
     applyScale();
     render();
   }
@@ -69,10 +90,11 @@
     render();
   }
 
+  let hovered = null;
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    ctx.beginPath(); path(sphere); ctx.fillStyle = "#f3f7fb"; ctx.fill();
+    ctx.clearRect(0, 0, W, W);
+    ctx.fillStyle = "#f3f7fb"; ctx.fillRect(0, 0, W, W);
     ctx.beginPath(); path(graticule); ctx.strokeStyle = "#dde7f0"; ctx.lineWidth = 0.5; ctx.stroke();
     for (const f of countries) {
       ctx.beginPath(); path(f);
@@ -85,7 +107,7 @@
 
   // 自動緩轉（拖曳或 hover 時暫停；尊重減少動態偏好）
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let dragging = false, hovered = null, last = 0;
+  let dragging = false, last = 0;
   d3.timer((t) => {
     if (reduced || dragging || hovered) { last = t; return; }
     const dt = t - last; last = t;
@@ -151,10 +173,8 @@
     const p = proj.invert([x, y]);
     let hit = null;
     if (p && !isNaN(p[0])) {
-      // 只在球面內找（invert 在球外會回傳背面座標）
-      const [cx, cy] = [W / 2, H / 2];
       const rad = proj.scale();
-      if ((x - cx) ** 2 + (y - cy) ** 2 <= rad * rad)
+      if ((x - W / 2) ** 2 + (y - W / 2) ** 2 <= rad * rad)
         hit = countries.find((f) => d3.geoContains(f, p)) ?? null;
     }
     if (hit !== hovered) { hovered = hit; render(); }
@@ -163,8 +183,9 @@
       const name = (c && data.names[c]) || hit.properties.name;
       const n = c ? data.counts[c] : null;
       tipEl.textContent = n ? `${name}：${n.toLocaleString("en-US")}` : name;
-      tipEl.style.left = Math.min(x + 14, W - 120) + "px";
-      tipEl.style.top = y + 14 + "px";
+      const cardRect = card.getBoundingClientRect();
+      tipEl.style.left = Math.min(e.clientX - cardRect.left + 14, cardRect.width - 130) + "px";
+      tipEl.style.top = e.clientY - cardRect.top + 14 + "px";
       tipEl.classList.remove("hidden");
     } else tipEl.classList.add("hidden");
   });
