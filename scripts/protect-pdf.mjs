@@ -22,20 +22,27 @@ if (!pdfPath || !title || !out || !semester || !password) {
   console.error('用法：node scripts/protect-pdf.mjs <pdf> --title "…" --out <檔名不含副檔名> --semester 115-1 --password <密碼>');
   process.exit(1);
 }
-// 先用 Ghostscript 壓縮（150 dpi 降採樣，向量文字不變），取較小者；--no-compress 可略過
+// 壓縮策略：Cloudflare 單檔上限 25 MB、base64 會脹 1.33 倍 → PDF ≤ 13 MB 直接原檔不壓
+// （畫質優先，PI 2026-09 裁定）；超過才用 Ghostscript 降採樣，先試 300 dpi（/printer），
+// 還是太大再退 150 dpi（/ebook）。--no-compress 可強制略過。
+const LIMIT = 13e6;
 let usePath = pdfPath;
-if (!args.includes("--no-compress")) {
+const origSize = readFileSync(pdfPath).length;
+if (!args.includes("--no-compress") && origSize > LIMIT) {
   try {
     const tmpPdf = resolve(root, ".pdf-tmp-compress.pdf");
-    execFileSync("gs", ["-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
-      "-dPDFSETTINGS=/ebook", "-dCompatibilityLevel=1.5",
-      `-sOutputFile=${tmpPdf}`, pdfPath]);
-    const orig = readFileSync(pdfPath).length;
-    const comp = readFileSync(tmpPdf).length;
-    if (comp < orig * 0.9) {
-      usePath = tmpPdf;
-      console.log(`（已壓縮 ${(orig / 1e6).toFixed(1)} MB → ${(comp / 1e6).toFixed(1)} MB）`);
-    } else rmSync(tmpPdf, { force: true });
+    for (const preset of ["/printer", "/ebook"]) {
+      execFileSync("gs", ["-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+        `-dPDFSETTINGS=${preset}`, "-dCompatibilityLevel=1.5",
+        `-sOutputFile=${tmpPdf}`, pdfPath]);
+      const comp = readFileSync(tmpPdf).length;
+      if (comp <= LIMIT || preset === "/ebook") {
+        usePath = tmpPdf;
+        console.log(`（已壓縮 ${(origSize / 1e6).toFixed(1)} MB → ${(comp / 1e6).toFixed(1)} MB，${preset}）`);
+        if (comp > LIMIT) console.log("（警告：仍超過 13 MB，加密頁可能超出 Cloudflare 25 MB 上限）");
+        break;
+      }
+    }
   } catch { console.log("（找不到 gs，略過壓縮）"); }
 }
 const pdf = readFileSync(usePath);
