@@ -83,9 +83,10 @@
   const dotsFor = () => (zoom >= 4.5 ? cityDots : zoom >= 2 ? regionDots : []);
   const dotR = (n) => Math.min(4 + 1.6 * Math.sqrt(n), 18);
 
-  // 省州縣界（NE 10m admin-1，1.4 MB）：放大到 3 倍以上才首次載入
+  // 省州縣界（NE 10m admin-1，1.6 MB）：放大到 3 倍以上才首次載入。
+  // 同時保留多邊形做命中測試（放大時反紅省州而非整國），bounds 先粗篩再 geoContains。
   const ADMIN_Z = 3;
-  let admin1Mesh = null, admin1Loading = false;
+  let admin1Mesh = null, admin1Features = null, admin1Loading = false;
   function ensureAdmin1() {
     if (admin1Mesh || admin1Loading || zoom < ADMIN_Z) return;
     admin1Loading = true;
@@ -94,10 +95,25 @@
       .then((topo) => {
         const obj = topo.objects[Object.keys(topo.objects)[0]];
         admin1Mesh = topojson.mesh(topo, obj, (a, b) => a !== b);
+        admin1Features = topojson.feature(topo, obj).features;
+        for (const f of admin1Features) f.__b = d3.geoBounds(f);
         render();
       })
       .catch(() => {})
       .finally(() => { admin1Loading = false; });
+  }
+  function admin1At(p) {
+    if (!admin1Features) return null;
+    const [lon, lat] = p;
+    for (const f of admin1Features) {
+      const b = f.__b;
+      if (lat < b[0][1] - 0.1 || lat > b[1][1] + 0.1) continue;
+      const inLon = b[0][0] <= b[1][0]
+        ? lon >= b[0][0] - 0.1 && lon <= b[1][0] + 0.1
+        : lon >= b[0][0] - 0.1 || lon <= b[1][0] + 0.1; // 跨越換日線
+      if (inLon && d3.geoContains(f, p)) return f;
+    }
+    return null;
   }
 
   function resize() {
@@ -117,7 +133,7 @@
     render();
   }
 
-  let hovered = null, hoveredDot = null;
+  let hovered = null, hoveredDot = null, hoveredAdmin = null;
   // 目前可見的圓點（正面半球）與其螢幕座標，render 時更新、hover 命中用
   let visibleDots = [];
   function render() {
@@ -129,6 +145,10 @@
       ctx.beginPath(); path(f);
       ctx.fillStyle = f === hovered ? "#dc2626" : fillOf[f.id];
       ctx.fill();
+    }
+    if (hoveredAdmin) {
+      ctx.beginPath(); path(hoveredAdmin);
+      ctx.fillStyle = "#dc2626"; ctx.fill();
     }
     ctx.beginPath(); path(borders); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.6; ctx.stroke();
     if (zoom >= ADMIN_Z && admin1Mesh) {
@@ -159,7 +179,7 @@
   let dragging = false, last = 0, mouseOver = false;
   canvas.addEventListener("pointerenter", () => { mouseOver = true; });
   d3.timer((t) => {
-    if (reduced || !mouseOver || dragging || hovered || hoveredDot) { last = t; return; }
+    if (reduced || !mouseOver || dragging || hovered || hoveredDot || hoveredAdmin) { last = t; return; }
     const dt = t - last; last = t;
     const r = proj.rotate();
     proj.rotate([r[0] + dt * 0.003, r[1], r[2]]);
@@ -192,6 +212,16 @@
     if (p && !isNaN(p[0])) {
       const rad = proj.scale();
       if ((x - W / 2) ** 2 + (y - W / 2) ** 2 <= rad * rad) {
+        // 放大時命中省州多邊形；統計＝該省範圍內回報點的加總
+        if (zoom >= ADMIN_Z) {
+          const f = admin1At(p);
+          if (f) {
+            const label = `${f.properties.name}, ${f.properties.admin}`;
+            let n = 0;
+            for (const d of regionDots) if (d3.geoContains(f, [d.lon, d.lat])) n += d.n;
+            return { admin: f, text: n ? fmt(label, n) : label };
+          }
+        }
         const hit = countries.find((f) => d3.geoContains(f, p));
         if (hit) {
           const c = a2(hit);
@@ -233,6 +263,7 @@
       const res = pick(e.clientX - rect.left, e.clientY - rect.top);
       hoveredDot = res?.dot ?? null;
       hovered = res?.country ?? null;
+      hoveredAdmin = res?.admin ?? null;
       render();
       clearTimeout(tapTimer);
       if (res) {
@@ -240,7 +271,7 @@
         tapActive = true;
         tapTimer = setTimeout(() => {
           tapActive = false;
-          hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
+          hovered = null; hoveredDot = null; hoveredAdmin = null; tipEl.classList.add("hidden"); render();
         }, 2600);
       } else { tapActive = false; tipEl.classList.add("hidden"); }
     }
@@ -264,7 +295,7 @@
         r[2],
       ]);
       px = e.clientX; py = e.clientY;
-      hovered = null; hoveredDot = null; tipEl.classList.add("hidden");
+      hovered = null; hoveredDot = null; hoveredAdmin = null; tipEl.classList.add("hidden");
       render();
       return;
     }
@@ -273,14 +304,17 @@
     const res = pick(x, y);
     const dotHit = res?.dot ?? null;
     const hit = res?.country ?? null;
-    if (dotHit !== hoveredDot || hit !== hovered) { hoveredDot = dotHit; hovered = hit; render(); }
+    const adminHit = res?.admin ?? null;
+    if (dotHit !== hoveredDot || hit !== hovered || adminHit !== hoveredAdmin) {
+      hoveredDot = dotHit; hovered = hit; hoveredAdmin = adminHit; render();
+    }
     if (res) showTipAt(e.clientX, e.clientY, res.text);
     else tipEl.classList.add("hidden");
   });
   canvas.addEventListener("pointerleave", () => {
     mouseOver = false;
     if (tapActive) return; // 觸控放開後瀏覽器會補發 pointerleave，別把剛輕點出的 tooltip 藏掉
-    hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
+    hovered = null; hoveredDot = null; hoveredAdmin = null; tipEl.classList.add("hidden"); render();
   });
 
   new ResizeObserver(resize).observe(wrap);
