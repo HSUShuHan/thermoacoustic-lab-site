@@ -23,6 +23,12 @@ import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
       academic project, or already accepted and weighing your options — this
       page is for you.
     </p>
+    <p>
+      The lab is <strong>recruiting year-round</strong> for Master's students and
+      undergraduate project students; see the
+      <a href="/en/grants" class="text-accent-600 underline hover:text-accent-700">Grants</a>
+      page for our current funding.
+    </p>
     <div class="mt-8 rounded-lg border-l-4 border-accent-500 bg-brand-50 p-6">
       <p class="text-sm uppercase tracking-widest text-brand-500">
         Quick start
@@ -226,5 +232,40 @@ import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
         class="text-accent-600 underline hover:text-accent-700">People page</a
       >.
     </p>
+  </section>
+
+  <section id="contact" class="mt-12 max-w-3xl border-t border-brand-100 pt-10">
+    <h2 class="text-2xl font-semibold text-brand-900">Contact and location</h2>
+    <div class="mt-5 grid gap-8 sm:grid-cols-2">
+      <div class="text-gray-700">
+        <address class="not-italic leading-relaxed">
+          Room 614-2A, General Studies Building<br />
+          Department of Mechanical Engineering, NTUT<br />
+          1, Sec. 3, Zhongxiao E. Rd., Taipei 10608, Taiwan
+        </address>
+        <p class="mt-4">
+          +886-2-2771-2171 #2086<br />
+          <a href="mailto:bookhsu@ntut.edu.tw" class="text-accent-600 underline hover:text-accent-700">bookhsu@ntut.edu.tw</a>
+        </p>
+        <ul class="mt-4 space-y-1 text-sm text-gray-600">
+          <li>5-minute walk from MRT Zhongxiao Fuxing Station, Exit 1</li>
+          <li>6F, General Studies Building (Zhongxiao E. Rd. side)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="aspect-[4/3] w-full overflow-hidden rounded-lg border border-brand-100">
+          <iframe
+            src="https://www.google.com/maps?q=25.042256,121.536138&hl=en&z=18&output=embed"
+            title="NTUT General Studies Building, Room 614-2A"
+            class="h-full w-full"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+        <p class="mt-2 text-xs text-gray-500">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138" target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">Open in Google Maps ↗</a>
+        </p>
+      </div>
+    </div>
   </section>
 </BaseLayout>

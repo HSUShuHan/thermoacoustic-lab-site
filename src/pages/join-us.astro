@@ -22,6 +22,10 @@ import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
     <p class="text-lg leading-relaxed">
       如果你正在考慮加入熱聲實驗室——不論是準備推甄、考研究所、想做大專專題、或者已經錄取在猶豫——本頁是給你的。
     </p>
+    <p>
+      實驗室<strong>常年招收</strong>碩士生與大學部專題生；研究經費與執行中計畫見
+      <a href="/grants" class="text-accent-600 underline hover:text-accent-700">計畫</a>頁。
+    </p>
     <div class="mt-8 rounded-lg border-l-4 border-accent-500 bg-brand-50 p-6">
       <p class="text-sm uppercase tracking-widest text-brand-500">
         Quick start
@@ -114,5 +118,40 @@ import AlumniOutcomes from "~/components/AlumniOutcomes.astro";
         class="text-accent-600 underline hover:text-accent-700">成員頁</a
       >。
     </p>
+  </section>
+
+  <section id="contact" class="mt-12 max-w-3xl border-t border-brand-100 pt-10">
+    <h2 class="text-2xl font-semibold text-brand-900">聯絡與位置</h2>
+    <div class="mt-5 grid gap-8 sm:grid-cols-2">
+      <div class="text-gray-700">
+        <address class="not-italic leading-relaxed">
+          10608 台北市忠孝東路三段 1 號<br />
+          綜合科館 614-2A<br />
+          國立臺北科技大學機械工程系
+        </address>
+        <p class="mt-4">
+          (02) 2771-2171 #2086<br />
+          <a href="mailto:bookhsu@ntut.edu.tw" class="text-accent-600 underline hover:text-accent-700">bookhsu@ntut.edu.tw</a>
+        </p>
+        <ul class="mt-4 space-y-1 text-sm text-gray-600">
+          <li>捷運忠孝復興站 1 號出口，步行約 5 分鐘</li>
+          <li>綜合科館 6 樓（忠孝東路側）</li>
+        </ul>
+      </div>
+      <div>
+        <div class="aspect-[4/3] w-full overflow-hidden rounded-lg border border-brand-100">
+          <iframe
+            src="https://www.google.com/maps?q=25.042256,121.536138&hl=zh-TW&z=18&output=embed"
+            title="國立臺北科技大學 綜合科館 614-2A"
+            class="h-full w-full"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+        <p class="mt-2 text-xs text-gray-500">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138" target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">在 Google Maps 開啟導航 ↗</a>
+        </p>
+      </div>
+    </div>
   </section>
 </BaseLayout>
