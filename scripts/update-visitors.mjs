@@ -59,6 +59,7 @@ const bucket = (n) => (n >= 10000 ? "#1e3a5f" : n >= 1000 ? "#41608c" : n >= 100
 let css = `
 .oceanxx, .limitxx { fill: #ffffff; stroke: none; }
 .landxx, .coastxx, .antxx { fill: #eceff3; stroke: #ffffff; stroke-width: 0.6; }
+g[id]:hover, path[id]:hover { filter: brightness(0.82); }
 `;
 for (const [code, n] of Object.entries(counts)) {
   const id = code.toLowerCase();
@@ -66,19 +67,36 @@ for (const [code, n] of Object.entries(counts)) {
 }
 let svg = readFileSync(resolve(root, "scripts/assets/world-map.svg"), "utf-8");
 svg = svg.replace("</style>", css + "</style>");
-// 原圖無 viewBox（CSS 縮放會變裁切），補上
 if (!svg.includes("viewBox"))
   svg = svg.replace(/<svg([^>]*)width="2754" height="1398"/, '<svg$1viewBox="0 0 2754 1398"');
 
-const tmp = resolve(root, ".visitor-tmp.html");
-writeFileSync(tmp, `<!DOCTYPE html><html><head><style>body{margin:0}svg{display:block;width:1600px;height:auto}</style></head><body>${svg.replace(/^[\s\S]*?<svg/, "<svg")}</body></html>`);
-mkdirSync(resolve(root, "public/images/home"), { recursive: true });
-const png = resolve(root, "public/images/home/visitor-map.png");
-execFileSync(CHROME, ["--headless", "--window-size=1600,830", "--default-background-color=FFFFFFFF",
-  `--screenshot=${png}`, "file://" + tmp], { stdio: "ignore" });
-rmSync(tmp, { force: true });
+// 各國 <title> 提示（中英名＋請求數；hover 原生顯示）
+const zhName = new Intl.DisplayNames(["zh-Hant"], { type: "region" });
+const enName = new Intl.DisplayNames(["en"], { type: "region" });
+for (const [code, n] of Object.entries(counts)) {
+  if (!/^[A-Z]{2}$/.test(code)) continue;
+  const id = code.toLowerCase();
+  let zh = code, en = code;
+  try { zh = zhName.of(code) ?? code; en = enName.of(code) ?? code; } catch {}
+  const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const tip = `<title>${esc(zh)}${en !== zh ? " " + esc(en) : ""}：${n.toLocaleString("en-US")}</title>`;
+  const re = new RegExp(`<(g|path|circle)([^>]*id="${id}"[^>]*?)(\\s*/)?>`);
+  const m = svg.match(re);
+  if (!m) continue;
+  svg = m[3]
+    ? svg.replace(m[0], `<${m[1]}${m[2]}>${tip}</${m[1]}>`)
+    : svg.replace(m[0], `${m[0]}${tip}`);
+}
 
-// 計數門檻：30 天內至少 10 次請求才列入國家數（濾掉零星爬蟲）；地圖仍全部上色
+// 太平洋置中：主圖左移、第二份補右側（切線約 30°W，只切格陵蘭）
+const DX = -1048;
+const inner = svg.slice(svg.indexOf(">", svg.indexOf("<svg")) + 1, svg.lastIndexOf("</svg>"));
+const head = svg.slice(0, svg.indexOf(">", svg.indexOf("<svg")) + 1);
+svg = `${head}<g id="wsrc" transform="translate(${DX},0)">${inner}</g><use href="#wsrc" x="2754"/></svg>`;
+
+mkdirSync(resolve(root, "public/images/home"), { recursive: true });
+writeFileSync(resolve(root, "public/images/home/visitor-map.svg"), svg);
+
 const codes = Object.entries(counts).filter(([c, n]) => /^[A-Z]{2}$/.test(c) && n >= 10).map(([c]) => c);
 const meta = {
   updated: new Date().toISOString().slice(0, 10),
@@ -88,5 +106,5 @@ const meta = {
 };
 mkdirSync(resolve(root, "src/data"), { recursive: true });
 writeFileSync(resolve(root, "src/data/visitors.json"), JSON.stringify(meta, null, 2));
-console.log(`✓ visitor-map.png（${codes.length} 個國家／地區${sample ? "，樣本資料" : ""}）`);
+console.log(`✓ visitor-map.svg（${codes.length} 個國家／地區${sample ? "，樣本資料" : ""}）`);
 console.log("✓ src/data/visitors.json");

@@ -499,15 +499,15 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
             <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
             <h2 class="mt-2 text-3xl font-bold text-brand-900">訪客足跡</h2>
             <div class="mt-6 flex aspect-[2/1] w-full items-center justify-center overflow-hidden rounded border border-brand-100 bg-white">
-              <img
-                src="/images/home/visitor-map.png"
-                alt={`過去 ${visitors.days} 天訪客來源世界地圖`}
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
+              <object
+                type="image/svg+xml"
+                data="/images/home/visitor-map.svg"
+                class="h-full w-full"
+                aria-label={`過去 ${visitors.days} 天訪客來源世界地圖（滑鼠移至國家可見次數）`}
+              >訪客來源世界地圖</object>
             </div>
             <p class="mt-2 text-sm text-gray-600">
-              過去 {visitors.days} 天，訪客來自 <strong>{visitors.countries}</strong> 個國家／地區。
+              過去 {visitors.days} 天，訪客來自 <strong>{visitors.countries}</strong> 個國家／地區；滑鼠移至國家可見造訪次數。
               <span class="text-xs text-gray-400">統計自 Cloudflare 邊緣請求；更新於 {visitors.updated}。</span>
             </p>
           </div>

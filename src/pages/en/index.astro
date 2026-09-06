@@ -523,15 +523,15 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
             <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
             <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
             <div class="mt-6 flex aspect-[2/1] w-full items-center justify-center overflow-hidden rounded border border-brand-100 bg-white">
-              <img
-                src="/images/home/visitor-map.png"
-                alt={`World map of visitor origins over the past ${visitors.days} days`}
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
+              <object
+                type="image/svg+xml"
+                data="/images/home/visitor-map.svg"
+                class="h-full w-full"
+                aria-label={`World map of visitor origins over the past ${visitors.days} days (hover a country for counts)`}
+              >World map of visitor origins</object>
             </div>
             <p class="mt-2 text-sm text-gray-600">
-              Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions.
+              Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions; hover a country for counts.
               <span class="text-xs text-gray-400">Counted from Cloudflare edge requests; updated {visitors.updated}.</span>
             </p>
           </div>
