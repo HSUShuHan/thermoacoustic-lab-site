@@ -30,6 +30,8 @@
   td.total { font-weight:700; color:var(--navy); }
   tr.fail td.total { color:var(--red); }
   tr.dropped td { opacity:.35; text-decoration:line-through; }
+  tr.leave td { opacity:.45; font-style:italic; }
+  td select { font:inherit; border:0; background:transparent; }
   .stats { display:flex; gap:16px; flex-wrap:wrap; margin:14px 0; }
   .stat { border:1px solid var(--b); border-radius:4px; padding:10px 14px; min-width:150px; cursor:pointer; }
   .stat.sel { border-color:var(--navy); box-shadow:inset 0 0 0 1px var(--navy); }
@@ -55,6 +57,7 @@
   <button id="btn-save" class="primary">儲存</button>
   <button id="btn-saveas">另存新檔</button>
   <button id="btn-roster">貼上名單</button>
+  <button id="btn-zuvio">匯入 Zuvio 點名</button>
   <button id="btn-bonus">批次加分</button>
   <button id="btn-export">匯出網站發布包</button>
   <span id="savestate"></span>
@@ -88,7 +91,7 @@
   <table id="tbl">
     <thead>
       <tr>
-        <th>#</th><th>學號</th><th>姓名</th><th>班級</th><th>停修</th>
+        <th>#</th><th>學號</th><th>姓名</th><th>班級</th><th>狀態</th>
         <th>平時<br>(0–100)</th><th>出席<br>次數</th><th>期中</th><th>期末</th>
         <th>實驗<br>作業</th><th>加分</th><th>覆寫</th><th>學期<br>總成績</th><th></th>
       </tr>
@@ -97,7 +100,7 @@
   </table>
   <p><button id="btn-addrow">＋ 加一列</button></p>
   <p class="hint">資料自動暫存於瀏覽器（localStorage），請仍以「儲存」寫入 JSON 檔為準。
-    實驗作業勾選＝通過（不及格以 60 分計、及格 +3，上限 100）。覆寫欄填數字＝直接指定學期總成績（學不躐等等情況）。</p>
+    實驗作業勾選＝通過（不及格以 60 分計、及格 +3，上限 100）。狀態設「撤選」或「休學」者不列入統計與網站發布。覆寫欄填數字＝直接指定學期總成績（學不躐等等情況）。</p>
 </main>
 
 <dialog id="dlg-roster">
@@ -111,6 +114,18 @@
     <input id="bonus-k" type="number" value="2" style="width:60px"> 分（覆蓋整欄，之後可逐列修改）</p>
   <label><input type="checkbox" id="bonus-skip90" checked> 原始成績 &gt; 90 者不加分</label>
   <p><button id="bonus-ok" class="primary">套用</button> <button onclick="this.closest('dialog').close()">取消</button></p>
+</dialog>
+
+<dialog id="dlg-zuvio">
+  <p><b>匯入 Zuvio 點名紀錄</b>（Zuvio「匯出點名紀錄」的 .xlsx，或從試算表整表複製貼上）</p>
+  <p><input type="file" id="zuvio-file" accept=".xlsx"></p>
+  <textarea id="zuvio-text" placeholder="或貼上：學號  姓名  全部(記錄次數)  準時次數  遲到次數  未到次數  請假次數"></textarea>
+  <p>
+    <label><input type="checkbox" id="zuvio-late" checked> 遲到算出席</label>
+    <label><input type="checkbox" id="zuvio-leave"> 請假算出席</label>
+  </p>
+  <p class="hint" id="zuvio-msg"></p>
+  <p><button id="zuvio-ok" class="primary">匯入並更新出席</button> <button onclick="this.closest('dialog').close()">取消</button></p>
 </dialog>
 
 <dialog id="dlg-export">
@@ -173,13 +188,18 @@ function render() {
     const { total } = computeRow(s);
     const tr = document.createElement("tr");
     if (total !== null && total < 60) tr.classList.add("fail");
-    if (s.dropped) tr.classList.add("dropped");
+    if (s.status === "withdrawn") tr.classList.add("dropped");
+    if (s.status === "leave") tr.classList.add("leave");
     tr.innerHTML = `
       <td>${i + 1}</td>
       <td><input data-k="id" value="${s.id ?? ""}"></td>
       <td class="name"><input data-k="name" value="${s.name ?? ""}"></td>
       <td><input data-k="klass" value="${s.klass ?? ""}"></td>
-      <td><input data-k="dropped" type="checkbox" ${s.dropped ? "checked" : ""}></td>
+      <td><select data-k="status">
+        <option value="" ${!s.status ? "selected" : ""}>正常</option>
+        <option value="withdrawn" ${s.status === "withdrawn" ? "selected" : ""}>撤選</option>
+        <option value="leave" ${s.status === "leave" ? "selected" : ""}>休學</option>
+      </select></td>
       <td><input data-k="regular" inputmode="decimal" value="${s.regular ?? ""}"></td>
       <td><input data-k="attend" inputmode="numeric" value="${s.attend ?? ""}"></td>
       <td><input data-k="mid" inputmode="decimal" value="${s.mid ?? ""}"></td>
@@ -189,7 +209,7 @@ function render() {
       <td><input data-k="override" inputmode="decimal" value="${s.override ?? ""}"></td>
       <td class="total">${total ?? "—"}</td>
       <td><button data-del="${i}" title="刪除">×</button></td>`;
-    tr.querySelectorAll("input").forEach((inp) => {
+    tr.querySelectorAll("input, select").forEach((inp) => {
       inp.addEventListener("change", () => {
         const k = inp.dataset.k;
         s[k] = inp.type === "checkbox" ? inp.checked : inp.value.trim();
@@ -204,7 +224,7 @@ function render() {
   renderStats();
 }
 
-function activeStudents() { return data.students.filter((s) => !s.dropped); }
+function activeStudents() { return data.students.filter((s) => !s.status && !s.dropped); }
 function colValues(key) {
   return activeStudents()
     .map((s) => key === "total" ? computeRow(s).total : num(s[key]))
@@ -360,7 +380,132 @@ $("#export-ok").addEventListener("click", () => {
   $("#" + id).addEventListener("change", () => { touch(); writeForm(); render(); }));
 window.addEventListener("beforeunload", (e) => { if (dirty) e.preventDefault(); });
 
+/* ===== Zuvio 點名匯入 ===== */
+async function readXlsxFirstSheet(buf) {
+  const u8 = new Uint8Array(buf);
+  const dv = new DataView(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= 0; i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("not a zip");
+  const count = dv.getUint16(eocd + 10, true);
+  let off = dv.getUint32(eocd + 16, true);
+  const entries = {};
+  for (let i = 0; i < count; i++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) throw new Error("bad cd");
+    const method = dv.getUint16(off + 10, true);
+    const csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true);
+    const elen = dv.getUint16(off + 30, true);
+    const clen = dv.getUint16(off + 32, true);
+    const lho = dv.getUint32(off + 42, true);
+    const name = new TextDecoder().decode(u8.slice(off + 46, off + 46 + nlen));
+    entries[name] = { method, csize, lho };
+    off += 46 + nlen + elen + clen;
+  }
+  async function file(name) {
+    const e = entries[name];
+    if (!e) return null;
+    const nlen = dv.getUint16(e.lho + 26, true);
+    const elen = dv.getUint16(e.lho + 28, true);
+    const start = e.lho + 30 + nlen + elen;
+    const comp = u8.slice(start, start + e.csize);
+    if (e.method === 0) return new TextDecoder().decode(comp);
+    const ds = new DecompressionStream("deflate-raw");
+    const out = await new Response(new Blob([comp]).stream().pipeThrough(ds)).arrayBuffer();
+    return new TextDecoder().decode(out);
+  }
+  const sstXml = (await file("xl/sharedStrings.xml")) ?? "";
+  const sst = [...sstXml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) =>
+    [...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((t) => t[1]).join("")
+      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+  const wb = await file("xl/workbook.xml");
+  const first = /<sheet [^>]*r:id="(rId\d+)"/.exec(wb)?.[1];
+  const rels = await file("xl/_rels/workbook.xml.rels");
+  const target = new RegExp(`Id="${first}"[^>]*Target="([^"]+)"`).exec(rels)?.[1] ?? "worksheets/sheet1.xml";
+  const sheet = await file("xl/" + target.replace(/^\//, ""));
+  const rows = [];
+  for (const rm of sheet.matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)) {
+    const cells = [];
+    for (const cm of rm[1].matchAll(/<c([^>]*)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+      const attrs = cm[1];
+      const ref = /r="([A-Z]+)\d+"/.exec(attrs)?.[1] ?? null;
+      const col = ref ? [...ref].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1 : cells.length;
+      const type = /t="(\w+)"/.exec(attrs)?.[1];
+      let v = null;
+      const vm = /<v>([\s\S]*?)<\/v>/.exec(cm[2] ?? "");
+      if (vm) v = type === "s" ? sst[+vm[1]] : vm[1];
+      else if (type === "inlineStr") v = /<t[^>]*>([\s\S]*?)<\/t>/.exec(cm[2] ?? "")?.[1] ?? null;
+      cells[col] = v;
+    }
+    rows.push(cells);
+  }
+  return rows;
+}
+
+function zuvioParseRows(rows) {
+  // 以表頭名稱對應欄位（不同年代的 Zuvio 匯出欄位位置不同）
+  const hi = rows.findIndex((r) => r.some((c) => String(c ?? "").includes("學號")) && r.some((c) => String(c ?? "").includes("準時")));
+  if (hi < 0) throw new Error("找不到表頭（需含「學號」與「準時次數」欄）");
+  const hdr = rows[hi].map((c) => String(c ?? ""));
+  const col = (kw) => hdr.findIndex((h) => h.includes(kw));
+  const ci = { id: col("學號"), total: col("全部"), ontime: col("準時"), late: col("遲到"), absent: col("未到"), leave: col("請假") };
+  const out = [];
+  for (const r of rows.slice(hi + 1)) {
+    const rawId = String(r[ci.id] ?? "").trim();
+    if (!rawId) continue;
+    const id = rawId.replace(/^[^0-9]+/, "");
+    if (!id) continue;
+    out.push({
+      id,
+      total: +(r[ci.total] ?? 0) || 0,
+      ontime: +(r[ci.ontime] ?? 0) || 0,
+      late: +(r[ci.late] ?? 0) || 0,
+      leave: +(r[ci.leave] ?? 0) || 0,
+    });
+  }
+  return out;
+}
+
+$("#btn-zuvio").addEventListener("click", () => { $("#zuvio-msg").textContent = ""; $("#dlg-zuvio").showModal(); });
+$("#zuvio-ok").addEventListener("click", async () => {
+  const msg = $("#zuvio-msg");
+  try {
+    let rows = null;
+    const f = $("#zuvio-file").files[0];
+    if (f) rows = await readXlsxFirstSheet(await f.arrayBuffer());
+    else {
+      const t = $("#zuvio-text").value.trim();
+      if (!t) { msg.textContent = "請選擇 .xlsx 或貼上表格內容。"; return; }
+      rows = t.split("\n").map((l) => l.split(/\t|,|\s{2,}/).map((c) => c.trim()));
+    }
+    const recs = zuvioParseRows(rows);
+    const countLate = $("#zuvio-late").checked;
+    const countLeave = $("#zuvio-leave").checked;
+    const byId = new Map(data.students.map((s) => [String(s.id ?? "").replace(/^[^0-9]+/, ""), s]));
+    let matched = 0;
+    const unmatched = [];
+    let maxTotal = 0;
+    for (const r of recs) {
+      maxTotal = Math.max(maxTotal, r.total);
+      const s = byId.get(r.id);
+      if (!s) { unmatched.push(r.id); continue; }
+      s.attend = r.ontime + (countLate ? r.late : 0) + (countLeave ? r.leave : 0);
+      matched++;
+    }
+    if (maxTotal) data.config.roll = maxTotal;
+    writeForm(); touch(); render();
+    msg.textContent = `已更新 ${matched} 位（總點名次數 → ${maxTotal}）` +
+      (unmatched.length ? `；名單中找不到：${unmatched.join("、")}` : "");
+    $("#zuvio-file").value = ""; $("#zuvio-text").value = "";
+  } catch (e) {
+    msg.textContent = "解析失敗：" + e.message;
+  }
+});
+
 const auto = localStorage.getItem("grade-tool-autosave");
+
 if (auto) { try { data = JSON.parse(auto); } catch {} }
 writeForm(); render();
 </script>
