@@ -15,8 +15,13 @@ const ZONE = process.env.CF_ZONE ?? "thermoacoustictw.org";
 const DAYS = 30;
 
 async function fetchCounts() {
-  const token = process.env.CF_API_TOKEN;
-  if (!token) throw new Error("缺 CF_API_TOKEN（或改用 --sample 預覽）");
+  let token = process.env.CF_API_TOKEN;
+  if (!token) {
+    try {
+      token = readFileSync(`${process.env.HOME}/.config/thermoacoustic-cf-token`, "utf-8").trim();
+    } catch {}
+  }
+  if (!token) throw new Error("缺 CF_API_TOKEN（~/.config/thermoacoustic-cf-token 或環境變數；--sample 可預覽）");
   const h = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   const zr = await (await fetch(`https://api.cloudflare.com/client/v4/zones?name=${ZONE}`, { headers: h })).json();
   const zoneTag = zr.result?.[0]?.id;
@@ -73,7 +78,8 @@ execFileSync(CHROME, ["--headless", "--window-size=1600,830", "--default-backgro
   `--screenshot=${png}`, "file://" + tmp], { stdio: "ignore" });
 rmSync(tmp, { force: true });
 
-const codes = Object.keys(counts).filter((c) => /^[A-Z]{2}$/.test(c));
+// 計數門檻：30 天內至少 10 次請求才列入國家數（濾掉零星爬蟲）；地圖仍全部上色
+const codes = Object.entries(counts).filter(([c, n]) => /^[A-Z]{2}$/.test(c) && n >= 10).map(([c]) => c);
 const meta = {
   updated: new Date().toISOString().slice(0, 10),
   days: DAYS,
