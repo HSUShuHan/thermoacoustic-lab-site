@@ -57,9 +57,12 @@ const counts = sample ? SAMPLE : await fetchCounts();
 // 產出地球儀資料：counts（A2→次數）、names（A2→中文短名）、n3 對照
 const n3map = JSON.parse(readFileSync(resolve(root, "scripts/assets/iso-n3-to-a2.json"), "utf-8"));
 const zhName = new Intl.DisplayNames(["zh-Hant"], { type: "region" });
+const enName = new Intl.DisplayNames(["en"], { type: "region" });
 const names = {};
+const namesEn = {};
 for (const a2 of new Set(Object.values(n3map))) {
   try { names[a2] = zhName.of(a2) ?? a2; } catch { names[a2] = a2; }
+  try { namesEn[a2] = enName.of(a2) ?? a2; } catch { namesEn[a2] = a2; }
 }
 const cleanCounts = {};
 for (const [code, n] of Object.entries(counts))
@@ -77,7 +80,7 @@ writeFileSync(resolve(root, "src/data/visitors.json"), JSON.stringify(meta, null
 mkdirSync(resolve(root, "public/data"), { recursive: true });
 writeFileSync(
   resolve(root, "public/data/visitor-globe.json"),
-  JSON.stringify({ ...meta, counts: cleanCounts, names, n3: n3map }),
+  JSON.stringify({ ...meta, counts: cleanCounts, names, names_en: namesEn, n3: n3map }),
 );
 console.log(`✓ public/data/visitor-globe.json（${codes.length} 個國家／地區${sample ? "，樣本資料" : ""}）`);
 console.log("✓ src/data/visitors.json");

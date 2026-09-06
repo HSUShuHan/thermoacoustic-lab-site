@@ -55,6 +55,7 @@
       fetch("/data/visitor-globe.json").then((r) => r.json()),
     ]);
   } catch { return; }
+  const isEn = (document.documentElement.lang || "").toLowerCase().startsWith("en");
   const countries = topojson.feature(world, world.objects.countries).features;
   const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
   const a2 = (f) => data.n3[String(f.id).padStart(3, "0")] ?? null;
@@ -182,9 +183,10 @@
     if (hit !== hovered) { hovered = hit; render(); }
     if (hit) {
       const c = a2(hit);
-      const name = (c && data.names[c]) || hit.properties.name;
+      const dict = (isEn ? data.names_en : data.names) || data.names;
+      const name = (c && dict[c]) || hit.properties.name;
       const n = c ? data.counts[c] : null;
-      tipEl.textContent = n ? `${name}：${n.toLocaleString("en-US")}` : name;
+      tipEl.textContent = n ? (isEn ? `${name}: ${n.toLocaleString("en-US")}` : `${name}：${n.toLocaleString("en-US")}`) : name;
       const cardRect = card.getBoundingClientRect();
       tipEl.style.left = Math.min(e.clientX - cardRect.left + 14, cardRect.width - 130) + "px";
       tipEl.style.top = e.clientY - cardRect.top + 14 + "px";
