@@ -1,8 +1,15 @@
 # Cloudflare Workers Static Assets configuration.
-# 把 Astro build 產出的 dist/ 直接當靜態網站部署，無 SSR / 無 Worker script。
+# 靜態站 dist/ 照舊由 assets 服務；worker/index.mjs 只多接 /api/beacon
+# （匿名訪客地區統計，寫入 Analytics Engine，見 scripts/update-visitors.mjs）。
 name = "thermoacoustic-lab-site"
+main = "worker/index.mjs"
 compatibility_date = "2024-12-01"
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "404-page"
+
+[[analytics_engine_datasets]]
+binding = "VISITS"
+dataset = "thermoacoustic_visits"

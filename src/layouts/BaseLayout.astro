@@ -82,5 +82,18 @@ const ogLocaleAlt = lang === "en" ? "zh_TW" : "en_US";
       <slot />
     </main>
     <Footer lang={lang} />
+    <script is:inline>
+      // 匿名訪客回報：每個瀏覽器工作階段一次，只在正式站發送；無 IP、無 cookie。
+      try {
+        if (
+          location.hostname === "thermoacoustictw.org" &&
+          "sendBeacon" in navigator &&
+          !sessionStorage.getItem("ta-v")
+        ) {
+          sessionStorage.setItem("ta-v", "1");
+          navigator.sendBeacon("/api/beacon");
+        }
+      } catch {}
+    </script>
   </body>
 </html>

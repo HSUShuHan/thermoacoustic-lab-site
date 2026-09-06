@@ -48,13 +48,16 @@
   const card = document.getElementById("globe-card");
   const wrap = document.getElementById("globe-wrap");
   const tipEl = document.getElementById("globe-tip");
-  let world, data;
+  let world, data, geo;
   try {
-    [world, data] = await Promise.all([
+    [world, data, geo] = await Promise.all([
       fetch("/vendor/countries-50m.json").then((r) => r.json()),
       fetch("/data/visitor-globe.json").then((r) => r.json()),
+      fetch("/data/visitor-regions.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
   } catch { return; }
+  const regionDots = geo?.regions ?? [];
+  const cityDots = geo?.cities ?? [];
   const isEn = (document.documentElement.lang || "").toLowerCase().startsWith("en");
   const countries = topojson.feature(world, world.objects.countries).features;
   const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
@@ -74,8 +77,11 @@
   const graticule = d3.geoGraticule10();
   let W = 0, dpr = 1;
   let zoom = 1.35; // 預設拉近，台灣居中
-  const ZMIN = 0.95, ZMAX = 5;
+  const ZMIN = 0.95, ZMAX = 16;
   const applyScale = () => proj.scale((W / 2) * zoom);
+  // 縮放層級決定圓點圖層：廣域＝國家著色，中距＝省州，近距＝縣市
+  const dotsFor = () => (zoom >= 4.5 ? cityDots : zoom >= 2 ? regionDots : []);
+  const dotR = (n) => Math.min(4 + 1.6 * Math.sqrt(n), 18);
 
   function resize() {
     W = wrap.clientWidth;
@@ -93,7 +99,9 @@
     render();
   }
 
-  let hovered = null;
+  let hovered = null, hoveredDot = null;
+  // 目前可見的圓點（正面半球）與其螢幕座標，render 時更新、hover 命中用
+  let visibleDots = [];
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, W);
@@ -106,6 +114,22 @@
     }
     ctx.beginPath(); path(borders); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.6; ctx.stroke();
     ctx.beginPath(); path(sphere); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.stroke();
+
+    visibleDots = [];
+    const r = proj.rotate();
+    const center = [-r[0], -r[1]];
+    for (const d of dotsFor()) {
+      if (d3.geoDistance([d.lon, d.lat], center) > 1.45) continue;
+      const pt = proj([d.lon, d.lat]);
+      if (!pt) continue;
+      const rad = dotR(d.n);
+      visibleDots.push({ d, x: pt[0], y: pt[1], rad });
+      ctx.beginPath();
+      ctx.arc(pt[0], pt[1], rad, 0, 2 * Math.PI);
+      ctx.fillStyle = d === hoveredDot?.d ? "rgba(220,38,38,0.9)" : "rgba(220,38,38,0.55)";
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
+    }
   }
 
   // 滑鼠移入地球才緩轉（預設靜止、台灣正中；拖曳或指到國家時暫停；尊重減少動態偏好）
@@ -113,7 +137,7 @@
   let dragging = false, last = 0, mouseOver = false;
   canvas.addEventListener("pointerenter", () => { mouseOver = true; });
   d3.timer((t) => {
-    if (reduced || !mouseOver || dragging || hovered) { last = t; return; }
+    if (reduced || !mouseOver || dragging || hovered || hoveredDot) { last = t; return; }
     const dt = t - last; last = t;
     const r = proj.rotate();
     proj.rotate([r[0] + dt * 0.003, r[1], r[2]]);
@@ -161,19 +185,38 @@
       return;
     }
     if (dragging) {
+      const sens = 0.25 / zoom; // 拉近時降低靈敏度，避免一動就飛走
       const r = proj.rotate();
       proj.rotate([
-        r[0] + (e.clientX - px) * 0.25,
-        Math.max(-75, Math.min(75, r[1] - (e.clientY - py) * 0.25)),
+        r[0] + (e.clientX - px) * sens,
+        Math.max(-89, Math.min(89, r[1] - (e.clientY - py) * sens)),
         r[2],
       ]);
       px = e.clientX; py = e.clientY;
-      hovered = null; tipEl.classList.add("hidden");
+      hovered = null; hoveredDot = null; tipEl.classList.add("hidden");
       render();
       return;
     }
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const showTip = (text) => {
+      tipEl.textContent = text;
+      const cardRect = card.getBoundingClientRect();
+      tipEl.style.left = Math.min(e.clientX - cardRect.left + 14, cardRect.width - 130) + "px";
+      tipEl.style.top = e.clientY - cardRect.top + 14 + "px";
+      tipEl.classList.remove("hidden");
+    };
+    // 圓點優先命中（省州／縣市統計）
+    let dotHit = null;
+    for (const v of visibleDots) {
+      if ((x - v.x) ** 2 + (y - v.y) ** 2 <= (v.rad + 3) ** 2) dotHit = v;
+    }
+    if (dotHit !== hoveredDot) { hoveredDot = dotHit; hovered = null; render(); }
+    if (dotHit) {
+      const nm = dotHit.d.name + (isEn ? ": " : "：") + dotHit.d.n.toLocaleString("en-US");
+      showTip(nm);
+      return;
+    }
     const p = proj.invert([x, y]);
     let hit = null;
     if (p && !isNaN(p[0])) {
@@ -187,15 +230,11 @@
       const dict = (isEn ? data.names_en : data.names) || data.names;
       const name = (c && dict[c]) || hit.properties.name;
       const n = c ? data.counts[c] : null;
-      tipEl.textContent = n ? (isEn ? `${name}: ${n.toLocaleString("en-US")}` : `${name}：${n.toLocaleString("en-US")}`) : name;
-      const cardRect = card.getBoundingClientRect();
-      tipEl.style.left = Math.min(e.clientX - cardRect.left + 14, cardRect.width - 130) + "px";
-      tipEl.style.top = e.clientY - cardRect.top + 14 + "px";
-      tipEl.classList.remove("hidden");
+      showTip(n ? (isEn ? `${name}: ${n.toLocaleString("en-US")}` : `${name}：${n.toLocaleString("en-US")}`) : name);
     } else tipEl.classList.add("hidden");
   });
   canvas.addEventListener("pointerleave", () => {
-    mouseOver = false; hovered = null; tipEl.classList.add("hidden"); render();
+    mouseOver = false; hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
   });
 
   new ResizeObserver(resize).observe(wrap);
