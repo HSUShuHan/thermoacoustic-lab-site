@@ -53,6 +53,10 @@ const heroNews = allNews
   })
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+// 訪客足跡（scripts/update-visitors.mjs 產生；樣本資料不顯示）
+const visitorFiles = import.meta.glob("~/data/visitors.json", { eager: true });
+const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
 ---
 
 <BaseLayout
@@ -492,4 +496,48 @@ const heroNews = allNews
       </section>
     )
   }
+
+  <!-- Location & visitors -->
+  <section class="mt-20 border-t border-brand-100 pt-16">
+    <div class:list={["grid gap-8", visitors && !visitors.sample && "md:grid-cols-2"]}>
+      <div>
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Location</p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Where we are</h2>
+        <div class="mt-6 aspect-[2/1] w-full overflow-hidden rounded border border-brand-100">
+          <iframe
+            src="https://www.google.com/maps?q=25.042256,121.536138&hl=en&z=17&output=embed"
+            title="NTUT General Studies Building, Room 614-2A"
+            class="h-full w-full"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+        <p class="mt-2 text-sm text-gray-600">
+          Room 614-2A, General Studies Building, NTUT, Taipei
+          <a href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138" target="_blank" rel="noopener noreferrer" class="ml-2 text-xs text-accent-600 underline hover:text-accent-700">Directions ↗</a>
+        </p>
+      </div>
+      {
+        visitors && !visitors.sample && (
+          <div>
+            <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
+            <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
+            <div class="mt-6 flex aspect-[2/1] w-full items-center justify-center overflow-hidden rounded border border-brand-100 bg-white">
+              <img
+                src="/images/home/visitor-map.png"
+                alt={`World map of visitor origins over the past ${visitors.days} days`}
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <p class="mt-2 text-sm text-gray-600">
+              Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions.
+              <span class="text-xs text-gray-400">Counted from Cloudflare edge requests; updated {visitors.updated}.</span>
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
 </BaseLayout>
