@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成績工具 · 熱聲實驗室</title>
+<style>
+  :root { --navy:#1e3a5f; --navy-9:#172b47; --red:#dc2626; --b:#e5e7eb; --g5:#6b7280; --g7:#374151; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter,"Noto Sans TC",system-ui,sans-serif; color:var(--g7); background:#fff; }
+  header { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid var(--b); padding:10px 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:16px; color:var(--navy); margin:0 12px 0 0; }
+  button { font:inherit; font-size:13px; padding:6px 12px; border-radius:2px; border:1px solid #cbd5e1; background:#fff; color:var(--navy); cursor:pointer; }
+  button:hover { background:#f1f5f9; }
+  button.primary { background:var(--navy); border-color:var(--navy); color:#fff; }
+  button.primary:hover { background:var(--navy-9); }
+  main { max-width:1280px; margin:0 auto; padding:16px 20px 80px; }
+  fieldset { border:1px solid var(--b); border-radius:4px; margin:0 0 14px; padding:10px 14px; }
+  legend { font-size:12px; color:var(--g5); letter-spacing:.15em; padding:0 6px; }
+  .row { display:flex; gap:14px; flex-wrap:wrap; align-items:end; }
+  .row label { font-size:12px; color:var(--g5); display:flex; flex-direction:column; gap:3px; }
+  .row input, .row select { font:inherit; font-size:13px; padding:5px 8px; border:1px solid #cbd5e1; border-radius:2px; width:110px; }
+  .row input.wide { width:170px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:8px; }
+  th, td { border:1px solid var(--b); padding:3px 6px; text-align:center; }
+  th { background:#f1f5f9; color:var(--navy); font-weight:600; position:sticky; top:53px; }
+  td input { width:100%; border:0; font:inherit; text-align:center; padding:4px 2px; background:transparent; }
+  td input:focus { outline:2px solid var(--navy); background:#fff; }
+  td.name { text-align:left; white-space:nowrap; }
+  td.total { font-weight:700; color:var(--navy); }
+  tr.fail td.total { color:var(--red); }
+  tr.dropped td { opacity:.35; text-decoration:line-through; }
+  .stats { display:flex; gap:16px; flex-wrap:wrap; margin:14px 0; }
+  .stat { border:1px solid var(--b); border-radius:4px; padding:10px 14px; min-width:150px; cursor:pointer; }
+  .stat.sel { border-color:var(--navy); box-shadow:inset 0 0 0 1px var(--navy); }
+  .stat b { color:var(--navy); }
+  .stat small { color:var(--g5); display:block; margin-top:2px; }
+  #hist { display:flex; align-items:flex-end; gap:4px; height:120px; max-width:520px; margin:6px 0 2px; }
+  #hist div { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; font-size:10px; color:var(--g5); }
+  #hist i { width:100%; border-radius:2px 2px 0 0; background:var(--navy); font-style:normal; }
+  #hist .f i { background:#94a3b8; }
+  #histlab { display:flex; gap:4px; max-width:520px; font-size:10px; color:#9ca3af; }
+  #histlab span { flex:1; text-align:center; }
+  dialog { border:1px solid var(--b); border-radius:4px; padding:20px; max-width:560px; font-size:13px; }
+  dialog textarea { width:100%; height:180px; font:12px/1.5 "JetBrains Mono",monospace; }
+  .hint { font-size:12px; color:var(--g5); }
+  .badge { font-size:11px; color:#fff; background:var(--navy); border-radius:2px; padding:2px 6px; }
+  #savestate { font-size:12px; color:var(--g5); margin-left:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>成績工具 <span class="badge" id="coursebadge">未命名</span></h1>
+  <button id="btn-open">開啟檔案</button>
+  <button id="btn-save" class="primary">儲存</button>
+  <button id="btn-saveas">另存新檔</button>
+  <button id="btn-roster">貼上名單</button>
+  <button id="btn-bonus">批次加分</button>
+  <button id="btn-export">匯出網站發布包</button>
+  <span id="savestate"></span>
+</header>
+<main>
+  <fieldset>
+    <legend>課程設定</legend>
+    <div class="row">
+      <label>課名<input id="c-name" class="wide" placeholder="熱力學"></label>
+      <label>網站代號 slug<input id="c-slug" class="wide" placeholder="thermodynamics"></label>
+      <label>學期<input id="c-sem" placeholder="115-1"></label>
+      <label>班級<input id="c-class" placeholder="機械二乙"></label>
+      <label>平時 %<input id="c-w1" type="number" value="30"></label>
+      <label>期中 %<input id="c-w2" type="number" value="35"></label>
+      <label>期末 %<input id="c-w3" type="number" value="35"></label>
+      <label>總點名次數<input id="c-roll" type="number" value="0"></label>
+      <label>進位
+        <select id="c-round">
+          <option value="floor">無條件捨去</option>
+          <option value="round">四捨五入</option>
+          <option value="ceil">無條件進位</option>
+        </select>
+      </label>
+    </div>
+  </fieldset>
+
+  <div class="stats" id="stats"></div>
+  <div id="hist"></div>
+  <div id="histlab"></div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th>#</th><th>學號</th><th>姓名</th><th>班級</th><th>停修</th>
+        <th>平時<br>(0–100)</th><th>出席<br>次數</th><th>期中</th><th>期末</th>
+        <th>實驗<br>作業</th><th>加分</th><th>覆寫</th><th>學期<br>總成績</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <p><button id="btn-addrow">＋ 加一列</button></p>
+  <p class="hint">資料自動暫存於瀏覽器（localStorage），請仍以「儲存」寫入 JSON 檔為準。
+    實驗作業勾選＝通過（不及格以 60 分計、及格 +3，上限 100）。覆寫欄填數字＝直接指定學期總成績（學不躐等等情況）。</p>
+</main>
+
+<dialog id="dlg-roster">
+  <p><b>貼上名單</b>（每行一位：學號 姓名 班級，以 Tab／空白／逗號分隔，可直接從試算表複製貼上）</p>
+  <textarea id="roster-text" placeholder="11330012&#9;王小明&#9;機械二乙"></textarea>
+  <p><button id="roster-ok" class="primary">匯入</button> <button onclick="this.closest('dialog').close()">取消</button></p>
+</dialog>
+
+<dialog id="dlg-bonus">
+  <p><b>批次加分</b>：加分 ＝ 出席比 ×
+    <input id="bonus-k" type="number" value="2" style="width:60px"> 分（覆蓋整欄，之後可逐列修改）</p>
+  <label><input type="checkbox" id="bonus-skip90" checked> 原始成績 &gt; 90 者不加分</label>
+  <p><button id="bonus-ok" class="primary">套用</button> <button onclick="this.closest('dialog').close()">取消</button></p>
+</dialog>
+
+<dialog id="dlg-export">
+  <p><b>匯出網站發布包</b>（去識別化：不含姓名、學號遮蔽末三碼）</p>
+  <p>
+    <label><input type="checkbox" id="ex-mid" checked> 期中考</label>
+    <label><input type="checkbox" id="ex-final"> 期末考</label>
+    <label><input type="checkbox" id="ex-total"> 學期總成績</label>
+  </p>
+  <p class="hint">只勾已完成的項目；網站統計與明細表僅呈現勾選欄位。</p>
+  <p><button id="export-ok" class="primary">下載發布包 JSON</button> <button onclick="this.closest('dialog').close()">取消</button></p>
+</dialog>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+let data = { version: 1, course: {}, config: {}, students: [] };
+let fileHandle = null;
+let statCol = "total";
+
+const CFG = [["c-name","name"],["c-slug","slug"],["c-sem","semester"],["c-class","klass"]];
+const NUMCFG = [["c-w1","w1",30],["c-w2","w2",35],["c-w3","w3",35],["c-roll","roll",0]];
+
+function readForm() {
+  CFG.forEach(([id,k]) => data.course[k] = $("#"+id).value.trim());
+  NUMCFG.forEach(([id,k,d]) => data.config[k] = Number($("#"+id).value) || d);
+  data.config.rounding = $("#c-round").value;
+}
+function writeForm() {
+  CFG.forEach(([id,k]) => $("#"+id).value = data.course[k] ?? "");
+  NUMCFG.forEach(([id,k,d]) => $("#"+id).value = data.config[k] ?? d);
+  $("#c-round").value = data.config.rounding ?? "floor";
+  $("#coursebadge").textContent = (data.course.name || "未命名") + " " + (data.course.semester || "");
+}
+
+function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : null; }
+
+function computeRow(s) {
+  const c = data.config;
+  const parts = [[s.regular, c.w1], [s.mid, c.w2], [s.fin, c.w3]];
+  let raw = 0, complete = true;
+  for (const [v, w] of parts) { if (num(v) === null) complete = false; else raw += num(v) * w / 100; }
+  const bonus = num(s.bonus) ?? 0;
+  let total = null;
+  if (complete) {
+    let t = raw + bonus;
+    t = c.rounding === "round" ? Math.round(t) : c.rounding === "ceil" ? Math.ceil(t) : Math.floor(t);
+    t = Math.max(0, Math.min(100, t));
+    if (s.lab) t = t < 60 ? 60 : Math.min(100, t + 3);
+    total = t;
+  }
+  if (num(s.override) !== null) total = num(s.override);
+  return { raw: complete ? raw : null, total };
+}
+
+function render() {
+  const tb = $("#tbody");
+  tb.innerHTML = "";
+  data.students.forEach((s, i) => {
+    const { total } = computeRow(s);
+    const tr = document.createElement("tr");
+    if (total !== null && total < 60) tr.classList.add("fail");
+    if (s.dropped) tr.classList.add("dropped");
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td><input data-k="id" value="${s.id ?? ""}"></td>
+      <td class="name"><input data-k="name" value="${s.name ?? ""}"></td>
+      <td><input data-k="klass" value="${s.klass ?? ""}"></td>
+      <td><input data-k="dropped" type="checkbox" ${s.dropped ? "checked" : ""}></td>
+      <td><input data-k="regular" inputmode="decimal" value="${s.regular ?? ""}"></td>
+      <td><input data-k="attend" inputmode="numeric" value="${s.attend ?? ""}"></td>
+      <td><input data-k="mid" inputmode="decimal" value="${s.mid ?? ""}"></td>
+      <td><input data-k="fin" inputmode="decimal" value="${s.fin ?? ""}"></td>
+      <td><input data-k="lab" type="checkbox" ${s.lab ? "checked" : ""}></td>
+      <td><input data-k="bonus" inputmode="decimal" value="${s.bonus ?? ""}"></td>
+      <td><input data-k="override" inputmode="decimal" value="${s.override ?? ""}"></td>
+      <td class="total">${total ?? "—"}</td>
+      <td><button data-del="${i}" title="刪除">×</button></td>`;
+    tr.querySelectorAll("input").forEach((inp) => {
+      inp.addEventListener("change", () => {
+        const k = inp.dataset.k;
+        s[k] = inp.type === "checkbox" ? inp.checked : inp.value.trim();
+        touch(); render();
+      });
+    });
+    tr.querySelector("[data-del]").addEventListener("click", () => {
+      if (confirm("刪除這一列？")) { data.students.splice(i, 1); touch(); render(); }
+    });
+    tb.appendChild(tr);
+  });
+  renderStats();
+}
+
+function activeStudents() { return data.students.filter((s) => !s.dropped); }
+function colValues(key) {
+  return activeStudents()
+    .map((s) => key === "total" ? computeRow(s).total : num(s[key]))
+    .filter((v) => v !== null);
+}
+function agg(vals) {
+  const n = vals.length;
+  if (!n) return null;
+  const mean = vals.reduce((a, b) => a + b, 0) / n;
+  const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
+  const bins = Array(10).fill(0);
+  vals.forEach((v) => bins[Math.min(Math.floor(v / 10), 9)]++);
+  return { n, mean: +mean.toFixed(1), sd: +sd.toFixed(1), fail: vals.filter((v) => v < 60).length, bins };
+}
+const COLS = [["regular","平時"],["mid","期中"],["fin","期末"],["total","學期總成績"]];
+function renderStats() {
+  const box = $("#stats");
+  box.innerHTML = "";
+  COLS.forEach(([key, label]) => {
+    const a = agg(colValues(key));
+    const div = document.createElement("div");
+    div.className = "stat" + (statCol === key ? " sel" : "");
+    div.innerHTML = a
+      ? `<b>${label}</b>　${a.n} 筆<small>平均 ${a.mean} ± ${a.sd} · 不及格 ${a.fail}</small>`
+      : `<b>${label}</b><small>尚無資料</small>`;
+    div.addEventListener("click", () => { statCol = key; renderStats(); });
+    box.appendChild(div);
+  });
+  const a = agg(colValues(statCol));
+  const hist = $("#hist"), lab = $("#histlab");
+  hist.innerHTML = ""; lab.innerHTML = "";
+  if (!a) return;
+  const max = Math.max(...a.bins, 1);
+  a.bins.forEach((b, i) => {
+    const d = document.createElement("div");
+    if (i < 6) d.className = "f";
+    d.innerHTML = `<span>${b || ""}</span><i style="height:${(b / max) * 82}%"></i>`;
+    hist.appendChild(d);
+    const s = document.createElement("span");
+    s.textContent = i * 10;
+    lab.appendChild(s);
+  });
+}
+
+let dirty = false;
+function touch() {
+  dirty = true;
+  readForm();
+  localStorage.setItem("grade-tool-autosave", JSON.stringify(data));
+  $("#savestate").textContent = "未儲存變更（已暫存瀏覽器）";
+}
+
+async function saveFile(as) {
+  readForm();
+  const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+  const suggested = `成績_${data.course.semester || "sem"}_${data.course.name || "course"}.json`;
+  if (window.showSaveFilePicker) {
+    try {
+      if (!fileHandle || as)
+        fileHandle = await showSaveFilePicker({ suggestedName: suggested, types: [{ accept: { "application/json": [".json"] } }] });
+      const w = await fileHandle.createWritable();
+      await w.write(blob); await w.close();
+      dirty = false;
+      $("#savestate").textContent = "已儲存 " + new Date().toLocaleTimeString();
+      return;
+    } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const aEl = document.createElement("a");
+  aEl.href = URL.createObjectURL(blob); aEl.download = suggested; aEl.click();
+  dirty = false;
+  $("#savestate").textContent = "已下載 JSON（瀏覽器不支援直接寫檔）";
+}
+
+async function openFile() {
+  let text = null;
+  if (window.showOpenFilePicker) {
+    try {
+      [fileHandle] = await showOpenFilePicker({ types: [{ accept: { "application/json": [".json"] } }] });
+      text = await (await fileHandle.getFile()).text();
+    } catch (e) { if (e.name === "AbortError") return; }
+  }
+  if (text === null) {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = ".json";
+    text = await new Promise((res) => {
+      inp.onchange = () => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsText(inp.files[0]); };
+      inp.click();
+    });
+  }
+  data = JSON.parse(text);
+  writeForm(); render();
+  $("#savestate").textContent = "已開啟檔案";
+}
+
+$("#btn-open").addEventListener("click", openFile);
+$("#btn-save").addEventListener("click", () => saveFile(false));
+$("#btn-saveas").addEventListener("click", () => saveFile(true));
+$("#btn-addrow").addEventListener("click", () => { data.students.push({}); touch(); render(); });
+$("#btn-roster").addEventListener("click", () => $("#dlg-roster").showModal());
+$("#roster-ok").addEventListener("click", () => {
+  const lines = $("#roster-text").value.split("\n").map((l) => l.trim()).filter(Boolean);
+  lines.forEach((l) => {
+    const p = l.split(/[\t,]+|\s{1,}/).filter(Boolean);
+    if (!p.length) return;
+    data.students.push({ id: p[0], name: p[1] ?? "", klass: p[2] ?? "" });
+  });
+  $("#dlg-roster").close(); $("#roster-text").value = "";
+  touch(); render();
+});
+$("#btn-bonus").addEventListener("click", () => $("#dlg-bonus").showModal());
+$("#bonus-ok").addEventListener("click", () => {
+  const k = Number($("#bonus-k").value) || 0;
+  const skip90 = $("#bonus-skip90").checked;
+  const roll = data.config.roll || 0;
+  data.students.forEach((s) => {
+    const att = num(s.attend);
+    if (att === null || !roll) return;
+    const { raw } = computeRow({ ...s, bonus: 0 });
+    if (skip90 && raw !== null && raw > 90) { s.bonus = 0; return; }
+    s.bonus = +((att / roll) * k).toFixed(2);
+  });
+  $("#dlg-bonus").close(); touch(); render();
+});
+$("#btn-export").addEventListener("click", () => $("#dlg-export").showModal());
+$("#export-ok").addEventListener("click", () => {
+  readForm();
+  const inc = { mid: $("#ex-mid").checked, fin: $("#ex-final").checked, total: $("#ex-total").checked };
+  const mask = (id) => { id = String(id ?? ""); return id.length > 3 ? id.slice(0, -3) + "***" : id + "***"; };
+  const rows = activeStudents().map((s) => {
+    const r = { id: mask(s.id) };
+    if (inc.mid) r.mid = num(s.mid);
+    if (inc.fin) r.final = num(s.fin);
+    if (inc.total) r.total = computeRow(s).total;
+    return r;
+  });
+  const stats = {};
+  if (inc.mid) stats.mid = agg(colValues("mid"));
+  if (inc.fin) stats.final = agg(colValues("fin"));
+  if (inc.total) stats.total = agg(colValues("total"));
+  const out = {
+    kind: "grade-web-export", version: 1,
+    course: data.course, generated: new Date().toISOString().slice(0, 10),
+    included: Object.keys(stats), stats, rows,
+  };
+  const blob = new Blob([JSON.stringify(out, null, 1)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `web-export_${data.course.semester || "sem"}_${data.course.slug || "course"}.json`;
+  a.click();
+  $("#dlg-export").close();
+});
+["c-name","c-slug","c-sem","c-class","c-w1","c-w2","c-w3","c-roll","c-round"].forEach((id) =>
+  $("#" + id).addEventListener("change", () => { touch(); writeForm(); render(); }));
+window.addEventListener("beforeunload", (e) => { if (dirty) e.preventDefault(); });
+
+const auto = localStorage.getItem("grade-tool-autosave");
+if (auto) { try { data = JSON.parse(auto); } catch {} }
+writeForm(); render();
+</script>
+</body>
+</html>

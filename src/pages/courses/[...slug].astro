@@ -2,6 +2,10 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+// 本學期成績統計（由 npm run import:grades 產生；僅聚合數字）
+const gradeFiles = import.meta.glob("~/data/grades/*.json", { eager: true });
 
 export async function getStaticPaths() {
   const items = await getCollection("courses");
@@ -15,6 +19,19 @@ export async function getStaticPaths() {
 
 const { item } = Astro.props;
 const { Content } = await item.render();
+
+const gradeEntry = Object.entries(gradeFiles).find(([path]) =>
+  path.endsWith(`/${item.slug}.json`),
+);
+const grades =
+  gradeEntry && (gradeEntry[1] as any).semester === item.data.semester
+    ? (gradeEntry[1] as any)
+    : null;
+const gradeLabel: Record<string, string> = {
+  mid: "期中考",
+  final: "期末考",
+  total: "學期總成績",
+};
 ---
 
 <BaseLayout
@@ -42,6 +59,29 @@ const { Content } = await item.render();
       {item.data.active && `本頁為 ${item.data.semester} 學期版；`}已開授學期：
       {[...item.data.past_semesters, item.data.semester].join(" · ")}
     </p>
+
+    {
+      grades && (
+        <section class="mt-8 rounded border border-brand-200 bg-brand-50/40 p-5">
+          <h2 class="text-xl font-semibold text-brand-900">
+            本學期成績統計
+            <span class="ml-2 text-sm font-normal text-gray-500">更新至 {grades.generated}</span>
+          </h2>
+          <GradeHistograms
+            data={grades.included.map((k: string) => ({
+              sem: `${grades.semester} ${gradeLabel[k]}`,
+              ...grades.stats[k],
+            }))}
+          />
+          <p class="mt-3 text-sm text-gray-600">
+            個人成績明細（學號遮蔽）：
+            <a href={grades.detail} class="text-brand-700 underline hover:text-accent-600">
+              成績明細表</a
+            >（需課程密碼，於課堂與 LINE 群組公布）。正式成績以學校系統為準。
+          </p>
+        </section>
+      )
+    }
 
     <div class="mt-10">
       <Prose>

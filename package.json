@@ -12,7 +12,8 @@
     "astro": "astro",
     "typecheck": "astro check",
     "export:obsidian": "node scripts/export-obsidian.mjs",
-    "format": "prettier --write \"**/*.{astro,ts,tsx,js,jsx,mjs,cjs,md,mdx,json,css}\""
+    "format": "prettier --write \"**/*.{astro,ts,tsx,js,jsx,mjs,cjs,md,mdx,json,css}\"",
+    "import:grades": "node scripts/import-grades.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
