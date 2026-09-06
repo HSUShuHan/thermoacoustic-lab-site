@@ -498,21 +498,6 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
     )
   }
 
-  <!-- Visitors & location -->
-  {
-    visitors && !visitors.sample && (
-      <section class="mt-20 border-t border-brand-100 pt-16">
-        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
-        <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
-        <VisitorGlobe />
-        <p class="mt-3 text-center text-sm text-gray-600">
-          Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions; drag to rotate, scroll or ＋/－ to zoom, hover a country for counts.
-          <span class="text-xs text-gray-400">Counted from Cloudflare edge requests; updated {visitors.updated}.</span>
-        </p>
-      </section>
-    )
-  }
-
   <!-- Location -->
   <section class="mt-20 border-t border-brand-100 pt-16">
     <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Location</p>
@@ -533,5 +518,20 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
       </p>
     </div>
   </section>
+
+  <!-- Visitors -->
+  {
+    visitors && !visitors.sample && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
+        <VisitorGlobe />
+        <p class="mt-3 text-center text-sm text-gray-600">
+          Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions; drag to rotate, scroll or ＋/－ to zoom, hover a country for counts.
+          <span class="text-xs text-gray-400">Counted from Cloudflare edge requests; updated {visitors.updated}.</span>
+        </p>
+      </section>
+    )
+  }
 
 </BaseLayout>
