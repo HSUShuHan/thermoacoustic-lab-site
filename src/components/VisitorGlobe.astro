@@ -77,11 +77,28 @@
   const graticule = d3.geoGraticule10();
   let W = 0, dpr = 1;
   let zoom = 1.35; // 預設拉近，台灣居中
-  const ZMIN = 0.95, ZMAX = 16;
+  const ZMIN = 0.95, ZMAX = 40;
   const applyScale = () => proj.scale((W / 2) * zoom);
   // 縮放層級決定圓點圖層：廣域＝國家著色，中距＝省州，近距＝縣市
   const dotsFor = () => (zoom >= 4.5 ? cityDots : zoom >= 2 ? regionDots : []);
   const dotR = (n) => Math.min(4 + 1.6 * Math.sqrt(n), 18);
+
+  // 省州縣界（NE 10m admin-1，1.4 MB）：放大到 3 倍以上才首次載入
+  const ADMIN_Z = 3;
+  let admin1Mesh = null, admin1Loading = false;
+  function ensureAdmin1() {
+    if (admin1Mesh || admin1Loading || zoom < ADMIN_Z) return;
+    admin1Loading = true;
+    fetch("/vendor/admin1-10m.json")
+      .then((r) => r.json())
+      .then((topo) => {
+        const obj = topo.objects[Object.keys(topo.objects)[0]];
+        admin1Mesh = topojson.mesh(topo, obj, (a, b) => a !== b);
+        render();
+      })
+      .catch(() => {})
+      .finally(() => { admin1Loading = false; });
+  }
 
   function resize() {
     W = wrap.clientWidth;
@@ -96,6 +113,7 @@
   function setZoom(z) {
     zoom = Math.max(ZMIN, Math.min(ZMAX, z));
     applyScale();
+    ensureAdmin1();
     render();
   }
 
@@ -113,6 +131,10 @@
       ctx.fill();
     }
     ctx.beginPath(); path(borders); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.6; ctx.stroke();
+    if (zoom >= ADMIN_Z && admin1Mesh) {
+      ctx.beginPath(); path(admin1Mesh);
+      ctx.strokeStyle = "rgba(255,255,255,0.65)"; ctx.lineWidth = 0.4; ctx.stroke();
+    }
     ctx.beginPath(); path(sphere); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.stroke();
 
     visibleDots = [];
@@ -186,7 +208,7 @@
   // 拖曳旋轉＋雙指捏合；輕點（手機）＝顯示統計
   const pointers = new Map();
   let pinchDist = 0;
-  let px = 0, py = 0, downX = 0, downY = 0, tapTimer = 0;
+  let px = 0, py = 0, downX = 0, downY = 0, tapTimer = 0, tapActive = false;
   canvas.addEventListener("pointerdown", (e) => {
     pointers.set(e.pointerId, [e.clientX, e.clientY]);
     if (pointers.size === 2) {
@@ -215,10 +237,12 @@
       clearTimeout(tapTimer);
       if (res) {
         showTipAt(e.clientX, e.clientY, res.text);
+        tapActive = true;
         tapTimer = setTimeout(() => {
+          tapActive = false;
           hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
         }, 2600);
-      } else tipEl.classList.add("hidden");
+      } else { tapActive = false; tipEl.classList.add("hidden"); }
     }
   };
   canvas.addEventListener("pointerup", endPointer);
@@ -254,7 +278,9 @@
     else tipEl.classList.add("hidden");
   });
   canvas.addEventListener("pointerleave", () => {
-    mouseOver = false; hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
+    mouseOver = false;
+    if (tapActive) return; // 觸控放開後瀏覽器會補發 pointerleave，別把剛輕點出的 tooltip 藏掉
+    hovered = null; hoveredDot = null; tipEl.classList.add("hidden"); render();
   });
 
   new ResizeObserver(resize).observe(wrap);
