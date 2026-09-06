@@ -11,7 +11,7 @@
 >
   <img src="/images/home/tiger-flame.png" alt="" class="pointer-events-none absolute right-[1%] top-[0%] z-[6] w-[18%]" loading="lazy" />
   <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute left-[1%] top-[13%] z-[8] w-[12%]" loading="lazy" />
-  <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute bottom-[0%] left-[10%] z-[12] w-[12%]" loading="lazy" />
+  <img src="/images/home/tiger-cloud-left.png" alt="" class="pointer-events-none absolute bottom-[6%] left-[14%] z-[12] w-[12%]" loading="lazy" />
   <img src="/images/home/tiger-cloud-right.png" alt="" class="pointer-events-none absolute bottom-[0%] right-[27%] z-[12] w-[13%]" loading="lazy" />
 
   <div
@@ -108,11 +108,12 @@
     ctx.beginPath(); path(sphere); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.stroke();
   }
 
-  // 自動緩轉（拖曳或 hover 時暫停；尊重減少動態偏好）
+  // 滑鼠移入地球才緩轉（預設靜止、台灣正中；拖曳或指到國家時暫停；尊重減少動態偏好）
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let dragging = false, last = 0;
+  let dragging = false, last = 0, mouseOver = false;
+  canvas.addEventListener("pointerenter", () => { mouseOver = true; });
   d3.timer((t) => {
-    if (reduced || dragging || hovered) { last = t; return; }
+    if (reduced || !mouseOver || dragging || hovered) { last = t; return; }
     const dt = t - last; last = t;
     const r = proj.rotate();
     proj.rotate([r[0] + dt * 0.003, r[1], r[2]]);
@@ -194,7 +195,7 @@
     } else tipEl.classList.add("hidden");
   });
   canvas.addEventListener("pointerleave", () => {
-    hovered = null; tipEl.classList.add("hidden"); render();
+    mouseOver = false; hovered = null; tipEl.classList.add("hidden"); render();
   });
 
   new ResizeObserver(resize).observe(wrap);
