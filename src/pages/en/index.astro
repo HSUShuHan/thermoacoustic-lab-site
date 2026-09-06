@@ -497,46 +497,44 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
     )
   }
 
-  <!-- Location & visitors -->
-  <section class="mt-20 border-t border-brand-100 pt-16">
-    <div class:list={["grid gap-8", visitors && !visitors.sample && "md:grid-cols-2"]}>
-      <div>
-        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Location</p>
-        <h2 class="mt-2 text-3xl font-bold text-brand-900">Where we are</h2>
-        <div class="mt-6 aspect-[2/1] w-full overflow-hidden rounded border border-brand-100">
-          <iframe
-            src="https://www.google.com/maps?q=25.042256,121.536138&hl=en&z=17&output=embed"
-            title="NTUT General Studies Building, Room 614-2A"
-            class="h-full w-full"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            allowfullscreen></iframe>
-        </div>
+  <!-- Visitors & location -->
+  {
+    visitors && !visitors.sample && (
+      <section class="mt-20 border-t border-brand-100 pt-16">
+        <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
+        <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
+        <object
+          type="image/svg+xml"
+          data="/images/home/visitor-map.svg"
+          class="mt-6 w-full"
+          aria-label={`World map of visitor origins over the past ${visitors.days} days (hover a country for counts)`}
+        >World map of visitor origins</object>
         <p class="mt-2 text-sm text-gray-600">
-          Room 614-2A, General Studies Building, NTUT, Taipei
-          <a href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138" target="_blank" rel="noopener noreferrer" class="ml-2 text-xs text-accent-600 underline hover:text-accent-700">Directions ↗</a>
+          Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions; hover a country for counts.
+          <span class="text-xs text-gray-400">Equal Earth projection; counted from Cloudflare edge requests; updated {visitors.updated}.</span>
         </p>
+      </section>
+    )
+  }
+
+  <!-- Location -->
+  <section class="mt-20 border-t border-brand-100 pt-16">
+    <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Location</p>
+    <h2 class="mt-2 text-3xl font-bold text-brand-900">Where we are</h2>
+    <div class="mt-6 max-w-2xl">
+      <div class="aspect-[2/1] w-full overflow-hidden rounded border border-brand-100">
+        <iframe
+          src="https://www.google.com/maps?q=25.042256,121.536138&hl=en&z=17&output=embed"
+          title="NTUT General Studies Building, Room 614-2A"
+          class="h-full w-full"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen></iframe>
       </div>
-      {
-        visitors && !visitors.sample && (
-          <div>
-            <p class="ribbon text-xs uppercase tracking-[0.3em] text-brand-500">Visitors</p>
-            <h2 class="mt-2 text-3xl font-bold text-brand-900">Visitor map</h2>
-            <div class="mt-6 flex aspect-[2/1] w-full items-center justify-center overflow-hidden rounded border border-brand-100 bg-white">
-              <object
-                type="image/svg+xml"
-                data="/images/home/visitor-map.svg"
-                class="h-full w-full"
-                aria-label={`World map of visitor origins over the past ${visitors.days} days (hover a country for counts)`}
-              >World map of visitor origins</object>
-            </div>
-            <p class="mt-2 text-sm text-gray-600">
-              Over the past {visitors.days} days, visitors came from <strong>{visitors.countries}</strong> countries and regions; hover a country for counts.
-              <span class="text-xs text-gray-400">Counted from Cloudflare edge requests; updated {visitors.updated}.</span>
-            </p>
-          </div>
-        )
-      }
+      <p class="mt-2 text-sm text-gray-600">
+        Room 614-2A, General Studies Building, NTUT, Taipei
+        <a href="https://www.google.com/maps/dir/?api=1&destination=25.042256,121.536138" target="_blank" rel="noopener noreferrer" class="ml-2 text-xs text-accent-600 underline hover:text-accent-700">Directions ↗</a>
+      </p>
     </div>
   </section>
 

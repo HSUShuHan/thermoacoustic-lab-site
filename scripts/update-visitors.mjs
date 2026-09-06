@@ -57,42 +57,32 @@ const counts = sample ? SAMPLE : await fetchCounts();
 // 色階（藏青系，依請求數級距）
 const bucket = (n) => (n >= 10000 ? "#1e3a5f" : n >= 1000 ? "#41608c" : n >= 100 ? "#7d97b8" : "#b9c8db");
 let css = `
-.oceanxx, .limitxx { fill: #ffffff; stroke: none; }
-.landxx, .coastxx, .antxx { fill: #eceff3; stroke: #ffffff; stroke-width: 0.6; }
-g[id]:hover, path[id]:hover { filter: brightness(0.82); }
+#sphere { fill: #ffffff; }
+.cty { fill: #eceff3; stroke: #ffffff; stroke-width: 0.5; }
+.cty:hover { filter: brightness(0.82); }
 `;
 for (const [code, n] of Object.entries(counts)) {
-  const id = code.toLowerCase();
-  css += `#${id}, #${id} * { fill: ${bucket(n)}; }\n`;
+  if (!/^[A-Z]{2}$/.test(code)) continue;
+  css += `#${code.toLowerCase()} { fill: ${bucket(n)}; }\n`;
 }
-let svg = readFileSync(resolve(root, "scripts/assets/world-map.svg"), "utf-8");
-svg = svg.replace("</style>", css + "</style>");
-if (!svg.includes("viewBox"))
-  svg = svg.replace(/<svg([^>]*)width="2754" height="1398"/, '<svg$1viewBox="0 0 2754 1398"');
+let svg = readFileSync(resolve(root, "scripts/assets/world-map-equalearth.svg"), "utf-8");
+svg = svg.replace("<style>\n</style>", `<style>${css}</style>`);
 
-// 各國 <title> 提示（中英名＋請求數；hover 原生顯示）
+// 各國 <title>（中文短名＋次數；瀏覽器原生 tooltip）
 const zhName = new Intl.DisplayNames(["zh-Hant"], { type: "region" });
-const enName = new Intl.DisplayNames(["en"], { type: "region" });
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 for (const [code, n] of Object.entries(counts)) {
   if (!/^[A-Z]{2}$/.test(code)) continue;
   const id = code.toLowerCase();
-  let zh = code, en = code;
-  try { zh = zhName.of(code) ?? code; en = enName.of(code) ?? code; } catch {}
-  const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const tip = `<title>${esc(zh)}${en !== zh ? " " + esc(en) : ""}：${n.toLocaleString("en-US")}</title>`;
-  const re = new RegExp(`<(g|path|circle)([^>]*id="${id}"[^>]*?)(\\s*/)?>`);
-  const m = svg.match(re);
-  if (!m) continue;
-  svg = m[3]
-    ? svg.replace(m[0], `<${m[1]}${m[2]}>${tip}</${m[1]}>`)
-    : svg.replace(m[0], `${m[0]}${tip}`);
+  let zh = code;
+  try { zh = zhName.of(code) ?? code; } catch {}
+  const tip = `<title>${esc(zh)}：${n.toLocaleString("en-US")}</title>`;
+  const marker = `<path id="${id}" class="cty" `;
+  const i = svg.indexOf(marker);
+  if (i < 0) continue;
+  const close = svg.indexOf("/>", i);
+  svg = svg.slice(0, close) + `>${tip}</path>` + svg.slice(close + 2);
 }
-
-// 太平洋置中：主圖左移、第二份補右側（切線約 30°W，只切格陵蘭）
-const DX = -1048;
-const inner = svg.slice(svg.indexOf(">", svg.indexOf("<svg")) + 1, svg.lastIndexOf("</svg>"));
-const head = svg.slice(0, svg.indexOf(">", svg.indexOf("<svg")) + 1);
-svg = `${head}<g id="wsrc" transform="translate(${DX},0)">${inner}</g><use href="#wsrc" x="2754"/></svg>`;
 
 mkdirSync(resolve(root, "public/images/home"), { recursive: true });
 writeFileSync(resolve(root, "public/images/home/visitor-map.svg"), svg);
