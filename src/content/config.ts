@@ -146,7 +146,7 @@ const courses = defineCollection({
         z.object({
           title: z.string(),
           file: z.string(),
-          type: z.enum(["lecture", "homework", "project", "exam", "other"]),
+          type: z.enum(["intro", "lecture", "lab", "exam", "other"]),
         }),
       )
       .default([]),

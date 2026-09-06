@@ -32,6 +32,17 @@ const gradeLabel: Record<string, string> = {
   final: "期末考",
   total: "學期總成績",
 };
+const materialType: Record<string, string> = {
+  intro: "課程規劃",
+  lecture: "單元投影片",
+  lab: "實驗作業",
+  exam: "考試",
+  other: "其他",
+};
+const materialOrder = ["intro", "lecture", "lab", "exam", "other"];
+const materials = (item.data.materials ?? []).slice().sort(
+  (a, b) => materialOrder.indexOf(a.type) - materialOrder.indexOf(b.type),
+);
 ---
 
 <BaseLayout
@@ -59,6 +70,37 @@ const gradeLabel: Record<string, string> = {
       {item.data.active && `本頁為 ${item.data.semester} 學期版；`}已開授學期：
       {[...item.data.past_semesters, item.data.semester].join(" · ")}
     </p>
+
+    {
+      materials.length > 0 && (
+        <section class="mt-8 rounded border border-brand-200 p-5">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 class="text-xl font-semibold text-brand-900">課程教材</h2>
+            <p class="text-xs text-gray-500">
+              需課程密碼（課堂與 LINE 群組公布）；輸入一次並勾「記住我」，所有教材本學期通行。
+            </p>
+          </div>
+          <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+            {materials.map((m) => (
+              <li>
+                <a
+                  href={m.file}
+                  class="group flex items-center gap-3 rounded border border-brand-100 px-4 py-3 transition hover:border-brand-800"
+                >
+                  <span class="shrink-0 rounded bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                    {materialType[m.type]}
+                  </span>
+                  <span class="min-w-0 flex-1 truncate text-sm font-medium text-brand-900 group-hover:text-accent-700">
+                    {m.title}
+                  </span>
+                  <span class="shrink-0 text-brand-300 transition group-hover:text-accent-600" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
     {
       grades && (
