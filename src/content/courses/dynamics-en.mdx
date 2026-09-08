@@ -1,0 +1,182 @@
+---
+title_zh: "動力學"
+title_en: "Engineering Dynamics"
+semester: "115-1"
+past_semesters: ["114-1"]
+class_zh: "ME Sophomore, Section A"
+time_zh: "Mon. periods 5–6 · Wed. period 6"
+instructor: "Shu-Han Hsu"
+requirement: "required"
+level: "undergrad"
+order: 2
+materials:
+  - { title: "Course Rules & Plan", file: "/slides/115-1/dynamics-intro.html", type: "intro" }
+  - { title: "Lab Assignment Guide", file: "/slides/115-1/dynamics-lab.html", type: "lab" }
+  - { title: "Vector Basics", file: "/slides/115-1/dynamics-ch0-vectors.html", type: "lecture" }
+  - { title: "Unit 1: Kinematics of a Particle (student version)", file: "/slides/115-1/dynamics-ch1-student.html", type: "lecture" }
+summary: "Undergraduate dynamics, fall semester 2026 (115-1): course rules and plan, grading, and the self-directed-learning lab assignment (18 topics)."
+---
+
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+## Course Rules & Plan
+
+### Textbook
+
+Russell C. Hibbeler, *Engineering Mechanics: Dynamics in SI Units*, 14th edition,
+Pearson.
+
+Please purchase or prepare a printed copy. Printed textbooks and reference books
+are allowed during exams.
+
+### What is dynamics about?
+
+- **Describing motion**: position, velocity, and acceleration (kinematics of a particle)
+- **How forces determine motion**: the net force gives the acceleration (force & acceleration)
+- **How energy converts**: potential and kinetic energy trade places (work & energy)
+- **How rigid bodies move**: translation, fixed-axis rotation, and general plane
+  motion; how forces and moments become angular acceleration
+
+### Schedule
+
+| Week | Dates (Mon / Wed) | Topic | Notes |
+|---|---|---|---|
+| 1 | 9/7 · 9/9 | Course introduction; vector basics | |
+| 2 | 9/14 · 9/16 | 1. Kinematics of a particle (Ch. 12) | |
+| 3 | 9/21 · 9/23 | 1. Kinematics of a particle | |
+| 4 | 9/28 · 9/30 | 2. Force & acceleration (Ch. 13) | 9/28 Teachers' Day holiday |
+| 5 | 10/5 · 10/7 | 2. Force & acceleration | |
+| 6 | 10/12 · 10/14 | 3. Work & energy (Ch. 14) | |
+| 7 | 10/19 · 10/21 | 3. Work & energy | |
+| 8 | 10/26 · 10/28 | Midterm review | 10/26 Retrocession Day make-up holiday |
+| **9** | **11/2 · 11/4** | **Midterm exam week** | **Scope: kinematics – work & energy** |
+| 10 | 11/9 · 11/11 | No classes this week | 11/9 anniversary make-up holiday; 11/11 ICFD conference |
+| 11 | 11/16 · 11/18 | 4. Impulse & momentum (Ch. 15) | |
+| 12 | 11/23 · 11/25 | 5. Rigid-body kinematics (Ch. 16) | |
+| 13 | 11/30 · 12/2 | 5. Rigid-body kinematics | 12/2 no class: ISTP conference |
+| 14 | 12/7 · 12/9 | 6. Rigid-body dynamics (Ch. 17) | |
+| 15 | 12/14 · 12/16 | 6. Rigid-body dynamics; final review | |
+| **16** | **12/21 · 12/23** | **Final exam week** | **Scope: impulse & momentum – rigid-body dynamics** |
+| 17–18 | 12/28 – 1/8 | Flexible learning weeks: lab assignment (self-directed) | Optional; see the lab assignment guide below |
+
+Make-up arrangements for cancelled classes will be announced separately; the
+actual pace may be adjusted as the semester progresses.
+
+### Grading
+
+| Item | Weight |
+|---|---|
+| In-class performance | 30% |
+| Midterm exam | 35% |
+| Final exam | 35% |
+| Roll-call bonus adjustment | ±% (semester total capped at 100) |
+
+- In-class performance does not count every answer you give over the whole semester.
+- How many roll calls count toward the bonus adjustment depends on the class's
+  overall participation.
+- There is also a self-directed-learning "lab assignment" at the end of the
+  semester: up to +20 points if you are failing (capped at 60), up to +10 points
+  if you are passing (see below).
+
+### Grade statistics from past semesters
+
+| Semester | Enrolled | Semester total (mean ± SD) | Failed |
+|---|---|---|---|
+| 114-1 | 43 | 54.6 ± 18.1 | 24 (56%) |
+| 115-1 | this semester | updated after finals | |
+
+<GradeHistograms
+  data={[
+    { sem: "114-1", n: 43, mean: 54.6, sd: 18.1, fail: 24, bins: [0, 2, 1, 5, 6, 10, 11, 4, 3, 1] },
+  ]}
+/>
+
+### Questions & Contact
+
+If you have questions about the course, please describe your question by email
+first and book an office-hour slot.
+
+- E-mail: bookhsu@ntut.edu.tw
+- Office: Integrated Technology Complex, Room 614
+- Phone: (02) 2771-2171 #2086
+- LINE group: how to join is announced in class
+
+---
+
+## Lab Assignment Guide
+
+A self-directed-learning-week lab assignment, open to the whole class, to be
+completed individually.
+
+### How it works
+
+| Situation | If you pass the assignment |
+|---|---|
+| Failing the semester | Semester total raised by up to 20 points (capped at 60) |
+| Already passing | Semester total raised by up to 10 points (capped at 100) |
+
+- This assignment is the activity for the "+2 self-directed-learning weeks" of
+  the 16+2-week semester (12/28 – 1/8). If you are confident in your written-exam
+  grades, it is entirely optional.
+- Deadline: Sunday 1/11, 23:59. Late submissions are not accepted.
+- Topic selection: students failing the midterm choose first; remaining topics
+  are then opened to passing students. At most 3 students per topic.
+- Sloppy work, fabricated data, or parameters that do not match your assigned
+  value: fail — your original grade stands.
+
+### Workflow (six steps)
+
+1. Sign up for a topic in the LINE group (at most 3 per topic; pick another if full)
+2. Prepare the equipment and film the experiment in a **single continuous take**
+   (student ID card visible in the shot)
+3. Collect data with Tracker or phyphox
+4. Complete the measurements, calculations, and error discussion following the
+   report template
+5. Record a 2–3 minute **narrated video** of yourself (see the video rules)
+6. Bundle the LaTeX source and data into an archive and email it to the
+   instructor (see the submission rules)
+
+### Personalized parameters
+
+Every topic has an assigned parameter determined by the **last two digits of
+your student ID** (call it N, N = 00–99), stated on the topic card.
+Example: in the bouncing-ball topic, the release height is
+h₀ = 100 cm + N cm; ID ending in 25 → N = 25 → h₀ = 125 cm.
+
+The assigned parameter must be **visible** in the experiment video (measure it
+on camera with a ruler). If your parameter does not match the assigned value,
+you fail directly — this is the first plagiarism check.
+
+### Topic overview (18 topics)
+
+At most 3 students per topic; start only after signing up. To switch topics,
+cancel your original sign-up in the group first. Some topics are adapted from
+public educational resources (phyphox, JSME, etc.), credited on each topic card.
+
+| Group | Topic | Main equipment |
+|---|---|---|
+| A Tracker video analysis | A1 Coefficient of restitution of a bouncing ball | ball, tape measure |
+| | A2 Projectile motion | ball, tape measure |
+| | A3 Block sliding down an incline | board, box |
+| | A4 Deceleration sliding across a table | bottle cap or coin |
+| | A5 Rolling race | cylinder, tube, ball |
+| | A6 Descending yo-yo | yo-yo |
+| | A7 Video pendulum | string, weight |
+| | A8 Horizontal circular motion | string, small object, slow motion |
+| | A9 Two-dimensional coin collision | coins, slow motion |
+| | A10 Atwood machine | rod, string, plastic bottles |
+| B phyphox sensors | B1 Phone pendulum | string, cloth bag |
+| | B2 Elevator dynamics | elevator |
+| | B3 Rubber-band oscillation | several rubber bands |
+| | B4 Acoustic-stopwatch free fall | hard object, hard floor |
+| | B5 Bicycle-wheel spin-down | bicycle, magnet |
+| | B6 Centripetal acceleration | string, cloth bag |
+| | B7 Acoustic coefficient of restitution | ball, hard floor |
+| | B8 Angular momentum on a swivel chair | swivel chair, plastic bottles |
+
+The full topic cards (filming, measurements, calculations, personalized
+parameters, and concept questions for each topic), the report template, and the
+submission rules are published in the LINE group and on NTUT i-School.
+
+{/* TODO (after finals, ~Jan 2027): add the 115-1 row to the grade-statistics
+    table, from the final-grade xlsx in iCloud 2. 教學/教授課程/115-1/. */}

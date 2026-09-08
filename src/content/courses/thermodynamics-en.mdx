@@ -1,0 +1,192 @@
+---
+title_zh: "熱力學"
+title_en: "Engineering Thermodynamics"
+semester: "115-1"
+past_semesters: ["107-1", "110-1", "112-1", "113-1", "114-1"]
+class_zh: "ME Sophomore, Section B"
+time_zh: "Mon. periods 7–8 · Thu. period 4"
+instructor: "Shu-Han Hsu"
+requirement: "required"
+level: "undergrad"
+order: 1
+materials:
+  - { title: "Course Rules & Plan", file: "/slides/115-1/thermo-intro.html", type: "intro" }
+  - { title: "Lab Assignment Guide", file: "/slides/115-1/thermo-lab.html", type: "lab" }
+  - { title: "Unit 1: Introduction & Basic Concepts (student version)", file: "/slides/115-1/thermo-ch1-student.html", type: "lecture" }
+summary: "Undergraduate thermodynamics, fall semester 2026 (115-1): course rules and plan, grading, and the self-directed-learning lab assignment (21 topics)."
+---
+
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+## Course Rules & Plan
+
+### Textbook
+
+Yunus A. Çengel, Michael A. Boles, Mehmet Kanoğlu, *Thermodynamics: An Engineering
+Approach in SI Units*, 9th edition, McGraw-Hill Education.
+
+Please purchase or prepare a printed copy. Printed textbooks and reference books
+are allowed during exams.
+
+### What is thermodynamics about?
+
+- **Conservation of energy**: heat and work convert into each other (first law)
+- **Directionality**: heat flows spontaneously from hot to cold (second law)
+- **Cycles**: the thermodynamic cycles that keep an engine running continuously
+- **Efficiency limits**: the Carnot efficiency sets how good a heat engine can ever be
+
+### Schedule
+
+| Week | Dates (Mon / Thu) | Topic | Notes |
+|---|---|---|---|
+| 1 | 9/7 · 9/10 | Course introduction; basic concepts | |
+| 2 | 9/14 · 9/17 | 1. Introduction & basic concepts (Ch. 1–2) | |
+| 3 | 9/21 · 9/24 | 2. Properties of pure substances (Ch. 3) | |
+| 4 | 9/28 · 10/1 | 2. Properties of pure substances | 9/28 Teachers' Day holiday |
+| 5 | 10/5 · 10/8 | 3. Energy analysis of closed systems (Ch. 4) | |
+| 6 | 10/12 · 10/15 | 3. Energy analysis of closed systems | |
+| 7 | 10/19 · 10/22 | 4. Mass & energy analysis of control volumes (Ch. 5) | |
+| 8 | 10/26 · 10/29 | Midterm review | 10/26 Retrocession Day make-up holiday |
+| **9** | **11/2 · 11/5** | **Midterm exam week** | **Scope: introduction – control volumes** |
+| 10 | 11/9 · 11/12 | No classes this week | 11/9 anniversary make-up holiday; 11/12 ICFD conference |
+| 11 | 11/16 · 11/19 | 5. The second law of thermodynamics (Ch. 6) | |
+| 12 | 11/23 · 11/26 | 6. Entropy (Ch. 7) | |
+| 13 | 11/30 · 12/3 | 6. Entropy | 12/3 no class: ISTP conference |
+| 14 | 12/7 · 12/10 | 7. Exergy (Ch. 8) | |
+| 15 | 12/14 · 12/17 | 7. Exergy; final review | |
+| **16** | **12/21 · 12/24** | **Final exam week** | **Scope: second law – exergy** |
+| 17–18 | 12/28 – 1/8 | Flexible learning weeks: lab assignment (self-directed) | Optional; see the lab assignment guide below |
+
+Make-up arrangements for cancelled classes will be announced separately; the
+actual pace may be adjusted as the semester progresses.
+
+### Grading
+
+| Item | Weight |
+|---|---|
+| In-class performance | 30% |
+| Midterm exam | 35% |
+| Final exam | 35% |
+| Roll-call bonus adjustment | ±% (semester total capped at 100) |
+
+- In-class performance does not count every answer you give over the whole semester.
+- How many roll calls count toward the bonus adjustment depends on the class's
+  overall participation.
+- There is also a self-directed-learning "lab assignment" at the end of the
+  semester: up to +20 points if you are failing (capped at 60), up to +10 points
+  if you are passing (see below).
+
+### Grade statistics from past semesters
+
+| Semester | Enrolled | Semester total (mean ± SD) | Failed |
+|---|---|---|---|
+| 107-1 | 55 | 57.1 ± 14.7 | 28 (51%) |
+| 110-1 | 42 | 71.4 ± 12.1 | 5 (12%) |
+| 112-1 | 50 | 63.1 ± 7.2 | 14 (28%) |
+| 113-1 | 29 | 72.9 ± 7.3 | 1 (3%) |
+| 114-1 | 36 | 58.8 ± 17.3 | 16 (44%) |
+| 115-1 | this semester | updated after finals | |
+
+<GradeHistograms
+  data={[
+    { sem: "107-1", n: 55, mean: 57.1, sd: 14.7, fail: 28, bins: [0, 2, 1, 3, 9, 13, 18, 6, 2, 1] },
+    { sem: "110-1", n: 42, mean: 71.4, sd: 12.1, fail: 5, bins: [0, 0, 0, 2, 0, 3, 9, 18, 9, 1] },
+    { sem: "112-1", n: 50, mean: 63.1, sd: 7.2, fail: 14, bins: [0, 0, 0, 0, 2, 12, 30, 4, 2, 0] },
+    { sem: "113-1", n: 29, mean: 72.9, sd: 7.3, fail: 1, bins: [0, 0, 0, 0, 0, 1, 7, 15, 6, 0] },
+    { sem: "114-1", n: 36, mean: 58.8, sd: 17.3, fail: 16, bins: [0, 1, 2, 3, 3, 7, 11, 5, 3, 1] },
+  ]}
+/>
+
+### Questions & Contact
+
+If you have questions about the course, please describe your question by email
+first and book an office-hour slot.
+
+- E-mail: bookhsu@ntut.edu.tw
+- Office: Integrated Technology Complex, Room 614
+- Phone: (02) 2771-2171 #2086
+- LINE group: how to join is announced in class
+
+---
+
+## Lab Assignment Guide
+
+A self-directed-learning-week lab assignment, open to the whole class, to be
+completed individually.
+
+### How it works
+
+| Situation | If you pass the assignment |
+|---|---|
+| Failing the semester | Semester total raised by up to 20 points (capped at 60) |
+| Already passing | Semester total raised by up to 10 points (capped at 100) |
+
+- This assignment is the activity for the "+2 self-directed-learning weeks" of
+  the 16+2-week semester (12/28 – 1/8). If you are confident in your written-exam
+  grades, it is entirely optional.
+- Deadline: Sunday 1/11, 23:59. Late submissions are not accepted.
+- Topic selection: students failing the midterm choose first; remaining topics
+  are then opened to passing students. At most 3 students per topic.
+- Sloppy work, fabricated data, or parameters that do not match your assigned
+  value: fail — your original grade stands.
+
+### Workflow (six steps)
+
+1. Sign up for a topic in the LINE group (at most 3 per topic; pick another if full)
+2. Prepare the equipment and film the experiment in a **single continuous take**
+   (student ID card visible in the shot)
+3. Collect data: film the scale and thermometer readings, measure geometry with
+   Tracker, or use phyphox sensors
+4. Complete the measurements, calculations, and error discussion following the
+   report template
+5. Record a 2–3 minute **narrated video** of yourself (see the video rules)
+6. Bundle the LaTeX source and data into an archive and email it to the
+   instructor (see the submission rules)
+
+### Personalized parameters
+
+Every topic has an assigned parameter determined by the **last two digits of
+your student ID** (call it N, N = 00–99), stated on the topic card.
+Example: in the hot/cold water mixing topic, the hot-water mass is
+m = 200 g + N g; ID ending in 25 → N = 25 → m = 225 g.
+
+The assigned parameter must be **visible** in the experiment video (measure it
+on camera with a ruler or scale). If your parameter does not match the assigned
+value, you fail directly — this is the first plagiarism check.
+
+### Topic overview (21 topics)
+
+At most 3 students per topic; start only after signing up. To switch topics,
+cancel your original sign-up in the group first. Some topics are adapted from
+public educational resources (phyphox, JSME, etc.), credited on each topic card.
+
+| Group | Topic | Main equipment |
+|---|---|---|
+| A No thermometer needed | A1 Latent heat of vaporization with an electric kettle | kettle, kitchen scale |
+| | A2 Charles's law with a balloon | balloon, ice water & boiling water |
+| | A3 Boyle's law with a syringe | syringe, bottle weights |
+| | A4 Staircase barometer | phone with phyphox |
+| | A5 Homemade U-tube manometer | tubing, ruler |
+| | A6 Weight and density of air | ball, pump, kitchen scale |
+| B Kitchen digital thermometer (≈ NT$100) | B1 Hot/cold water mixing & entropy generation | thermometer, scale |
+| | B2 Latent heat of fusion of ice | ice cubes, scale |
+| | B3 Cooling curve & entropy change | hot water, timer |
+| | B4 Specific heat of water with a kettle | kettle, scale |
+| | B5 Joule's experiment by shaking sand | plastic bottle, sand |
+| | B6 Can crush & saturation pressure | aluminum can, tongs, cold water |
+| | B7 Lowest temperature of ice + salt | ice, salt |
+| | B8 Siphon coffee pot & saturation equilibrium | siphon pot |
+| C Steam-quality projects | C1 Steam quality by condensation calorimetry | silicone tube, thermometer |
+| | C2 Saturated mixture in a transparent lighter | lighter, ruler |
+| | C3 Ice fraction of a slushie | slushie, thermometer |
+| | C4 Void fraction of boiling water (challenge) | transparent kettle, slow motion |
+| D Open systems & the second law | D1 Steady-flow energy balance of a hair dryer | hair dryer, trash bag |
+| | D2 Air-conditioner COP & the Carnot limit | thermometer, nameplate |
+| | D3 Thermoelectric-generator heat engine (advanced) | TEG, multimeter (at own expense) |
+
+The full topic cards (measurements, calculations, personalized parameters, and
+concept questions for each topic), the report template, and the submission rules
+are published in the LINE group and on NTUT i-School.
+
+{/* TODO (after finals, ~Jan 2027): add the 115-1 row to the grade-statistics
+    table, from the final-grade xlsx in iCloud 2. 教學/教授課程/115-1/. */}

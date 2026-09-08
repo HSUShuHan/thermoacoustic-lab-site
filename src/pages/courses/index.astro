@@ -2,7 +2,9 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
-const courses = (await getCollection("courses")).sort((a, b) => {
+const courses = (await getCollection("courses"))
+  .filter((c) => !c.slug.endsWith("-en"))
+  .sort((a, b) => {
   if (a.data.semester !== b.data.semester)
     return b.data.semester.localeCompare(a.data.semester);
   return a.data.order - b.data.order;

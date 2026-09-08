@@ -2,11 +2,24 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 
-const courses = (await getCollection("courses")).sort((a, b) => {
-  if (a.data.semester !== b.data.semester)
-    return b.data.semester.localeCompare(a.data.semester);
-  return a.data.order - b.data.order;
-});
+const all = await getCollection("courses");
+const enBySlug = new Map(
+  all
+    .filter((c) => c.slug.endsWith("-en"))
+    .map((c) => [c.slug.replace(/-en$/, ""), c]),
+);
+const courses = all
+  .filter((c) => !c.slug.endsWith("-en"))
+  .map((c) => ({
+    slug: c.slug,
+    data: (enBySlug.get(c.slug) ?? c).data,
+    hasEn: enBySlug.has(c.slug),
+  }))
+  .sort((a, b) => {
+    if (a.data.semester !== b.data.semester)
+      return b.data.semester.localeCompare(a.data.semester);
+    return a.data.order - b.data.order;
+  });
 
 const levelLabel: Record<string, string> = {
   undergrad: "Undergraduate",
@@ -25,8 +38,9 @@ const levelLabel: Record<string, string> = {
     <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">Courses</h1>
     <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
     <p class="mt-4 text-sm text-gray-500">
-      Course rules and plans, grading, and lab assignment guidelines. Full course
-      pages are currently in Chinese.
+      Course rules and plans, grading, and lab assignment guidelines. Courses
+      offered this academic year have English pages; older course pages are in
+      Chinese.
     </p>
   </section>
 
@@ -35,7 +49,7 @@ const levelLabel: Record<string, string> = {
       courses.map((c) => (
         <li>
           <a
-            href={`/courses/${c.slug}/`}
+            href={`/en/courses/${c.slug}/`}
             class="block h-full rounded border border-brand-200 bg-white p-5 transition hover:border-brand-800"
           >
             <p class="flex flex-wrap items-center gap-2 text-xs">
@@ -69,7 +83,14 @@ const levelLabel: Record<string, string> = {
                 c.data.active ? `${c.data.semester} (current)` : c.data.semester,
               ].join(" · ")}
             </p>
-            <p class="mt-3 text-xs text-gray-500">Course page in Chinese →</p>
+            {c.data.summary && (
+              <p class="mt-3 text-sm leading-relaxed text-gray-700">
+                {c.data.summary}
+              </p>
+            )}
+            <p class="mt-3 text-xs text-gray-500">
+              {c.hasEn ? "Course page →" : "Course page (in Chinese) →"}
+            </p>
           </a>
         </li>
       ))

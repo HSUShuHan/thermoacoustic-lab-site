@@ -1,0 +1,167 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Prose from "~/components/Prose.astro";
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+// 本學期成績統計（由 npm run import:grades 產生；僅聚合數字）
+const gradeFiles = import.meta.glob("../../../data/grades/*.json", { eager: true });
+
+export async function getStaticPaths() {
+  const items = await getCollection("courses");
+  return items
+    .filter((item) => !item.slug.endsWith("-en"))
+    .map((item) => {
+      const en = items.find((i) => i.slug === `${item.slug}-en`);
+      return {
+        params: { slug: item.slug },
+        props: { item: en ?? item, baseSlug: item.slug, hasEn: Boolean(en) },
+      };
+    });
+}
+
+const { item, baseSlug, hasEn } = Astro.props;
+const { Content } = await item.render();
+
+const gradeEntry = Object.entries(gradeFiles).find(([path]) =>
+  path.endsWith(`/${baseSlug}.json`),
+);
+const grades =
+  gradeEntry && (gradeEntry[1] as any).semester === item.data.semester
+    ? (gradeEntry[1] as any)
+    : null;
+const gradeLabel: Record<string, string> = {
+  mid: "Midterm",
+  final: "Final",
+  total: "Semester total",
+};
+const materialType: Record<string, string> = {
+  intro: "Course Plan",
+  lecture: "Lecture Slides",
+  lab: "Lab Assignment",
+  exam: "Exams",
+  other: "Other",
+};
+const materialOrder = ["intro", "lecture", "lab", "exam", "other"];
+const materials = (item.data.materials ?? []).slice().sort(
+  (a, b) => materialOrder.indexOf(a.type) - materialOrder.indexOf(b.type),
+);
+---
+
+<BaseLayout
+  lang="en"
+  title={`${item.data.title_en ?? item.data.title_zh} (${item.data.semester})`}
+  description={item.data.summary}
+>
+  <article class="py-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-brand-500">
+      {item.data.title_zh}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-brand-900">
+      {item.data.title_en ?? item.data.title_zh}
+    </h1>
+    <div class="mt-3 h-1 w-16 bg-accent-500" aria-hidden="true"></div>
+    <p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+      <span class="font-mono">{item.data.semester}</span>
+      {item.data.class_zh && <span>{item.data.class_zh}</span>}
+      {item.data.time_zh && <span>{item.data.time_zh}</span>}
+      {item.data.requirement && (
+        <span>{item.data.requirement === "required" ? "Required" : "Elective"}</span>
+      )}
+      <span>Instructor: Shu-Han Hsu</span>
+    </p>
+    <p class="mt-1 text-xs text-gray-500">
+      {item.data.active && `This page reflects the ${item.data.semester} semester. `}
+      Semesters taught:
+      {" " + [...item.data.past_semesters, item.data.semester].join(" · ")}
+    </p>
+
+    {
+      !hasEn && (
+        <p class="mt-6 rounded border border-brand-200 bg-brand-50/60 px-4 py-3 text-sm text-gray-700">
+          An English version of this page is not available yet; the content below
+          is in Chinese. Feel free to contact
+          <a href="mailto:bookhsu@ntut.edu.tw" class="underline hover:text-accent-600">
+            bookhsu@ntut.edu.tw
+          </a>
+          with any questions.
+        </p>
+      )
+    }
+
+    {
+      materials.length > 0 && (
+        <section class="mt-8 rounded border border-brand-200 p-5">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 class="text-xl font-semibold text-brand-900">Course Materials</h2>
+            <p class="text-xs text-gray-500">
+              Course password required (announced in class and in the LINE group);
+              enter it once and check "Remember me" to unlock all materials for the
+              semester. Visitors not enrolled in the course may request the slides by
+              emailing
+              <a href="mailto:bookhsu@ntut.edu.tw" class="underline hover:text-accent-600">bookhsu@ntut.edu.tw</a>.
+            </p>
+          </div>
+          <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+            {materials.map((m) => (
+              <li>
+                <a
+                  href={m.file}
+                  target="_blank"
+                  rel="noopener"
+                  class="group flex items-center gap-3 rounded border border-brand-100 px-4 py-3 transition hover:border-brand-800"
+                >
+                  <span class="shrink-0 rounded bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                    {materialType[m.type]}
+                  </span>
+                  <span class="min-w-0 flex-1 truncate text-sm font-medium text-brand-900 group-hover:text-accent-700">
+                    {m.title}
+                  </span>
+                  <span class="shrink-0 text-brand-300 transition group-hover:text-accent-600" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      grades && (
+        <section class="mt-8 rounded border border-brand-200 bg-brand-50/40 p-5">
+          <h2 class="text-xl font-semibold text-brand-900">
+            Grade Statistics (this semester)
+            <span class="ml-2 text-sm font-normal text-gray-500">updated {grades.generated}</span>
+          </h2>
+          <GradeHistograms
+            data={grades.included.map((k: string) => ({
+              sem: `${grades.semester} ${gradeLabel[k]}`,
+              ...grades.stats[k],
+            }))}
+          />
+          <p class="mt-3 text-sm text-gray-600">
+            Individual grades (student IDs masked):
+            <a href={grades.detail} target="_blank" rel="noopener" class="text-brand-700 underline hover:text-accent-600">
+              grade sheet</a
+            > (course password required, announced in class and in the LINE group).
+            Official grades are those in the university system.
+          </p>
+        </section>
+      )
+    }
+
+    <div class="mt-10">
+      <Prose>
+        <Content />
+      </Prose>
+    </div>
+
+    <p class="mt-16">
+      <a
+        href="/en/courses"
+        class="text-sm text-brand-700 underline transition hover:text-accent-600"
+        >← Back to courses</a
+      >
+    </p>
+  </article>
+</BaseLayout>

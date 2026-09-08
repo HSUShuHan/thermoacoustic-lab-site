@@ -1,0 +1,28 @@
+---
+title_zh: "熱機學"
+title_en: "Heat Engines"
+semester: "114-2"
+active: false
+past_semesters: ["113-2"]
+instructor: "Shu-Han Hsu"
+requirement: "elective"
+level: "undergrad"
+order: 6
+summary: "Undergraduate heat engines. This page lists grade statistics from past semesters."
+---
+
+import GradeHistograms from "~/components/GradeHistograms.astro";
+
+## Grade statistics from past semesters
+
+| Semester | Enrolled | Semester total (mean ± SD) | Failed |
+|---|---|---|---|
+| 113-2 | 9 | 61.6 ± 38.7 | 3 (33%) |
+| 114-2 | 7 | 78.6 ± 8.8 | 0 (0%) |
+
+<GradeHistograms
+  data={[
+    { sem: "113-2", n: 9, mean: 61.6, sd: 38.7, fail: 3, bins: [2, 0, 1, 0, 0, 0, 0, 1, 2, 3] },
+    { sem: "114-2", n: 7, mean: 78.6, sd: 8.8, fail: 0, bins: [0, 0, 0, 0, 0, 0, 2, 1, 3, 1] },
+  ]}
+/>
