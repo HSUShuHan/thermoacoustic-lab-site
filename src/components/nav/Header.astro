@@ -17,7 +17,13 @@ type NavLink = { href: string; key: UIKey };
 type NavEntry = NavLink | { key: UIKey; children: NavLink[] };
 const navItems: NavEntry[] = [
   { href: "/", key: "nav.home" },
-  { href: "/research", key: "nav.research" },
+  {
+    key: "nav.research",
+    children: [
+      { href: "/research", key: "nav.researchTopics" },
+      { href: "/grants", key: "nav.projects" },
+    ],
+  },
   { href: "/courses", key: "nav.courses" },
   {
     key: "nav.output",
@@ -27,7 +33,6 @@ const navItems: NavEntry[] = [
       { href: "/media", key: "nav.media" },
     ],
   },
-  { href: "/grants", key: "nav.projects" },
   { href: "/people", key: "nav.people" },
   { href: "/join-us", key: "nav.join" },
   { href: "/news", key: "nav.news" },
