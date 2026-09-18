@@ -107,7 +107,7 @@
 - [ ] † Merkli & Thomann, JFM **70**, 161 (1975)
 - [ ] † Yazaki-Biwa-Tominaga pistonless Stirling cooler, APL **80**, 157 (2002)
 - [ ] † Tijani & Spoelstra coaxial cooler, Cryogenics **48**, 77 (2008)
-- [ ] ＋ 相變工質：Ramon 團隊 PC-TAS 系列（ECM 2023 前後）
+- [ ] ＋ 相變工作流體：Ramon 團隊 PC-TAS 系列（ECM 2023 前後）
 - 現役：上田、康慧芳、Ramon
 
 ### 4.4 脈管冷凍機
