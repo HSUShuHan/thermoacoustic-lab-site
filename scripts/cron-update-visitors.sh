@@ -5,6 +5,13 @@ set -e
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 cd /Users/hsushuhanmacbookpro/dev/thermoacoustic-lab-site
 
+# 喚醒補跑時網路可能還沒好：等 DNS 可解析再跑，最多等 5 分鐘
+for i in {1..30}; do
+  nslookup -timeout=3 api.cloudflare.com >/dev/null 2>&1 && break
+  [ "$i" -eq 30 ] && { echo "$(date '+%F %T') 網路等逾時，放棄"; exit 1 }
+  sleep 10
+done
+
 node scripts/update-visitors.mjs
 git add src/data/visitors.json public/data/visitor-globe.json
 if git diff --cached --quiet; then
