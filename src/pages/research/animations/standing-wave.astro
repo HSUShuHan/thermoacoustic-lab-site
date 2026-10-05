@@ -118,21 +118,21 @@ const md = (tex: string) =>
 
     <h3 class="mt-6 text-lg font-medium text-brand-800">行波成分 vs 駐波成分</h3>
     <p class="mt-2 text-gray-700">
-      取<strong>變位 <span set:html={m("\\xi'")} /> 為相位基準</strong>（<span set:html={m("\\xi'")} />：氣塊離開平衡位置的位移）。以複素振幅寫 <span
+      取<strong>位移 <span set:html={m("\\xi'")} /> 為相位基準</strong>（<span set:html={m("\\xi'")} />：氣塊偏離平衡位置的位移）。以複數振幅寫 <span
         set:html={m("p'=\\mathrm{Re}[p_1 e^{i\\omega t}]=|p_1|\\cos(\\omega t+\\theta)")}
-      />；其中 <span set:html={m("|p_1|")} /> 為<strong>壓力複素振幅大小</strong>、<span set:html={m("\\omega")} /> 為角頻率、<span set:html={m("\\theta")} /> 為<strong>壓力領先變位的相角</strong>。展開得
+      />；其中 <span set:html={m("|p_1|")} /> 為<strong>壓力複數振幅大小</strong>、<span set:html={m("\\omega")} /> 為角頻率、<span set:html={m("\\theta")} /> 為<strong>壓力領先位移的相角</strong>。展開得
     </p>
     <div set:html={md("p' = \\underbrace{|p_1|\\cos\\theta\\,\\cos\\omega t}_{\\text{駐波成分（與 }\\xi'\\text{ 同相）}} + \\underbrace{|p_1|\\sin\\theta\\,\\cos(\\omega t+\\tfrac{\\pi}{2})}_{\\text{行波成分（領先 }\\xi'\\text{ 90°）}}")}></div>
     <p class="mt-2 text-gray-700">
-      無散逸共鳴管中的<strong>駐波</strong>，流速與壓力相差 <span set:html={m("\\pm\\pi/2")} />，故壓力與變位同相（<span
+      無散逸共鳴管中的<strong>駐波</strong>，流速與壓力相差 <span set:html={m("\\pm\\pi/2")} />，故壓力與位移同相（<span
         set:html={m("\\theta=0")}
-      /> 或 <span set:html={m("\\pi")} />）→ 純駐波成分；<strong>行波</strong>則壓力與變位相差 <span set:html={m("\\pm\\pi/2")} /> → 純行波成分。
+      /> 或 <span set:html={m("\\pi")} />）→ 純駐波成分；<strong>行波</strong>則壓力與位移相差 <span set:html={m("\\pm\\pi/2")} /> → 純行波成分。
     </p>
 
     <div class="mt-4 rounded-md border-l-4 border-accent-500 bg-brand-50 py-3 pl-4 pr-3 text-gray-800">
-      <strong>關鍵：純駐波不做功。</strong><span set:html={m("\\theta=0")} /> 時壓力與變位完全同相，<span
+      <strong>關鍵：純駐波不做功。</strong><span set:html={m("\\theta=0")} /> 時壓力與位移完全同相，<span
         set:html={m("p'\\!-\\!\\xi'")}
-      /> 環塌成線、功流 <span set:html={m("I=0")} />。要有功流，壓力必須相對變位有<strong>相位延遲</strong>——駐波型引擎裡，這個延遲來自氣塊與壁<strong>不完全熱接觸（<span
+      /> 環塌成線、功流 <span set:html={m("I=0")} />。要有功流，壓力必須相對位移有<strong>相位延遲</strong>——駐波型引擎裡，這個延遲來自氣塊與壁<strong>不完全熱接觸（<span
         set:html={m("\\chi''_a")}
       />）的熱時間延遲</strong>，等效混入少量行波成分，環才張開。動畫中把 <span set:html={m("\\theta")} /> 拉到 0 即可看到迴圈閉合、聲場節點收緊。
     </div>
@@ -145,7 +145,7 @@ const md = (tex: string) =>
       即 <span set:html={m("p'\\!-\\!\\xi'")} /> 環的符號面積 <span set:html={m("\\times f")} />；<strong>只有行波成分有貢獻</strong>（駐波成分是線段、面積為零）。
     </p>
     <p class="mt-1 text-sm text-gray-600">
-      <span set:html={m("u_1")} />：複素流速振幅（<span set:html={m("u_1=i\\omega\\xi_1")} />，領先變位 <span set:html={m("90^\\circ")} />）。<span set:html={m("\\phi=\\pi/2-\\theta")} />：流速與壓力的相位差。<span set:html={m("f=\\omega/2\\pi")} />：頻率。
+      <span set:html={m("u_1")} />：複數流速振幅（<span set:html={m("u_1=i\\omega\\xi_1")} />，領先位移 <span set:html={m("90^\\circ")} />）。<span set:html={m("\\phi=\\pi/2-\\theta")} />：流速與壓力的相位差。<span set:html={m("f=\\omega/2\\pi")} />：頻率。
     </p>
 
     <p class="mt-4 text-gray-700"><strong>熱流密度 <span set:html={m("Q")} /></strong>（氣塊熵振動所搬運的熱）：</p>
@@ -153,7 +153,7 @@ const md = (tex: string) =>
     <ul class="mt-2 list-disc space-y-1 pl-6 text-gray-700">
       <li><span set:html={m("Q_{prog}=-\\chi'_a\\,\\beta T_m\\,I")} />：行波成分，<strong>可逆</strong>（<span set:html={m("\\chi'_a")} />）。</li>
       <li><span set:html={m("Q_{stand}\\propto\\chi''_a")} />：駐波成分，<strong>不可逆</strong>。</li>
-      <li><span set:html={m("Q_D")} />：變位—溫梯項（Dream-pipe 的主角）。</li>
+      <li><span set:html={m("Q_D")} />：位移—溫梯項（Dream-pipe 的主角）。</li>
     </ul>
     <p class="mt-1 text-sm text-gray-600">
       <span set:html={m("\\rho_m,\\ T_m")} />：平均密度、平均溫度（下標 <span set:html={m("m")} />＝mean）。<span set:html={m("\\langle S'\\rangle_r")} />：斷面平均熵振動。<span set:html={m("\\beta")} />：熱膨脹率。<span set:html={m("\\chi_a=\\chi'_a+i\\chi''_a")} />：熱應答函數（Rott），實部 <span set:html={m("\\chi'_a")} /> 對應可逆、虛部 <span set:html={m("\\chi''_a")} /> 對應不可逆熱交換。
