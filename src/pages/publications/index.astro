@@ -167,7 +167,7 @@ const LAB_AUTHORS = new Set([
                 )}
               </div>
             )}
-            {(p.data.doi || p.data.data_doi || p.data.slides || videoBySlug.get(p.slug)) && (
+            {(p.data.doi || p.data.data_doi || p.data.slides || p.data.slides_pdf || p.data.slides_doi || videoBySlug.get(p.slug)) && (
               <div class="mt-1.5 flex flex-wrap gap-3 text-xs">
                 {p.data.doi && (
                   <a
@@ -185,6 +185,26 @@ const LAB_AUTHORS = new Set([
                     class="rounded bg-brand-50 px-2 py-0.5 font-medium text-brand-700 hover:bg-brand-100"
                   >
                     投影片 Slides ↗
+                  </a>
+                )}
+                {p.data.slides_pdf && (
+                  <a
+                    href={p.data.slides_pdf}
+                    target="_blank"
+                    rel="noopener"
+                    class="rounded bg-brand-50 px-2 py-0.5 font-medium text-brand-700 hover:bg-brand-100"
+                  >
+                    投影片 PDF
+                  </a>
+                )}
+                {p.data.slides_doi && (
+                  <a
+                    href={`https://doi.org/${p.data.slides_doi}`}
+                    target="_blank"
+                    rel="noopener"
+                    class="text-accent-600 underline hover:text-accent-700"
+                  >
+                    投影片 DOI: {p.data.slides_doi}
                   </a>
                 )}
                 {p.data.data_doi && (

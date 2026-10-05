@@ -37,6 +37,10 @@ const publications = defineCollection({
     // Site-relative path or URL to the presentation slides for this entry
     // (e.g. /slides/isec2026/). Shown as a chip on the publications pages.
     slides: z.string().optional(),
+    // Downloadable PDF of the slides (not the paper itself).
+    slides_pdf: z.string().optional(),
+    // Archived-slides DOI (e.g. Zenodo), without the https://doi.org/ prefix.
+    slides_doi: z.string().optional(),
     bibtex: z.string().optional(),
     abstract: z.string().optional(),
     featured: z.boolean().default(false),
