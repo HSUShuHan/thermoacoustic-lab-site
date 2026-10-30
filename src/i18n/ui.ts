@@ -75,7 +75,7 @@ export const ui = {
     "role.undergrad": "大學部專題生",
     "role.exchange": "交換學生",
     "role.research-assistant": "研究助理",
-    "role.alumni": "校友",
+    "role.alumni": "畢業學生",
 
     "page.research.title": "研究",
     "page.research.subtitle": "Research",
@@ -92,7 +92,7 @@ export const ui = {
     "page.people.title": "成員",
     "page.people.subtitle": "People",
     "page.people.current": "現任成員",
-    "page.people.alumni": "校友",
+    "page.people.alumni": "畢業學生",
 
     "page.news.title": "近況",
     "page.news.subtitle": "News",
