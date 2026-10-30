@@ -14,7 +14,7 @@
 - **研究主軸**：熱聲引擎、熱聲製冷、非線性熱聲動力學；當前重點為使用濕蓄熱器與液柱之行波型熱聲引擎
 - **網站定位**：學術實驗室 official site，主要受眾依序為：潛在學生、同行研究者、合作單位、媒體
 
-從 WordPress 遷移而來，採用 Astro 靜態站架構 + git 版控 + Cloudflare Pages 自動部署。
+從 WordPress 遷移而來，採用 Astro 靜態站架構 + git 版控 + Cloudflare Workers Builds 自動部署。
 
 ---
 
@@ -26,7 +26,9 @@
 - **數學式**：rehype-katex + remark-math（語法 `$...$` 與 `$$...$$`）
 - **圖示**：Lucide / Heroicons（透過 astro-icon 整合）
 - **i18n**：Astro 內建 routing（`/` 中文預設、`/en/` 英文）
-- **部署**：Cloudflare Pages（main branch auto deploy；PR 自動產生 preview URL）
+- **部署**：Cloudflare Workers Builds（push main 自動跑 `pnpm run build` + `npx wrangler deploy`；設定見 `wrangler.toml`）
+  - 推送後約 3–5 分鐘上線；若超過 10 分鐘沒更新，到 Cloudflare 儀表板 Workers & Pages → thermoacoustic-lab-site 看 Builds 是否失敗（2026-10-30 曾因 Node 安裝暫時失敗，Retry build 即可）
+  - 緊急時可本機 `npm run build && npx wrangler deploy` 直接部署（需先 `npx wrangler login`）
 
 Node 版本：見 `.nvmrc`。包管理：npm（除非另有說明）。
 
