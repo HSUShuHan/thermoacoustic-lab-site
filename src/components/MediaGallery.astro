@@ -41,6 +41,30 @@ const featuredVenue = featuredPub
 // 照片區依研究主軸分組（中英標題；pub 可選，連結對應論文）
 const photoGroups = [
   {
+    zh: "濕熱聲：蒸氣注入與相變",
+    en: "Wet thermoacoustics: steam injection & phase change",
+    photos: [
+      {
+        src: "/images/media/wet-engine-three-modes.png",
+        zh: "三種運轉模式的穩態壓力包絡統計：乾態（80 W）、純蒸氣（8 g/min）、蒸氣加熱併用（8 g/min + 60 W）。左為帶通壓力與包絡 A(t)，中為振幅機率密度，右為相平面聯合機率密度——乾態細環、純蒸氣小環、併用寬環，隨機調制一眼可辨",
+        en: "Steady-state pressure-envelope statistics for three operating modes: dry (80 W), pure steam (8 g/min) and combined steam + heating (8 g/min + 60 W). Left: band-passed pressure and envelope A(t); centre: amplitude PDF; right: phase-plane joint PDF — a thin ring for dry, a small ring for pure steam and a broad ring for combined operation",
+        pub: "2026-lin-stochastic-wet-engine",
+      },
+      {
+        src: "/images/media/wet-engine-regime-map.png",
+        zh: "運轉區圖（Q̇_H–ṁ_s 平面，71 筆記錄）：綠圈為乾淨極限環、橘菱為含噪極限環、紅方為近起振不可靠區；蒸氣注入擴大可運轉範圍",
+        en: "Operating-regime map in the (Q̇_H, ṁ_s) plane for 71 records: green circles are clean limit cycles, orange diamonds noisy limit cycles and red squares near-onset unreliable cases; steam injection widens the accessible operating envelope",
+        pub: "2026-lin-stochastic-wet-engine",
+      },
+      {
+        src: "/images/media/wet-engine-potential-well.png",
+        zh: "有效位能井與隨機穩定性（ṁ_s = 8 g/min）：加熱功率由 30 W 增至 70 W，位能井加深，井深比 ΔV/D₂ 由 52 升至 197，極限環愈趨穩定",
+        en: "Effective potential well and stochastic stability (ṁ_s = 8 g/min): as heater power rises from 30 W to 70 W the well deepens and the well-depth ratio ΔV/D₂ grows from 52 to 197, i.e. an increasingly robust limit cycle",
+        pub: "2026-lin-stochastic-wet-engine",
+      },
+    ],
+  },
+  {
     zh: "非線性動力學：起振、分歧與飽和",
     en: "Nonlinear dynamics: onset, bifurcation & saturation",
     photos: [
@@ -68,6 +92,12 @@ const photoGroups = [
     zh: "熱聲引擎與蓄熱器",
     en: "Thermoacoustic engines & regenerators",
     photos: [
+      {
+        src: "/images/media/wet-engine-hardware.jpg",
+        zh: "蒸氣注入濕駐波熱聲引擎實驗硬體：熱聲核心（PT1/PT2 動態壓力計、熱端加熱器、金屬絲網蓄熱器）、蒸氣產生器、蠕動泵、冷凝水回流與資料擷取系統",
+        en: "Experimental hardware of the steam-injected wet standing-wave thermoacoustic engine: thermoacoustic core (PT1/PT2 dynamic pressure transducers, cartridge heater, wire-mesh stack), steam generator, peristaltic pump, condensate return and data acquisition",
+        pub: "2026-lin-stochastic-wet-engine",
+      },
       {
         src: "/images/media/speaker-load-onset-setup.jpg",
         zh: "負載揚聲器之環形管熱聲史特靈引擎發振條件量測配置",
