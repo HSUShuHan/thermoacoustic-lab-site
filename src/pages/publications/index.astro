@@ -4,7 +4,13 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
 import { profileGroups } from "~/data/scholar-profiles";
 
 const all = await getCollection("publications");
-const sorted = all.sort((a, b) => b.data.year - a.data.year);
+// 年份新到舊；同年內期刊優先（journal → conference → thesis → preprint → dataset）
+const typeOrder = ["journal", "conference", "thesis", "preprint", "dataset"];
+const sorted = all.sort(
+  (a, b) =>
+    b.data.year - a.data.year ||
+    typeOrder.indexOf(a.data.type) - typeOrder.indexOf(b.data.type),
+);
 
 // Map publication slug → first associated video (for ▶ badge)
 const allVideos = await getCollection("videos");
@@ -15,7 +21,6 @@ const videoBySlug = new Map(
 );
 
 const years = ["All", ...Array.from(new Set(sorted.map((p) => p.data.year))).sort((a, b) => b - a)];
-const typeOrder = ["journal", "conference", "thesis", "preprint", "dataset"];
 const presentTypes = typeOrder.filter((t) =>
   sorted.some((p) => p.data.type === t),
 );
