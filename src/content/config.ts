@@ -182,6 +182,9 @@ const news = defineCollection({
   schema: z.object({
     title: z.string(),
     title_en: z.string().optional(),
+    // 首頁近況區塊用的短標題（可省略人名）；未填則顯示 title / title_en
+    title_home: z.string().optional(),
+    title_home_en: z.string().optional(),
     date: z.date(),
     cover: z.string().optional(),
     tags: z.array(z.string()).default([]),

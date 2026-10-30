@@ -141,7 +141,7 @@ const visitors = (Object.values(visitorFiles)[0] as any) ?? null;
                       {n.data.date.toISOString().slice(0, 10)}
                     </p>
                     <p class="mt-0.5 text-sm leading-snug text-brand-900 group-hover:text-accent-700">
-                      {n.data.title}
+                      {n.data.title_home ?? n.data.title}
                     </p>
                   </a>
                 </li>
