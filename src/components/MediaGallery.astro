@@ -14,6 +14,9 @@ const videos = allVideos.sort((a, b) => {
 });
 const pubs = await getCollection("publications");
 const pubBySlug = new Map(pubs.map((p) => [p.slug, p]));
+// 校友學位論文（影片 related_thesis → members/alumni/<slug>）
+const members = await getCollection("members");
+const memberBySlug = new Map(members.map((m) => [m.slug.replace(/^alumni\//, ""), m]));
 
 // 凝結爆衝：影片＋數據圖並排特別區塊（從一般影片格與照片組抽出）
 const CONDENSATION_PUB = "2024-hsu-condensation-shock";
@@ -145,6 +148,7 @@ const L = {
   videos: en ? "Videos" : "影片",
   photos: en ? "Images" : "圖像",
   paper: en ? "Related paper" : "對應論文",
+  thesis: en ? "Thesis" : "學位論文",
   play: en ? "Play video" : "播放影片",
   featured: en ? "Featured" : "特別收錄",
   footage: en ? "Experiment footage" : "實驗影片",
@@ -238,6 +242,20 @@ const vdesc = (v: (typeof videos)[number]) =>
             const url = pub
               ? pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null)
               : null;
+            const thesisMember = v.data.related_thesis
+              ? memberBySlug.get(v.data.related_thesis)
+              : null;
+            const thesisTitle = thesisMember
+              ? en
+                ? (thesisMember.data.thesis_en ?? thesisMember.data.thesis)
+                : thesisMember.data.thesis
+              : null;
+            const thesisYear = thesisMember?.data.graduated?.slice(0, 4);
+            const thesisName = thesisMember
+              ? en
+                ? thesisMember.data.name_en
+                : thesisMember.data.name_zh
+              : null;
             return (
               <figure class="overflow-hidden rounded-lg border border-brand-100 bg-white shadow-sm transition hover:border-brand-300">
                 <button
@@ -276,6 +294,19 @@ const vdesc = (v: (typeof videos)[number]) =>
                         </a>
                       ) : (
                         <span class="text-gray-700">{pub.data.venue_short ?? pub.data.venue} ({pub.data.year})</span>
+                      )}
+                    </p>
+                  )}
+                  {thesisMember && thesisTitle && (
+                    <p class="mt-3 text-sm">
+                      <span class="text-brand-600">{L.thesis}：</span>
+                      <span class="text-gray-700">{thesisName}{en ? ", " : "，"}</span>
+                      {thesisMember.data.thesis_url ? (
+                        <a href={thesisMember.data.thesis_url} target="_blank" rel="noopener noreferrer" class="text-accent-600 underline hover:text-accent-700">
+                          {en ? `“${thesisTitle}”` : `《${thesisTitle}》`}{thesisYear ? ` (${thesisYear})` : ""} <span class="text-xs">↗</span>
+                        </a>
+                      ) : (
+                        <span class="text-gray-700">{en ? `“${thesisTitle}”` : `《${thesisTitle}》`}{thesisYear ? ` (${thesisYear})` : ""}</span>
                       )}
                     </p>
                   )}

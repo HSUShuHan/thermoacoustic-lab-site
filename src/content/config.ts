@@ -12,6 +12,9 @@ const videos = defineCollection({
     description_en: z.string().optional(),
     // Slug of the associated publication (e.g., "2024-hsu-condensation-shock").
     related_pub: z.string().optional(),
+    // Slug of the alumni member whose thesis this video belongs to
+    // (e.g., "yi-chieh-wang"); the card links to that thesis.
+    related_thesis: z.string().optional(),
     tags: z.array(z.string()).default([]),
     order: z.number().default(0),
   }),
