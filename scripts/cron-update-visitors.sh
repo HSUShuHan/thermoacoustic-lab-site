@@ -13,7 +13,7 @@ for i in {1..30}; do
 done
 
 node scripts/update-visitors.mjs
-git add src/data/visitors.json public/data/visitor-globe.json
+git add src/data/visitors.json public/data/visitor-globe.json public/data/visitor-regions.json
 if git diff --cached --quiet; then
   echo "$(date '+%F %T') 無變動，略過"
   exit 0
