@@ -3,7 +3,7 @@
 //   1. 寫入 src/data/grades/<slug>.json（課程頁「成績查詢」區塊的資料來源；公開直條圖只放學期總成績）
 //   2. 產生成績明細 HTML，以 staticrypt 加密後放 public/slides/<學期>/<prefix>-grades.html
 // 用法：npm run import:grades -- <web-export.json> --password <課程密碼>
-// 發布包不含姓名、學號只保留末三碼（***127；由工具在匯出時去識別化）。
+// 學號只保留末三碼（***127；由工具在匯出時遮蔽）；姓名欄為選用（PI 2026-11-06 決定放姓名，頁面在課程密碼之後）。
 // 可加 --draft-out <path> 另存未加密的明細頁草稿到 repo 外供預覽。
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -34,8 +34,8 @@ if (!course?.slug || !course?.semester) {
   process.exit(1);
 }
 for (const r of rows) {
-  if (r.name || !/^(\*{3}\d{1,3}|旁聽\d*)$/.test(String(r.id ?? ""))) {
-    console.error(`資料未去識別化（${JSON.stringify(r).slice(0, 60)}…），中止。請用工具的「匯出網站發布包」。`);
+  if (!/^(\*{3}\d{1,3}|旁聽\d*)$/.test(String(r.id ?? ""))) {
+    console.error(`學號未遮蔽（${JSON.stringify(r).slice(0, 60)}…），中止。請用工具的「匯出網站發布包」。`);
     process.exit(1);
   }
 }
@@ -64,6 +64,7 @@ console.log(`✓ src/data/grades/${course.slug}.json（${included.join("、") ||
 // 2) 明細頁
 const label = { mid: "期中考", final: "期末考", total: "學期總成績" };
 const cols = included;
+const hasName = rows.some((r) => r.name);
 const binLabels = ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90"];
 const histHtml = cols
   .map((k) => {
@@ -86,7 +87,7 @@ const rowsHtml = rows
   .sort((a, b) => (/^旁聽/.test(a.id) ? 1 : 0) - (/^旁聽/.test(b.id) ? 1 : 0) || String(a.id).localeCompare(String(b.id)))
   .map(
     (r) =>
-      `<tr><td>${r.id}</td>${cols
+      `<tr><td>${r.id}</td>${hasName ? `<td>${r.name ?? ""}</td>` : ""}${cols
         .map((k) => `<td${r[k] !== null && r[k] !== undefined && r[k] < 60 ? ' class="f"' : ""}>${r[k] ?? "—"}</td>`)
         .join("")}</tr>`,
   )
@@ -121,7 +122,7 @@ p.note{font-size:12px;color:#6b7280;margin:4px 0 0}
 ${histHtml}
 </div>
 <p class="note">橫軸為分數級距（每 10 分一組，90 含以上）；淺色為不及格級距，柱上數字為人數。對照自己的分數，可知在全班的位置。表中不及格分數以紅底標示。${rows.some((r) => /^旁聽/.test(r.id)) ? "旁聽生列於表末，不計入統計。" : ""}</p>
-<table><thead><tr><th>學號</th>${cols.map((k) => `<th>${label[k]}</th>`).join("")}</tr></thead>
+<table><thead><tr><th>學號</th>${hasName ? "<th>姓名</th>" : ""}${cols.map((k) => `<th>${label[k]}</th>`).join("")}</tr></thead>
 <tbody>
 ${rowsHtml}
 </tbody></table>

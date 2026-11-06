@@ -354,7 +354,7 @@ $("#export-ok").addEventListener("click", () => {
   const inc = { mid: $("#ex-mid").checked, fin: $("#ex-final").checked, total: $("#ex-total").checked };
   const mask = (id) => { id = String(id ?? ""); return "***" + id.slice(-3); };  // 只顯示末三碼（同班學號前綴相同，遮前面才分得出人）
   const rows = activeStudents().map((s) => {
-    const r = { id: mask(s.id) };
+    const r = { id: mask(s.id), name: String(s.name ?? "").trim() };  // 姓名隨發布包上網（頁面在課程密碼後）
     if (inc.mid) r.mid = num(s.mid);
     if (inc.fin) r.final = num(s.fin);
     if (inc.total) r.total = computeRow(s).total;
