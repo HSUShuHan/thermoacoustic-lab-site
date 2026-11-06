@@ -356,7 +356,7 @@ $("#export-ok").addEventListener("click", () => {
   const order = activeStudents().map((s) => String(s.id ?? "")).sort();
   const rows = activeStudents().map((s) => {
     const r = { id: mask(s.id), name: String(s.name ?? "").trim(), klass: String(s.klass ?? "").trim(), seq: order.indexOf(String(s.id ?? "")) };  // 姓名隨發布包上網（頁面在課程密碼後）
-    if (inc.mid) r.mid = num(s.mid);
+    if (inc.mid) { r.mid = num(s.mid); if (r.mid === null) r.absent = true; }  // 空白＝缺考，列出但不計入統計
     if (inc.fin) r.final = num(s.fin);
     if (inc.total) r.total = computeRow(s).total;
     return r;
