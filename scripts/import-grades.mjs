@@ -65,6 +65,12 @@ console.log(`✓ src/data/grades/${course.slug}.json（${included.join("、") ||
 const label = { mid: "期中考", final: "期末考", total: "學期總成績" };
 const cols = included;
 const hasName = rows.some((r) => r.name);
+// 醒目提示：各次考試佔學期總成績的比重（course.weights = { mid: 35, final: 35 }）
+const weights = course.weights ?? {};
+const calloutHtml = cols
+  .filter((k) => weights[k])
+  .map((k) => `<div class="callout">${label[k]}佔學期總成績 <b>${weights[k]}%</b></div>`)
+  .join("\n");
 const binLabels = ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90"];
 const histHtml = cols
   .map((k) => {
@@ -114,10 +120,13 @@ td.f{color:#b91c1c;font-weight:600;background:#fef2f2}
 .cnt{font-size:10px;line-height:1;color:#6b7280}.bar{width:100%;margin-top:2px;border-radius:2px;background:#1e3a5f}.bar.lo{background:#a9b8cf}
 .axis{display:flex;gap:4px;margin-top:4px}.axis span{flex:1;text-align:center;font-size:10px;color:#9ca3af}
 p.note{font-size:12px;color:#6b7280;margin:4px 0 0}
+.callout{margin:16px 0 4px;padding:14px 18px;border-left:6px solid #dc2626;background:#fff7ed;color:#1e3a5f;font-size:22px;font-weight:700;letter-spacing:.02em}
+.callout b{color:#dc2626;font-size:34px;line-height:1}
 </style></head><body>
 <h1>${course.name ?? course.slug} <small>${course.semester} ${course.klass ?? ""}</small></h1>
 <div class="rule"></div>
 <p class="meta">更新日期：${generated}。學號只顯示末三碼；本表僅供修課同學參考，正式成績以學校系統為準。</p>
+${calloutHtml}
 <div class="grid">
 ${histHtml}
 </div>
