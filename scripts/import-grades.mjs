@@ -34,7 +34,7 @@ if (!course?.slug || !course?.semester) {
   process.exit(1);
 }
 for (const r of rows) {
-  if (r.name || !/^\*{3}\d{1,3}$/.test(String(r.id ?? ""))) {
+  if (r.name || !/^(\*{3}\d{1,3}|旁聽\d*)$/.test(String(r.id ?? ""))) {
     console.error(`資料未去識別化（${JSON.stringify(r).slice(0, 60)}…），中止。請用工具的「匯出網站發布包」。`);
     process.exit(1);
   }
@@ -83,7 +83,7 @@ const histHtml = cols
   .join("\n");
 const rowsHtml = rows
   .slice()
-  .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+  .sort((a, b) => (/^旁聽/.test(a.id) ? 1 : 0) - (/^旁聽/.test(b.id) ? 1 : 0) || String(a.id).localeCompare(String(b.id)))
   .map(
     (r) =>
       `<tr><td>${r.id}</td>${cols
@@ -120,7 +120,7 @@ p.note{font-size:12px;color:#6b7280;margin:4px 0 0}
 <div class="grid">
 ${histHtml}
 </div>
-<p class="note">橫軸為分數級距（每 10 分一組，90 含以上）；淺色為不及格級距，柱上數字為人數。對照自己的分數，可知在全班的位置。表中不及格分數以紅底標示。</p>
+<p class="note">橫軸為分數級距（每 10 分一組，90 含以上）；淺色為不及格級距，柱上數字為人數。對照自己的分數，可知在全班的位置。表中不及格分數以紅底標示。${rows.some((r) => /^旁聽/.test(r.id)) ? "旁聽生列於表末，不計入統計。" : ""}</p>
 <table><thead><tr><th>學號</th>${cols.map((k) => `<th>${label[k]}</th>`).join("")}</tr></thead>
 <tbody>
 ${rowsHtml}
