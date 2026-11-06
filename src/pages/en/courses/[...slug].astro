@@ -4,7 +4,7 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
 import Prose from "~/components/Prose.astro";
 import GradeHistograms from "~/components/GradeHistograms.astro";
 
-// 本學期成績統計（由 npm run import:grades 產生；僅聚合數字）
+// 成績查詢／統計（由 npm run import:grades 產生；公開直條圖只有學期總成績，期中期末統計在加密明細頁）
 const gradeFiles = import.meta.glob("../../../data/grades/*.json", { eager: true });
 
 export async function getStaticPaths() {
@@ -130,17 +130,19 @@ const materials = (item.data.materials ?? []).slice().sort(
       grades && (
         <section class="mt-8 rounded border border-brand-200 bg-brand-50/40 p-5">
           <h2 class="text-xl font-semibold text-brand-900">
-            Grade Statistics (this semester)
+            {(grades.public ?? []).length ? "Grade Statistics (this semester)" : "Grade Lookup"}
             <span class="ml-2 text-sm font-normal text-gray-500">updated {grades.generated}</span>
           </h2>
-          <GradeHistograms
-            data={grades.included.map((k: string) => ({
-              sem: `${grades.semester} ${gradeLabel[k]}`,
-              ...grades.stats[k],
-            }))}
-          />
+          {(grades.public ?? []).length > 0 && (
+            <GradeHistograms
+              data={(grades.public as string[]).map((k: string) => ({
+                sem: `${grades.semester} ${gradeLabel[k]}`,
+                ...grades.stats[k],
+              }))}
+            />
+          )}
           <p class="mt-3 text-sm text-gray-600">
-            Individual grades (student IDs masked):
+            Individual grades (IDs masked to the last three digits, with the class distribution of each exam):
             <a href={grades.detail} target="_blank" rel="noopener" class="text-brand-700 underline hover:text-accent-600">
               grade sheet</a
             > (course password required, announced in class and in the LINE group).

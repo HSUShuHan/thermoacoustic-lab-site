@@ -151,8 +151,8 @@ npm run import:bib       # 從 publications.bib 重新產生論文 mdx（見下�
 ### 「更新課程成績統計」（學期中／期末）
 
 1. PI 用 `tools/grade-tool.html`（瀏覽器開啟的本機工具）打成績，原始 JSON 存教學資料夾，**絕不放進 repo**
-2. 工具「匯出網站發布包」產生去識別化 JSON（無姓名、學號遮蔽末三碼）
-3. `npm run import:grades -- <發布包.json> --password <課程密碼>`：更新 `src/data/grades/<slug>.json`（課程頁「本學期成績統計」自動渲染）並產生 staticrypt 加密明細頁 `public/slides/<學期>/<prefix>-grades.html`
+2. 工具「匯出網站發布包」產生去識別化 JSON（無姓名、學號只留末三碼 `***127`）
+3. `npm run import:grades -- <發布包.json> --password <課程密碼> [--draft-out <repo 外路徑>]`：更新 `src/data/grades/<slug>.json`（課程頁「成績查詢」區塊；**公開直條圖只畫學期總成績**，期中／期末的平均、標準差、級距分布只放在加密明細頁）並產生 staticrypt 加密明細頁 `public/slides/<學期>/<prefix>-grades.html`
 4. build 確認後 commit。腳本會拒絕含姓名或未遮蔽學號的輸入
 
 ### 「Join Us 頁的 FAQ 加一條：問題 X / 回答 Y」

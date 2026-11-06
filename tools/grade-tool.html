@@ -352,7 +352,7 @@ $("#btn-export").addEventListener("click", () => $("#dlg-export").showModal());
 $("#export-ok").addEventListener("click", () => {
   readForm();
   const inc = { mid: $("#ex-mid").checked, fin: $("#ex-final").checked, total: $("#ex-total").checked };
-  const mask = (id) => { id = String(id ?? ""); return id.length > 3 ? id.slice(0, -3) + "***" : id + "***"; };
+  const mask = (id) => { id = String(id ?? ""); return "***" + id.slice(-3); };  // 只顯示末三碼（同班學號前綴相同，遮前面才分得出人）
   const rows = activeStudents().map((s) => {
     const r = { id: mask(s.id) };
     if (inc.mid) r.mid = num(s.mid);

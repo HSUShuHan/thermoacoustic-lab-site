@@ -1,0 +1,29 @@
+{
+  "semester": "115-1",
+  "generated": "2026-11-06",
+  "included": [
+    "mid"
+  ],
+  "public": [],
+  "stats": {
+    "mid": {
+      "n": 33,
+      "mean": 25.6,
+      "sd": 17.8,
+      "fail": 31,
+      "bins": [
+        6,
+        8,
+        8,
+        7,
+        0,
+        2,
+        1,
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "detail": "/slides/115-1/thermo-grades.html"
+}
