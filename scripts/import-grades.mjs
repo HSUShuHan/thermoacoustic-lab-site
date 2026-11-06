@@ -87,7 +87,7 @@ const rowsHtml = rows
   .map(
     (r) =>
       `<tr><td>${r.id}</td>${cols
-        .map((k) => `<td${k === "total" && r[k] !== null && r[k] < 60 ? ' class="f"' : ""}>${r[k] ?? "—"}</td>`)
+        .map((k) => `<td${r[k] !== null && r[k] !== undefined && r[k] < 60 ? ' class="f"' : ""}>${r[k] ?? "—"}</td>`)
         .join("")}</tr>`,
   )
   .join("\n");
@@ -104,7 +104,7 @@ p.meta{font-size:13px;color:#6b7280}
 table{border-collapse:collapse;width:100%;font-size:14px;margin-top:12px}
 th,td{border:1px solid #e5e7eb;padding:5px 10px;text-align:center}
 th{background:#f1f5f9;color:#1e3a5f}
-td.f{color:#dc2626;font-weight:600}
+td.f{color:#b91c1c;font-weight:600;background:#fef2f2}
 .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:12px 0 4px}
 .hist{border:1px solid #e5e7eb;border-radius:4px;padding:12px;background:#fff}
 .ht{font-size:14px;font-weight:600;color:#1e3a5f}.hs{font-size:12px;color:#6b7280;margin-top:2px}
@@ -120,7 +120,7 @@ p.note{font-size:12px;color:#6b7280;margin:4px 0 0}
 <div class="grid">
 ${histHtml}
 </div>
-<p class="note">橫軸為分數級距（每 10 分一組，90 含以上）；淺色為不及格級距，柱上數字為人數。對照自己的分數，可知在全班的位置。</p>
+<p class="note">橫軸為分數級距（每 10 分一組，90 含以上）；淺色為不及格級距，柱上數字為人數。對照自己的分數，可知在全班的位置。表中不及格分數以紅底標示。</p>
 <table><thead><tr><th>學號</th>${cols.map((k) => `<th>${label[k]}</th>`).join("")}</tr></thead>
 <tbody>
 ${rowsHtml}
