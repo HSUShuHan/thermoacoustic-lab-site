@@ -91,7 +91,8 @@ const histHtml = cols
   .join("\n");
 const rowsHtml = rows
   .slice()
-  .sort((a, b) => (/^旁聽/.test(a.id) ? 1 : 0) - (/^旁聽/.test(b.id) ? 1 : 0) || String(a.id).localeCompare(String(b.id)))
+  // seq = 依完整學號排序的序號（發布包不含完整學號，但保留原排序；外系高年級學號較小者在前）
+  .sort((a, b) => (/^旁聽/.test(a.id) ? 1 : 0) - (/^旁聽/.test(b.id) ? 1 : 0) || (a.seq ?? 0) - (b.seq ?? 0) || String(a.id).localeCompare(String(b.id)))
   .map(
     (r) =>
       `<tr><td>${r.id}</td>${hasName ? `<td>${r.name ?? ""}</td>` : ""}${hasKlass ? `<td>${r.klass ?? ""}</td>` : ""}${cols
