@@ -155,6 +155,15 @@ npm run import:bib       # 從 publications.bib 重新產生論文 mdx（見下�
 3. `npm run import:grades -- <發布包.json> --password <課程密碼> [--draft-out <repo 外路徑>]`：更新 `src/data/grades/<slug>.json`（課程頁「成績查詢」區塊；**公開直條圖只畫學期總成績**，期中／期末的平均、標準差、級距分布只放在加密明細頁）並產生 staticrypt 加密明細頁 `public/slides/<學期>/<prefix>-grades.html`
 4. build 確認後 commit。腳本會拒絕含姓名或未遮蔽學號的輸入
 
+### 「上架課程教材」（投影片 PDF／HTML deck）
+
+教材放 `public/slides/<學期>/`，以課程密碼保護。**不要直接用 `npx staticrypt` 加密大檔**：staticrypt 把密文以 hex 內嵌，PDF 或內嵌字型／影片的 deck 會變成 16–24 MB 的密碼頁，iPad 上的 Chrome 解不開（2026-11）。一律用下列腳本，產出一張約 50 KB 的密碼頁＋一個獨立加密的本體檔（`.pdf.enc`／`.html.enc`，兩個檔都要 commit）：
+
+- PDF 講義：`node scripts/protect-pdf.mjs <pdf> --title "…" --out <檔名> --semester 115-1 --password <課程密碼>`（桌機用瀏覽器內建 PDF 檢視器，手機平板用 `public/vendor/pdfjs/` 逐頁繪製）
+- 單檔 HTML deck（reveal.js 課程介紹、實驗說明）：`node scripts/protect-html.mjs <html> --out <檔名> --semester 115-1 --password <課程密碼>`
+
+成績明細頁很小（約 50 KB），仍由 `import:grades` 直接以 staticrypt 加密。三者共用 `.staticrypt.json` 的 salt，「記住我」才能跨頁通行，不要刪。
+
 ### 「Join Us 頁的 FAQ 加一條：問題 X / 回答 Y」
 
 1. 找 `src/pages/join-us.astro` 中 FAQ 區塊
