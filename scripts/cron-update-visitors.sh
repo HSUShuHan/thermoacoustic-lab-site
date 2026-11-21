@@ -12,6 +12,12 @@ for i in {1..30}; do
   sleep 10
 done
 
+# 工作目錄若停在別的分支，commit 會落在那條分支上且推不出去（2026-11-09、11-16 曾因此延後上線）
+if [ "$(git branch --show-current)" != "main" ]; then
+  echo "$(date '+%F %T') 目前不在 main（$(git branch --show-current)），放棄"
+  exit 1
+fi
+git pull -q --ff-only
 node scripts/update-visitors.mjs
 git add src/data/visitors.json public/data/visitor-globe.json public/data/visitor-regions.json
 if git diff --cached --quiet; then
