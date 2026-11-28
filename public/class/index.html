@@ -26,7 +26,7 @@
     <h1>實驗作業選題</h1>
     <p class="sub">115-1 動力學（機械二甲）、熱力學（機械二乙）</p>
     <div id="err" class="note warn hidden"></div>
-    <p>請用學校 Google 帳號（<b>學號@ntut.edu.tw</b>）登入。系統會用信箱裡的學號對應選課名單，不用另外填資料。</p>
+    <p>請用學校 Google 帳號（<b>學號@ntut.edu.tw</b> 或 <b>學號@mail.ntut.edu.tw</b>）登入。系統會用信箱裡的學號對應選課名單，不用另外填資料。</p>
     <p><button class="btn lg" id="login">使用學校 Google 帳號登入</button></p>
     <p class="muted">登入後這台裝置會記住你約半年。換手機或清除瀏覽器資料時，重新登入一次即可。系統只讀取你的姓名與學校信箱。</p>
   </section>
@@ -72,7 +72,7 @@ $("#copy").onclick = async () => {
 
 const ERR = {
   "not-enrolled": (e) => `${esc(e)} 不在 115-1 動力學或熱力學的選課名單中（撤選的同學無法登入）。如果你有修課，請聯絡老師。`,
-  "not-school": (e) => `${esc(e)} 不是學校帳號。請改用 學號@ntut.edu.tw 登入。`,
+  "not-school": (e) => `${esc(e)} 不是學校帳號。請改用以學號開頭的學校 Google 帳號登入。`,
   "cancelled": () => "登入已取消。",
   "state": () => "登入逾時，請再按一次登入。",
   "google": () => "Google 登入驗證失敗，請再試一次。",

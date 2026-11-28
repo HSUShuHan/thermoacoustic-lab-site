@@ -53,8 +53,9 @@ function decodeJwtPayload(jwt) {
 const teachers = (env) =>
   (env.TEACHER_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 
+// 學校 Google 帳號可能是 學號@ntut.edu.tw 或 學號@mail.ntut.edu.tw，兩者都對應同一個學號。
 const studentId = (email) => {
-  const m = /^(\d{9})@ntut\.edu\.tw$/.exec(email);
+  const m = /^(\d{9})@(?:mail\.)?ntut\.edu\.tw$/.exec(email);
   return m ? m[1] : null;
 };
 
@@ -105,7 +106,6 @@ async function login(request, env, url) {
     state,
     prompt: "select_account",
   });
-  if (url.searchParams.get("as") !== "teacher") q.set("hd", "ntut.edu.tw");
   return redirect(`https://accounts.google.com/o/oauth2/v2/auth?${q}`, {
     "set-cookie": setCookie(STATE_COOKIE, `${state}|${next}`, 600),
   });

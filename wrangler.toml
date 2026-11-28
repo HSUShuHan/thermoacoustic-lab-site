@@ -23,5 +23,5 @@ database_id = "8ffa9224-0b80-42e3-9529-b082ae58baf7"
 migrations_dir = "migrations"
 
 [vars]
-TEACHER_EMAILS = "bookhsu@ntut.edu.tw"
+TEACHER_EMAILS = "bookhsu@ntut.edu.tw,bookhsu@mail.ntut.edu.tw"
 # GOOGLE_CLIENT_ID 與 GOOGLE_CLIENT_SECRET 以 `wrangler secret put` 設定，不寫在這裡。
