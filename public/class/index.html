@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>實驗作業選題｜熱聲實驗室課堂系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@600&display=swap">
+<link rel="stylesheet" href="/class/class.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="mark" href="/class/">熱聲實驗室 · 課堂系統</a>
+  <div class="who" id="who"></div>
+</div></header>
+
+<main class="wrap">
+  <div id="inapp" class="note warn hidden">
+    你正在 LINE（或其他 App）內建的瀏覽器裡，Google 不允許在這裡登入。<br>
+    請點右上角「⋯」選「用預設瀏覽器開啟」，或複製網址貼到 Safari／Chrome。
+    <div style="margin-top:8px"><button class="btn sm outline" id="copy">複製網址</button></div>
+  </div>
+
+  <section id="guest" class="hidden">
+    <h1>實驗作業選題</h1>
+    <p class="sub">115-1 動力學（機械二甲）、熱力學（機械二乙）</p>
+    <div id="err" class="note warn hidden"></div>
+    <p>請用學校 Google 帳號（<b>學號@ntut.edu.tw</b>）登入。系統會用信箱裡的學號對應選課名單，不用另外填資料。</p>
+    <p><button class="btn lg" id="login">使用學校 Google 帳號登入</button></p>
+    <p class="muted">登入後這台裝置會記住你約半年。換手機或清除瀏覽器資料時，重新登入一次即可。系統只讀取你的姓名與學校信箱。</p>
+  </section>
+
+  <section id="app" class="hidden"></section>
+</main>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const TZ = 8 * 3600e3;
+const fmt = (ms) => {
+  if (!ms) return "未定";
+  const d = new Date(ms + TZ);
+  const w = "日一二三四五六"[d.getUTCDay()];
+  return `${d.getUTCMonth() + 1}/${d.getUTCDate()}（${w}）${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function toast(msg, err = false) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "toast" + (err ? " err" : "");
+  clearTimeout(toast.h);
+  toast.h = setTimeout(() => t.classList.add("hidden"), 3500);
+}
+
+async function api(path, body) {
+  const res = await fetch("/api/class" + path, body === undefined ? {} : {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.message || "發生錯誤，請稍後再試。"), { status: res.status });
+  return data;
+}
+
+// LINE、Facebook、Instagram 等 App 內建瀏覽器擋 Google 登入
+if (/\bLine\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(navigator.userAgent)) $("#inapp").classList.remove("hidden");
+$("#copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(location.href); toast("已複製網址"); } catch { prompt("請複製這個網址：", location.href); }
+};
+
+const ERR = {
+  "not-enrolled": (e) => `${esc(e)} 不在 115-1 動力學或熱力學的選課名單中（撤選的同學無法登入）。如果你有修課，請聯絡老師。`,
+  "not-school": (e) => `${esc(e)} 不是學校帳號。請改用 學號@ntut.edu.tw 登入。`,
+  "cancelled": () => "登入已取消。",
+  "state": () => "登入逾時，請再按一次登入。",
+  "google": () => "Google 登入驗證失敗，請再試一次。",
+  "not-configured": () => "系統尚未開放登入。",
+};
+
+const PHASE = {
+  notyet: (c) => `選題將於 ${fmt(c.schedule.phase1)} 開放。`,
+  phase1: (c) => c.priority
+    ? `第一階段（期中考不及格同學優先），現在可以選題。${fmt(c.schedule.phase2)} 起開放全班。`
+    : `目前是第一階段，只開放期中考不及格的同學選題。你在 ${fmt(c.schedule.phase2)} 起可以選剩下的題目。`,
+  phase2: () => "第二階段，全班皆可選剩下的題目。",
+  closed: () => "選題已截止。要換題請聯絡老師。",
+};
+
+function renderCourse(c) {
+  const mine = c.mine;
+  const groups = [];
+  for (const t of c.topics) {
+    if (!groups.length || groups.at(-1).name !== t.group) groups.push({ name: t.group, items: [] });
+    groups.at(-1).items.push(t);
+  }
+  const topicRow = (t) => {
+    const left = t.capacity - t.taken;
+    const isMine = mine?.id === t.id;
+    const full = left <= 0 && !isMine;
+    const label = isMine ? "你的題目" : mine ? "換成這題" : "選這題";
+    return `<div class="topic${isMine ? " is-mine" : ""}">
+      <div><span class="id">${esc(t.id)}</span><span class="t">${esc(t.title)}</span></div>
+      <div class="g">器材：${esc(t.gear)}</div>
+      <div class="p">你的參數：${esc(t.preview)}</div>
+      <div class="right">
+        <span class="seats${left <= 0 ? " full" : ""}">${left <= 0 ? "額滿" : `剩 ${left} 名`}（${t.taken}/${t.capacity}）</span>
+        <button class="btn sm${isMine ? " outline" : ""}" data-pick="${esc(t.id)}" data-course="${esc(c.slug)}"
+          ${isMine || full || !c.canSelect ? "disabled" : ""}>${label}</button>
+      </div>
+    </div>`;
+  };
+  return `<section class="course">
+    <h2>${esc(c.name)} 實驗作業</h2>
+    <div class="note${c.canSelect ? " ok" : ""}">${PHASE[c.phase](c)}</div>
+    ${mine ? `<div class="card mine">
+        <div class="muted small">你登記的題目</div>
+        <h3 style="margin-top:4px"><span class="id" style="font-family:var(--font-mono)">${esc(mine.id)}</span> ${esc(mine.title)}</h3>
+        <div class="muted small">器材：${esc(mine.gear)}</div>
+        <div class="param">${esc(mine.param.text)}</div>
+        <div class="muted small">N = 學號末兩碼 ${String(mine.param.N).padStart(2, "0")}，末一碼 ${mine.param.d}。實驗影片中必須看得到這個值；實作值與指定值相差 ±10% 內視為符合，計算一律用實測值。</div>
+        ${c.phase === "phase1" || c.phase === "phase2" ? `<p style="margin:12px 0 0"><button class="btn sm danger" data-cancel="${esc(c.slug)}">取消登記</button>
+          <span class="muted small">要換題可以直接在下方按「換成這題」，原題名額會釋出。</span></p>` : ""}
+      </div>` : c.canSelect ? `<p class="muted">每人一題、每題最多 ${c.topics[0]?.capacity ?? 3} 人，先選先得。題卡細節請看<a href="${esc(c.labUrl)}">實驗作業說明</a>。</p>` : ""}
+    <p class="muted small">繳交期限 ${fmt(c.schedule.deadline)}。繳交功能 12/28 開放，也可以照說明頁用 Email 繳交。</p>
+    <div class="card" style="padding-top:4px">
+      ${groups.map((g) => `<div class="group">${esc(g.name)}</div>${g.items.map(topicRow).join("")}`).join("")}
+    </div>
+    <p class="small"><a href="${esc(c.labUrl)}">實驗作業說明（題卡、報告模板、影片規範）</a></p>
+  </section>`;
+}
+
+let state = null;
+
+async function load() {
+  try {
+    state = await api("/me");
+  } catch (e) {
+    if (e.status === 401) return showGuest();
+    return toast(e.message, true);
+  }
+  if (state.role === "teacher") { location.href = "/class/admin.html"; return; }
+  $("#guest").classList.add("hidden");
+  $("#who").innerHTML = `${esc(state.name)} ${esc(state.sid)}<button class="btn sm" id="logout">登出</button>`;
+  $("#logout").onclick = async () => { await api("/auth/logout", {}); location.href = "/class/"; };
+  const app = $("#app");
+  app.classList.remove("hidden");
+  app.innerHTML = `<h1>實驗作業選題</h1><p class="sub">${esc(state.name)}，你好。</p>` + state.courses.map(renderCourse).join("");
+}
+
+function showGuest() {
+  $("#guest").classList.remove("hidden");
+  const q = new URLSearchParams(location.search);
+  const err = q.get("err");
+  if (err && ERR[err]) { $("#err").innerHTML = ERR[err](q.get("email") || ""); $("#err").classList.remove("hidden"); }
+}
+
+$("#login").onclick = () => { location.href = "/api/class/auth/login?next=/class/"; };
+
+document.addEventListener("click", async (ev) => {
+  const pick = ev.target.closest("[data-pick]");
+  const cancel = ev.target.closest("[data-cancel]");
+  if (pick) {
+    const course = state.courses.find((c) => c.slug === pick.dataset.course);
+    const t = course.topics.find((x) => x.id === pick.dataset.pick);
+    const msg = course.mine
+      ? `要把 ${course.mine.id} ${course.mine.title} 換成 ${t.id} ${t.title} 嗎？原題名額會釋出，不一定能換回來。`
+      : `確定登記 ${t.id} ${t.title}？\n你的參數：${t.preview}`;
+    if (!confirm(msg)) return;
+    pick.disabled = true;
+    try { await api("/lab/select", { course: course.slug, topic: t.id }); toast(`已登記 ${t.id} ${t.title}`); }
+    catch (e) { toast(e.message, true); }
+    load();
+  } else if (cancel) {
+    const course = state.courses.find((c) => c.slug === cancel.dataset.cancel);
+    if (!confirm(`確定取消 ${course.mine.id} ${course.mine.title} 的登記？名額會釋出給其他同學。`)) return;
+    try { await api("/lab/cancel", { course: course.slug }); toast("已取消登記"); } catch (e) { toast(e.message, true); }
+    load();
+  }
+});
+
+load();
+</script>
+</body>
+</html>
